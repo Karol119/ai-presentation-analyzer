@@ -1,0 +1,60 @@
+/ai-presentation-analyzer
+│
+├── app/
+│   ├── __init__.py               
+│   │
+│   ├── presentation/             # LAYER 1: PRESENTATION (Integrante 1 - PyQt6)
+│   │   ├── __init__.py
+│   │   ├── widgets/             # Archivos XML (.ui) generados por Qt Designer
+│   │   │   ├── main_dashboard.ui # Panel principal (Carga de archivos y carpetas)
+│   │   │   ├── teacher_view.ui   # Vista Docente con cronómetro y alertas
+│   │   │   └── student_view.ui   # Vista Alumno (Pantalla completa pasiva)
+│   │   │
+│   │   ├── views/                # Clases de Python que controlan la interfaz interactiva
+│   │   │   ├── main_dashboard.py # Conecta los botones de main_dashboard.ui con el orquestador
+│   │   │   ├── teacher_view.py   # Control unidireccional de la sesión en vivo
+│   │   │   └── student_view.py   # Refleja el estado dictado por la vista docente
+│   │   │
+│   │   └── assets/               # Iconos, logos y hojas de estilo (QSS)
+│   │
+│   ├── core/           # LAYER 2: BUSINESS LOGIC (Integrante 2)
+│   │   ├── __init__.py
+│   │   ├── logic/                 # Lógica de negocio
+│   │   │   ├── __init__.py     
+│   │   │   ├── text_extractor.py     
+│   │   │   ├── presentation_manager.py 
+│   │   │   │
+│   │   │   ├── parameters/        # QUÉ estamos evaluando
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── syllabus_coverage.py  # Parámetro: Similitud con el temario
+│   │   │   │
+│   │   │   └── metrics/           # CÓMO lo estamos calculando (Matemática pura)
+│   │   │       ├── __init__.py
+│   │   │       └── cosine_similarity.py  # Fórmula: Similitud del Coseno
+│   │   └── controller/      # Orquestador modular (Conecta Capa 1 y 3)
+│   │       ├── __init__.py
+│   │       ├── evaluation_controller.py
+│   │       ├── live_session_controller.py
+│   │       └── performance_controller.py
+│   │
+│   ├── data/                     # LAYER 3: DATA (Integrante 3)
+│       ├── __init__.py
+│       ├── database.py           
+│       ├── database.py           
+│       ├── database.py           
+│       ├── gemini_connection.py  
+│       └── Llama_Store/                # Módulo para almacenamiento de pttx y Temario
+│            ├── __init__.py
+│            ├── presentation_store.py # Lógica para vectorizar y consultar los .pptx
+│            └── syllabus_store.py     # Lógica para indexar y consultar las materias  
+│   
+├── test/                     # Pruebas Unitarias
+│    ├── __init__.py
+│    └── test_text_extractor.py     
+│          
+├── environment.yml               # Configuración para Anaconda
+├── requirements.txt              # Configuración para Entorno
+├── .env                  
+├── .gitignore                    
+├── .Tree                         # Visualización de arquitectura
+└── main.py                       # Punto de entrada (Arranca la QApplication de PyQt6)

@@ -1,0 +1,22 @@
+name: ai-presentation-analyzer
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  # Framework gráfico y base de datos
+  - pyqt6
+  - sqlalchemy
+  - python-dotenv
+  # Dependencias que se instalan mejor vía pip dentro de Conda
+  - pip:
+    - python-pptx
+    - google-generativeai
+    - llama-index
+    - llama-index-llms-gemini
+    - llama-index-embeddings-gemini}
+
+
+# Agregar 
+# pip install llama-index-embeddings-huggingface

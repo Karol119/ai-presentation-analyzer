@@ -1,0 +1,21 @@
+# Interfaz Gráfica de Escritorio
+PyQt6==6.6.1
+
+# Manejo de variables de entorno (API Keys de Gemini)
+python-dotenv==1.0.1
+
+# Extracción de texto de presentaciones
+python-pptx==0.6.23
+
+# Integración con Google Gemini API
+google-generativeai==0.4.0
+
+# Almacenamiento y manejo de Vectores/RAG (LlamaIndex base)
+llama-index==0.10.15
+
+# Plugins de Gemini para LlamaIndex (Nuevos)
+llama-index-llms-gemini
+llama-index-embeddings-gemini
+
+# Base de datos relacional (ORM puro para historial y versiones)
+SQLAlchemy==2.0.28
