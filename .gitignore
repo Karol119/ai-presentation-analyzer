@@ -1,0 +1,49 @@
+# Entornos virtuales y variables de entorno
+venv/
+env/
+.env
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Bases de datos locales (Capa de Datos)
+*.sqlite3
+*.db
+
+# Archivos de prueba (Reglas de Negocio: Carga de Archivos)
+# Evita subir los .pptx reales al repositorio
+uploads/
+*.pptx
+
+# Archivos autogenerados por PyQt6 (si deciden compilar los .ui a .py)
+ui_*.py
+*_rc.py
+
+# Archivos generados al crear el ejecutable (.exe) con PyInstaller
+build/
+dist/
+*.spec
+
+# Configuración de IDEs y del sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Archivos de reportes generados (Prototipo 3)
+# Evita subir los PDF de rendimiento exportados por los docentes
+reports/
+*.pdf
+
+# Archivos de registro (Logs)
+# Útiles para monitorear errores de la API (Timeout) o tiempos, pero no deben subirse
+logs/
+*.log
+
+# Otras variaciones comunes de entornos virtuales de Python
+.venv/
+
+# Caché si deciden hacer pruebas unitarias después
+.pytest_cache/
