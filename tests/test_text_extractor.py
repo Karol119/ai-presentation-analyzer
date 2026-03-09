@@ -1,8 +1,12 @@
+import time
 from pptx import Presentation
 from pptx.enum.shapes import PP_PLACEHOLDER
 
+# ⏱️ Iniciar medición de tiempo
+inicio = time.time()
+
 # Ruta de tu archivo
-ruta = r'C:/Users/kgonz/Desktop/TT/Presentaciones/Tema_2_Normatividad_de_la_lengua_escrita.pptx'
+ruta = r'C:/Users/kgonz/Desktop/TT/Presentaciones/Curso_Redes_Computadoras.pptx'
 
 try:
     prs = Presentation(ruta)
@@ -24,9 +28,12 @@ try:
                 continue
                 
             if hasattr(shape, "text") and shape.text.strip():
-                # Limpiamos el texto de saltos de línea innecesarios
                 texto_limpio = shape.text.replace('\n', ' ').strip()
                 print(f" - {texto_limpio}")
 
 except Exception as e:
     print(f"Error: {e}")
+
+# ⏱️ Finalizar medición
+fin = time.time()
+print(f"\nTiempo de ejecución: {fin - inicio:.4f} segundos")

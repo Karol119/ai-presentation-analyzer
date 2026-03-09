@@ -9,5 +9,5 @@ conda deactivate
 
 # Correr Test Unitarios
 python tests/test_text_extractor.py
-python tests/test_full_flow.py
-python tests/test_1_raw_xml.py
+python tests/test_extraction.py
+
