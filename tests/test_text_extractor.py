@@ -1,32 +1,15 @@
-from pptx import Presentation
-from pptx.enum.shapes import PP_PLACEHOLDER
+from app.core.controller.presentation_controller import orquestar_carga_presentacion
 
-# Ruta de tu archivo
-ruta = r'C:/Users/kgonz/Desktop/TT/Presentaciones/Tema_2_Normatividad_de_la_lengua_escrita.pptx'
+def probar_flujo_completo():
+    print("--- Iniciando Prueba de Carga ---")
+    
+    # El test solo maneja las salidas (éxito o error)
+    exito, mensaje = orquestar_carga_presentacion()
+    
+    if exito:
+        print(f"✅ TEST PASADO: {mensaje}")
+    else:
+        print(f"❌ TEST FALLIDO: {mensaje}")
 
-try:
-    prs = Presentation(ruta)
-
-    for i, slide in enumerate(prs.slides):
-        print(f"\n=== DIAPOSITIVA {i+1} ===")
-        
-        # 1. Buscar el título (si existe)
-        if slide.shapes.title:
-            print(f"TITULO: {slide.shapes.title.text.upper()}")
-        else:
-            print("TITULO: (Sin título definido)")
-
-        # 2. Buscar el resto del contenido
-        print("CONTENIDO:")
-        for shape in slide.shapes:
-            # Evitamos repetir el título que ya imprimimos arriba
-            if shape == slide.shapes.title:
-                continue
-                
-            if hasattr(shape, "text") and shape.text.strip():
-                # Limpiamos el texto de saltos de línea innecesarios
-                texto_limpio = shape.text.replace('\n', ' ').strip()
-                print(f" - {texto_limpio}")
-
-except Exception as e:
-    print(f"Error: {e}")
+if __name__ == "__main__":
+    probar_flujo_completo()
