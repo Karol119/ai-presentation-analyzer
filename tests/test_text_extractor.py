@@ -1,15 +1,15 @@
-from app.core.controller.presentation_controller import orquestar_carga_presentacion
+from app.core.controller.presentation_controller import orquestar_subida
 
-def probar_flujo_completo():
-    print("--- Iniciando Prueba de Carga ---")
+def test_flujo_logico():
+    print("--- Test: Disparando evento de carga ---")
     
-    # El test solo maneja las salidas (éxito o error)
-    exito, mensaje = orquestar_carga_presentacion()
+    # El test no manda nada, solo espera
+    exito, mensaje = orquestar_subida()
     
     if exito:
-        print(f"✅ TEST PASADO: {mensaje}")
+        print(f"✅ TEST FINALIZADO: {mensaje}")
     else:
-        print(f"❌ TEST FALLIDO: {mensaje}")
+        print(f"❌ TEST FINALIZADO: {mensaje}")
 
 if __name__ == "__main__":
-    probar_flujo_completo()
+    test_flujo_logico()
