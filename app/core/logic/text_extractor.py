@@ -43,21 +43,18 @@ def extraer_datos_pptx(ruta_pptx):
             "slide_number": i + 1,
             "title": "",
             "content": [],
-            "images": []  # <--- Ahora será una lista de nombres
+            "images": []  
         }
 
-        # 1. Título oficial
         if slide.shapes.title and slide.shapes.title.text.strip():
             slide_info["title"] = slide.shapes.title.text.strip()
         
         candidatos_titulo = []
         for shape in slide.shapes:
-            # --- DETECCIÓN DE IMÁGENES ---
-            # El tipo 13 o PICTURE es el estándar para imágenes insertadas
-            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
-                slide_info["images"].append(shape.name) # Extrae el nombre (ej. "Imagen 2")
 
-            # --- DETECCIÓN DE TEXTO (con tu heurística) ---
+            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                slide_info["images"].append(shape.name) 
+
             if hasattr(shape, "text") and shape.text.strip():
                 texto = shape.text.strip()
                 if slide_info["title"] == texto: continue
@@ -71,7 +68,6 @@ def extraer_datos_pptx(ruta_pptx):
                 else:
                     slide_info["content"].append(texto)
 
-        # Resolución de títulos (lo que ya tenías)
         if not slide_info["title"] and candidatos_titulo:
             candidatos_titulo.sort(key=lambda x: (x['size'] or 0, -x['top']), reverse=True)
             mejor = candidatos_titulo[0]

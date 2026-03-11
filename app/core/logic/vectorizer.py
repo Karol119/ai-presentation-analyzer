@@ -34,7 +34,7 @@ def formatear_para_vectorizacion(datos_extraidos):
     vectorizacion_final = {
         "filename": datos_extraidos["filename"],
         "combined_titles": " ".join(titulos_reales),
-        "extracted_data": datos_extraidos["slides"] # Aquí ya viaja la lista de imágenes
+        "extracted_data": datos_extraidos["slides"]
     }
     
     return vectorizacion_final
