@@ -1,0 +1,263 @@
+{
+    "filename": "7 - Configuracion-de-Contrasenas-en-Cisco-IOS.pptx",
+    "combined_titles": "🔐 Primer Bloque: Configuración de Contraseña Privilegiada 🔐 Primer Bloque: Configuración de Contraseña Privilegiada 📌 ¿Qué hace cada comando? Comandos de Salida y Confirmación ⚠️ Diferencia Crítica: Seguridad 🎯 ¿Qué protege este bloque? 🔹 Segundo Bloque: Contraseña de Consola 📌 ¿Qué es line con 0? 📌 ¿Qué es line con 0? Explicación Paso a Paso del Segundo Bloque ⚠️ Consideraciones Importantes Configuración de Contraseñas para Acceso Remoto ¿Qué es line vty 0 15? ¿Qué Protege Esta Configuración? Observación Importante: Seguridad Comparación General: Tres Métodos de Protección",
+    "extracted_data": [
+        {
+            "slide_number": 1,
+            "title": "",
+            "content": [
+                "Configuración de Contraseñas en Cisco IOS",
+                "Dominando la seguridad del modo EXEC privilegiado y el acceso por consola (Primer bloque)"
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 2,
+            "title": "🔐 Primer Bloque: Configuración de Contraseña Privilegiada",
+            "content": [
+                "El primer bloque de comandos protege el modo EXEC privilegiado, una de las capas más importantes de seguridad en dispositivos Cisco. Esta configuración impide que usuarios no autorizados accedan a funciones administrativas del switch.",
+                "Este bloque de comandos es esencial porque el modo privilegiado permite realizar operaciones críticas como modificar la configuración, reiniciar el dispositivo o acceder a información sensible del sistema."
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 3,
+            "title": "🔐 Primer Bloque: Configuración de Contraseña Privilegiada",
+            "content": [],
+            "images": [
+                "Image 0",
+                "Imagen 7"
+            ]
+        },
+        {
+            "slide_number": 4,
+            "title": "📌 ¿Qué hace cada comando?",
+            "content": [
+                "Switch> enable",
+                "Cambia del modo usuario al modo privilegiado. El prompt cambia de Switch> a Switch#. Permite ejecutar comandos administrativos como ver la configuración completa, reiniciar el dispositivo o acceder a funciones avanzadas.",
+                "Switch# configure terminal",
+                "Entra al modo de configuración global. El prompt cambia a Switch(config)#. Aquí se pueden modificar todos los parámetros del equipo y configurar servicios, interfaces y protocolos.",
+                "Switch(config)# enable secret",
+                "Configura la contraseña cifrada para el modo privilegiado. Se guarda encriptada automáticamente usando MD5 en el running-config. Es la forma recomendada y segura."
+            ],
+            "images": [
+                "Image 0",
+                "Image 1",
+                "Image 2"
+            ]
+        },
+        {
+            "slide_number": 5,
+            "title": "Comandos de Salida y Confirmación",
+            "content": [
+                "exit",
+                "Comando fundamental que sale del modo de configuración actual, retrocediendo un nivel en la jerarquía de comandos. Si estás en configuración global (Switch(config)#), exit te devolverá al modo privilegiado (Switch#).",
+                "Es útil para confirmar cambios antes de abandonar completamente el modo de configuración.",
+                "disable",
+                "Regresa del modo privilegiado al modo usuario. El prompt cambia de Switch# a Switch>. Este comando cierra la sesión administrativa pero mantiene la conexión activa.",
+                "Es equivalente a hacer logout pero permaneciendo conectado al dispositivo con privilegios reducidos."
+            ],
+            "images": []
+        },
+        {
+            "slide_number": 6,
+            "title": "⚠️ Diferencia Crítica: Seguridad",
+            "content": [
+                "enable password",
+                "❌ Sin cifrado",
+                "Almacena la contraseña en texto plano en el archivo de configuración. Cualquier usuario que ejecute show running-config puede leer la contraseña directamente.",
+                "NO RECOMENDADO en entornos reales o de producción.",
+                "enable secret",
+                "✓ Cifrado MD5",
+                "Almacena una versión cifrada de la contraseña usando el algoritmo MD5. No es posible recuperar la contraseña original desde el running-config.",
+                "RECOMENDADO siempre.",
+                "La diferencia entre enable password y enable secret es fundamental para la seguridad del dispositivo. Es crucial elegir el método correcto para proteger las credenciales de acceso administrativo."
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 7,
+            "title": "🎯 ¿Qué protege este bloque?",
+            "content": [
+                "Acceso Administrativo",
+                "Protege el acceso al modo privilegiado, evitando que cualquier usuario pueda administrar el switch sin autorización.",
+                "Configuración del Sistema",
+                "Previniendo cambios no autorizados en la configuración y manteniendo la integridad del dispositivo.",
+                "Sin esta contraseña configurada, cualquier persona que tenga acceso físico o remoto al switch podría entrar al modo privilegiado y modificar cualquier aspecto del dispositivo, incluyendo otras contraseñas y configuraciones de red."
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 8,
+            "title": "🔹 Segundo Bloque: Contraseña de Consola",
+            "content": [
+                "El segundo bloque protege el acceso físico al dispositivo mediante el puerto de consola. Esta es la interfaz física (puerto RJ-45 o USB) que se usa con un cable específico para conectar un ordenador directamente al switch.",
+                "Protege el acceso físico al dispositivo mediante el puerto console. Esta es una medida de seguridad fundamental para un dispositivo de red."
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 9,
+            "title": "📌 ¿Qué es line con 0?",
+            "content": [],
+            "images": [
+                "Image 0",
+                "Imagen 14"
+            ]
+        },
+        {
+            "slide_number": 10,
+            "title": "📌 ¿Qué es line con 0?",
+            "content": [
+                "Línea de Consola Física",
+                "El puerto que usamos con el cable de consola para configurar el switch directamente. Es el primero (y principal) de las líneas de acceso del dispositivo.",
+                "Identificador de Línea",
+                "En los dispositivos Cisco, \"con 0\" significa console 0, identificando la primera línea de consola disponible. El número 0 indica que es la única línea física de consola."
+            ],
+            "images": [
+                "Image 0",
+                "Image 1",
+                "Image 2"
+            ]
+        },
+        {
+            "slide_number": 11,
+            "title": "Explicación Paso a Paso del Segundo Bloque",
+            "content": [
+                "Switch(config)# line con 0",
+                "Entra a la configuración de la línea de consola. El prompt cambia a Switch(config-line)#. Desde aquí configuras parámetros específicos de la conexión física por consola.",
+                "Switch(config-line)# password contraseña",
+                "Define la contraseña para acceder por consola. Esta contraseña será requerida cada vez que alguien conecte físicamente al dispositivo por este puerto.",
+                "03",
+                "Switch(config-line)# login",
+                "Habilita la verificación de contraseña para esta línea. Sin este comando, la contraseña definida no tendrá efecto.",
+                "04",
+                "Switch(config-line)# exit",
+                "Salva los cambios y retrocede al modo de configuración global.",
+                "01",
+                "02"
+            ],
+            "images": []
+        },
+        {
+            "slide_number": 12,
+            "title": "⚠️ Consideraciones Importantes",
+            "content": [
+                "Cifrado de Contraseñas de Consola",
+                "Por defecto, las contraseñas de consola se almacenan en texto plano. Usa el comando service password-encryption en configuración global para cifrar todas las contraseñas de texto plano.",
+                "enable secret y line con 0",
+                "Son independientes. enable secret protege el acceso al modo privilegiado (enable), mientras que line con 0 protege la conexión física por el puerto console.",
+                "Se pueden usar simultáneamente para múltiples capas de protección.",
+                "Si Olvidas una Contraseña",
+                "Sin una contraseña de consola configurada, puedes conectarte físicamente y cambiarla. Pero si se te olvida la contraseña de consola y está habilitada, necesitarás acceder por interfaces virtuales (VTY) con privilegios, o realizar un procedimiento de recuperación de contraseña accediendo al dispositivo durante el arranque para saltarse la carga de la configuración."
+            ],
+            "images": []
+        },
+        {
+            "slide_number": 13,
+            "title": "",
+            "content": [
+                "Configuración de Contraseñas en Cisco IOS",
+                "Gestión segura del acceso a dispositivos Cisco",
+                "Las contraseñas son fundamentales para proteger los dispositivos de red. Configuración de contraseñas de acceso remoto utilizando líneas virtuales (VTY) en dispositivos Cisco."
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 14,
+            "title": "Configuración de Contraseñas para Acceso Remoto",
+            "content": [
+                "Para proteger el acceso remoto a un switch o router Cisco, es esencial configurar contraseñas en las líneas virtuales (VTY). Este proceso se realiza en modo configuración global y afecta todas las sesiones de acceso remoto entrantes.",
+                "SW1>enable\nSW1# configure terminal\nSW1(config)# line vty 0 15\nSW1(config-line)# password contraseña\nSW1(config-line)# login\nSW1(config-line)# exit",
+                "Modo EXEC privilegiado",
+                "Accede al modo privilegiado con enable y luego entra en el modo configuración con configure terminal.",
+                "Configuración VTY",
+                "El comando line vty 0 15 entra en el modo configuración de líneas virtuales, donde puedes establecer la contraseña y habilitar la autenticación."
+            ],
+            "images": []
+        },
+        {
+            "slide_number": 15,
+            "title": "¿Qué es line vty 0 15?",
+            "content": [
+                "VTY = Virtual Teletype",
+                "Son líneas virtuales que permiten el acceso remoto a dispositivos Cisco mediante protocolos como Telnet y SSH.",
+                "0 15 = 16 Sesiones",
+                "El rango de 0 a 15 significa que se habilitan 16 sesiones remotas simultáneas, permitiendo que múltiples administradores accedan al dispositivo al mismo tiempo.",
+                "Las líneas VTY representan conexiones virtuales que no requieren acceso físico al dispositivo. Son esenciales para la administración remota de red, permitiendo gestionar switches y routers desde cualquier ubicación con conectividad de red."
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 16,
+            "title": "¿Qué Protege Esta Configuración?",
+            "content": [
+                "Telnet (Puerto TCP 23)",
+                "Protocolo de acceso remoto estándar, aunque con transmisión de datos sin cifrar",
+                "SSH (Puerto TCP 22)",
+                "Protocolo seguro de acceso remoto con transmisión cifrada de datos y contraseñas",
+                "Protección Remota",
+                "Sin esta configuración, cualquier usuario en la red podría conectarse al dispositivo sin autenticación previa.",
+                "La configuración de contraseñas en las líneas VTY protege el acceso remoto al dispositivo Cisco, creando una barrera de seguridad contra accesos no autorizados desde redes externas."
+            ],
+            "images": [
+                "Image 0",
+                "Image 1",
+                "Image 2"
+            ]
+        },
+        {
+            "slide_number": 17,
+            "title": "Observación Importante: Seguridad",
+            "content": [
+                "Mejor Práctica Recomendada",
+                "Para garantizar una autenticación segura, utiliza el método de autenticación local con usuarios y contraseñas cifradas:",
+                "username admin secret contraseña\nline vty 0 15\nlogin local\ntransport input ssh",
+                "username admin secret",
+                "Crea un usuario con contraseña cifrada mediante algoritmo MD5, mucho más seguro que password simple.",
+                "login local",
+                "Configura la autenticación para usar la base de datos local del dispositivo en lugar de una sola contraseña.",
+                "transport input ssh",
+                "Permite únicamente conexiones SSH cifradas, deshabilitando Telnet inseguro para proteger las credenciales.",
+                "🚨 Advertencia de Seguridad: El método básico password login NO es seguro cuando se utiliza con Telnet debido a que este protocolo transmite las contraseñas en texto plano, sin cifrado alguno."
+            ],
+            "images": [
+                "Image 0"
+            ]
+        },
+        {
+            "slide_number": 18,
+            "title": "Comparación General: Tres Métodos de Protección",
+            "content": [
+                "Bloque",
+                "Protege",
+                "Tipo de Acceso",
+                "1️⃣ enable secret",
+                "Modo privilegiado (EXEC)",
+                "Interno",
+                "2️⃣ line console 0",
+                "Consola física",
+                "Local",
+                "3️⃣ line vty 0 15",
+                "Acceso remoto",
+                "Telnet / SSH",
+                "Cada método protege un aspecto diferente del acceso al dispositivo. enable secret protege el acceso administrativo elevado, line console 0 protege el acceso físico directo, y line vty 0 15 protege el acceso remoto. Juntos forman una estrategia de defensa en profundidad para la seguridad del dispositivo."
+            ],
+            "images": []
+        }
+    ]
+}

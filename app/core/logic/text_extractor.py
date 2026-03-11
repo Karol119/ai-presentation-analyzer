@@ -1,55 +1,57 @@
-# app/core/logic/text_extractor.py
+import os
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
-class TextExtractor:
-    def extract_from_pptx(self, file_path: str) -> list[dict]:
-        """
-        Reads a PPTX file and extracts text separated by title and content.
-        Also detects if there are images in the slide.
-        Returns a list of dictionaries containing slide information.
-        """
-        extracted_data = []
+def extraer_datos_pptx(ruta_pptx):
+    prs = Presentation(ruta_pptx)
+    presentacion_estructurada = {
+        "filename": os.path.basename(ruta_pptx),
+        "slides": []
+    }
+
+    for i, slide in enumerate(prs.slides):
+        slide_info = {
+            "slide_number": i + 1,
+            "title": "",
+            "content": [],
+            "images": []  # <--- Ahora será una lista de nombres
+        }
+
+        # 1. Título oficial
+        if slide.shapes.title and slide.shapes.title.text.strip():
+            slide_info["title"] = slide.shapes.title.text.strip()
         
-        try:
-            prs = Presentation(file_path)
+        candidatos_titulo = []
+        for shape in slide.shapes:
+            # --- DETECCIÓN DE IMÁGENES ---
+            # El tipo 13 o PICTURE es el estándar para imágenes insertadas
+            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                slide_info["images"].append(shape.name) # Extrae el nombre (ej. "Imagen 2")
 
-            for i, slide in enumerate(prs.slides):
-                slide_info = {
-                    "slide_number": i + 1,
-                    "title": "(No title defined)",
-                    "content": [],
-                    "images": []  # New list to store image names
-                }
-                
-                # 1. Extract title
-                if slide.shapes.title:
-                    slide_info["title"] = slide.shapes.title.text.strip()
+            # --- DETECCIÓN DE TEXTO (con tu heurística) ---
+            if hasattr(shape, "text") and shape.text.strip():
+                texto = shape.text.strip()
+                if slide_info["title"] == texto: continue
 
-                # 2. Extract content and check for images
-                for shape in slide.shapes:
-                    # Skip the title shape as it is already extracted
-                    if shape == slide.shapes.title:
-                        continue
-                        
-                    # Check if the shape has text
-                    if hasattr(shape, "text") and shape.text.strip():
-                        clean_text = shape.text.replace('\n', ' ').strip()
-                        slide_info["content"].append(clean_text)
-                        
-                    # Check if the shape is a picture/image
-                    if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
-                        # shape.name holds the internal name (e.g., "Picture 1" or "logo.png")
-                        slide_info["images"].append(shape.name)
-                
-                # 3. Handle slides that only have images (no text)
-                if not slide_info["content"] and slide_info["images"]:
-                    image_names = ", ".join(slide_info["images"])
-                    slide_info["content"].append(f"[Slide contains only images: {image_names}]")
-                
-                extracted_data.append(slide_info)
-                
-        except Exception as e:
-            print(f"Error extracting data from {file_path}: {e}")
-            
-        return extracted_data
+                umbral_superior = prs.slide_height * 0.25
+                if not slide_info["title"] and shape.top < umbral_superior:
+                    try:
+                        size = shape.text_frame.paragraphs[0].runs[0].font.size
+                    except: size = 0
+                    candidatos_titulo.append({"text": texto, "size": size, "top": shape.top})
+                else:
+                    slide_info["content"].append(texto)
+
+        # Resolución de títulos (lo que ya tenías)
+        if not slide_info["title"] and candidatos_titulo:
+            candidatos_titulo.sort(key=lambda x: (x['size'] or 0, -x['top']), reverse=True)
+            mejor = candidatos_titulo[0]
+            if len(mejor['text']) < 150:
+                slide_info["title"] = mejor['text']
+                for c in candidatos_titulo[1:]: slide_info["content"].append(c['text'])
+            else:
+                for c in candidatos_titulo: slide_info["content"].append(c['text'])
+
+        presentacion_estructurada["slides"].append(slide_info)
+
+    return presentacion_estructurada
