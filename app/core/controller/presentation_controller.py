@@ -5,6 +5,22 @@ from app.core.logic.vectorizer import formatear_para_vectorizacion # <--- Paso 4
 from app.data.presentation_repository import guardar_todo        # <--- Paso 5
 
 def orquestar_proceso_completo():
+    """
+    Orquesta el proceso completo de análisis de presentación.
+        Args:       
+            None
+
+        Returns:
+            (bool, str): Tupla con el resultado del proceso y un mensaje descriptivo.
+            
+        Flujo:
+            1. El usuario selecciona un archivo PPTX a través de la interfaz gráfica.
+            2. El sistema valida que el archivo no exceda los 30MB.
+            3. Si el archivo es válido, se extrae el texto de cada diapositiva.
+            4. El texto extraído se formatea para ser compatible con el proceso de vectorización.
+            5. Finalmente, se almacena toda la información procesada en una ubicación definida, y se devuelve un mensaje de éxito o error según corresponda.
+            
+    """
     # 1. Selecciona el archivo
     ruta_pptx = interfaz_seleccionar_archivo()
     if not ruta_pptx: 

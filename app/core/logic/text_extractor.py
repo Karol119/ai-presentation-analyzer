@@ -3,6 +3,35 @@ from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 def extraer_datos_pptx(ruta_pptx):
+    """Extrae el texto y las imágenes de un archivo PPTX, organizándolos por diapositiva.
+
+    Args:
+        ruta_pptx (str): La ruta del archivo PPTX a procesar.
+
+    Returns:
+        dict: Un diccionario con los datos extraídos de la presentación.
+        
+
+    El diccionario tiene la siguiente estructura:
+        {
+            "filename": "nombre_del_archivo.pptx",
+            "slides": [
+                {
+                    "slide_number": 1,
+                    "title": "Título de la diapositiva",
+                    "content": ["Texto de la diapositiva", "Más texto..."],
+                    "images": ["Imagen 1", "Imagen 2"]  # Lista de nombres de imágenes
+                },
+                {
+                    "slide_number": 2,
+                    "title": "Título de la segunda diapositiva",  
+                    "content": ["Texto de la segunda diapositiva"],
+                    "images": []  # Sin imágenes en esta diapositiva
+                },
+                ...
+            ]
+        }
+    """
     prs = Presentation(ruta_pptx)
     presentacion_estructurada = {
         "filename": os.path.basename(ruta_pptx),

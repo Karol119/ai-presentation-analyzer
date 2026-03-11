@@ -1,7 +1,22 @@
 import os
 
 def validar_tamano_archivo(ruta_archivo, limite_mb=30):
-    """Verifica que el archivo no supere el peso definido (30MB por defecto)."""
+    """Valida que el archivo no exceda un tamaño específico en MB.
+
+    Args:
+        ruta_archivo (str): La ruta del archivo a validar.
+        limite_mb (int, optional): El tamaño máximo en MB. Defaults to 30.
+
+    Returns:
+        tuple: Una tupla con un booleano indicando si es válido y un mensaje descriptivo.
+        
+    Ejemplo de uso:
+        es_valido, mensaje = validar_tamano_archivo("ruta/a/archivo.pptx")
+        if es_valido:
+            print("Archivo válido.")
+        else:
+            print(f"Archivo no válido: {mensaje}")
+    """
     # Obtener peso en bytes y convertir a MB
     peso_bytes = os.path.getsize(ruta_archivo)
     peso_mb = peso_bytes / (1024 * 1024)
