@@ -1,19 +1,31 @@
-# Cambiamos de 'app.presentation.gui' a 'app.presentation.views.gui'
-# (Asumiendo que tu archivo se llama gui.py y está en la carpeta views)
 from app.presentation.views.gui import interfaz_seleccionar_archivo
-from app.data.presentation_repository import crear_carpeta_y_copiar
+from app.core.logic.file_validator import validar_tamano_archivo # <--- Paso 2
+from app.core.logic.text_extractor import extraer_datos_pptx      # <--- Paso 3
+from app.core.logic.vectorizer import formatear_para_vectorizacion # <--- Paso 4
+from app.data.presentation_repository import guardar_todo        # <--- Paso 5
 
-def orquestar_subida():
-    # El orquestador toma el mando.
-    # 1. Llama a la presentación para que dé la cara
-    ruta_seleccionada = interfaz_seleccionar_archivo()
-    
-    if not ruta_seleccionada:
-        return False, "Operación cancelada por el usuario."
-    
+def orquestar_proceso_completo():
+    # 1. Selecciona el archivo
+    ruta_pptx = interfaz_seleccionar_archivo()
+    if not ruta_pptx: 
+        return False, "Operación cancelada."
+
     try:
-        # 2. Le pasa la ruta a Data para el trabajo sucio
-        ruta_final = crear_carpeta_y_copiar(ruta_seleccionada)
-        return True, f"Éxito: Guardado en {ruta_final}"
+        # 2. Valida tamaño (30MB)
+        es_valido, mensaje_val = validar_tamano_archivo(ruta_pptx, limite_mb=30)
+        if not es_valido:
+            return False, mensaje_val
+
+        # 3. Extraer texto
+        datos_crudos = extraer_datos_pptx(ruta_pptx)
+        
+        # 4. Vectorizar
+        datos_listos = formatear_para_vectorizacion(datos_crudos)
+        
+        # 5. Almacenar
+        ruta_final = guardar_todo(ruta_pptx, datos_listos)
+        
+        return True, f"¡Éxito! Archivo procesado y guardado en: {ruta_final}"
+
     except Exception as e:
-        return False, f"Error en el proceso: {str(e)}"
+        return False, f"Error en el flujo: {str(e)}"

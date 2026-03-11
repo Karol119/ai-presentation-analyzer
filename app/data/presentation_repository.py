@@ -1,23 +1,24 @@
 import os
 import shutil
+import json
 
-def crear_carpeta_y_copiar(ruta_origen):
-    # Definir ruta base de storage
+def guardar_todo(ruta_origen, datos_json):
+    # Tu lógica de guardado que ya tenemos
     base_dir = os.path.dirname(os.path.abspath(__file__))
     storage_base = os.path.abspath(os.path.join(base_dir, "..", "..", "storage", "presentaciones"))
     
-    # Obtener nombres
-    nombre_con_ext = os.path.basename(ruta_origen)
-    nombre_sin_ext = os.path.splitext(nombre_con_ext)[0]
+    nombre_sin_ext = os.path.splitext(os.path.basename(ruta_origen))[0]
+    carpeta_final = os.path.join(storage_base, nombre_sin_ext)
     
-    # Crear subcarpeta específica
-    ruta_carpeta_final = os.path.join(storage_base, nombre_sin_ext)
+    if not os.path.exists(carpeta_final):
+        os.makedirs(carpeta_final)
     
-    if not os.path.exists(ruta_carpeta_final):
-        os.makedirs(ruta_carpeta_final)
+    # Copiar PPTX
+    shutil.copy(ruta_origen, os.path.join(carpeta_final, os.path.basename(ruta_origen)))
     
-    # Copiar archivo
-    destino = os.path.join(ruta_carpeta_final, nombre_con_ext)
-    shutil.copy(ruta_origen, destino)
-    
-    return destino
+    # Guardar JSON
+    ruta_json = os.path.join(carpeta_final, "vectorization.json")
+    with open(ruta_json, 'w', encoding='utf-8') as f:
+        json.dump(datos_json, f, ensure_ascii=False, indent=4)
+        
+    return carpeta_final
