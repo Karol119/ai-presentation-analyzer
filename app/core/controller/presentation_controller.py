@@ -1,8 +1,10 @@
+from app.core.logic.hash_generator import generar_hash_archivo
 from app.presentation.views.gui import interfaz_seleccionar_archivo
-from app.core.logic.file_validator import validar_tamano_archivo # <--- Paso 2
-from app.core.logic.text_extractor import extraer_datos_pptx      # <--- Paso 3
-from app.core.logic.vectorizer import formatear_para_vectorizacion # <--- Paso 4
-from app.data.presentation_repository import guardar_todo        # <--- Paso 5
+from app.core.logic.file_validator import validar_tamano_archivo # <--- Validador de tamaño de archivo
+from app.core.logic.hash_generator import generar_hash_archivo   # <--- Generador de hash para archivos grandes
+from app.core.logic.text_extractor import extraer_datos_pptx      # <--- Extractor de texto de PPTX
+from app.core.logic.vectorizer import formatear_para_vectorizacion # <--- Formateador para vectorización
+from app.data.presentation_repository import guardar_todo        # <--- Función para guardar toda la información procesada
 
 def orquestar_proceso_completo():
     """
@@ -31,14 +33,18 @@ def orquestar_proceso_completo():
         es_valido, mensaje_val = validar_tamano_archivo(ruta_pptx, limite_mb=30)
         if not es_valido:
             return False, mensaje_val
+        
+        # 3. El controlador llama a la función para el hash antes de procesar
+        hash_unico = generar_hash_archivo(ruta_pptx)
+        print(f"-> Hash generado: {hash_unico}")
 
-        # 3. Extraer texto
+        # 4. Extraer texto
         datos_crudos = extraer_datos_pptx(ruta_pptx)
         
-        # 4. Vectorizar
+        # 5. Vectorizar
         datos_listos = formatear_para_vectorizacion(datos_crudos)
         
-        # 5. Almacenar
+        # 6. Almacenar
         ruta_final = guardar_todo(ruta_pptx, datos_listos)
         
         return True, f"¡Éxito! Archivo procesado y guardado en: {ruta_final}"
