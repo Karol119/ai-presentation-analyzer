@@ -2,6 +2,12 @@ import os
 import shutil
 import json
 
+from pptx.presentation import Presentation
+
+#implementar: Extraer fecha de carga
+#Implentar: Contador de numero de diapositivas
+#Impmentar: Almacenar HASH
+
 def guardar_todo(ruta_origen, datos_json):
     """
     Esta función guarda tanto el archivo PPTX como el JSON de vectorización en una carpeta específica dentro de "storage/presentaciones". La carpeta se nombra según el nombre del archivo PPTX sin su extensión.

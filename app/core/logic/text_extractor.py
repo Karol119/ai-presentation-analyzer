@@ -2,6 +2,20 @@ import os
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
+
+def contar_diapositivas(ruta_pptx):
+    """
+    Obtiene el número total de diapositivas de un archivo PPTX.
+    Ideal para validaciones rápidas antes del procesamiento pesado.
+    """
+    try:
+        prs = Presentation(ruta_pptx)
+        return len(prs.slides)
+    except Exception as e:
+        print(f"Error al contar diapositivas: {e}")
+        return 0
+
+
 def extraer_datos_pptx(ruta_pptx):
     """Extrae el texto y las imágenes de un archivo PPTX, organizándolos por diapositiva.
 

@@ -17,41 +17,42 @@ def crear_base_de_datos():
 
     # --- TABLAS DE LA ESTRUCTURA ACADÉMICA ---
     
+    # Cambiamos INTEGER a TEXT para soportar UUIDs generados en Python
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Unidad_de_Aprendizaje (
-            id_unidad_aprendizaje INTEGER PRIMARY KEY AUTOINCREMENT,
-            unidad_aprendizaje VARCHAR(50),
-            activa BOOLEAN
+            id_unidad_aprendizaje TEXT PRIMARY KEY, 
+            unidad_aprendizaje TEXT NOT NULL UNIQUE,
+            activa BOOLEAN NOT NULL DEFAULT 1
         )
     ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Unidad (
-            id_unidad_tematica INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_unidad_aprendizaje INTEGER,
-            nombre_unidad_tematica VARCHAR(50),
-            numero_unidad INT,
+            id_unidad_tematica TEXT PRIMARY KEY,
+            id_unidad_aprendizaje TEXT NOT NULL,
+            nombre_unidad_tematica TEXT NOT NULL,
+            numero_unidad INTEGER NOT NULL,
             FOREIGN KEY (id_unidad_aprendizaje) REFERENCES Unidad_de_Aprendizaje(id_unidad_aprendizaje)
         )
     ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Temas (
-            id_tema INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_unidad_tematica INTEGER,
-            nombre_tema VARCHAR(50),
-            numero_tema INT,
+            id_tema TEXT PRIMARY KEY,
+            id_unidad_tematica TEXT NOT NULL,
+            nombre_tema TEXT NOT NULL,
+            numero_tema INTEGER NOT NULL,
             FOREIGN KEY (id_unidad_tematica) REFERENCES Unidad(id_unidad_tematica)
         )
     ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Subtema (
-            id_subtema INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_tema INTEGER,
-            nombre_subtema VARCHAR(50),
-            numero_subtema INT,
-            embedding BLOB, -- SQLite usa BLOB para arreglos de floats/datos binarios
+            id_subtema TEXT PRIMARY KEY,
+            id_tema TEXT NOT NULL,
+            nombre_subtema TEXT NOT NULL,
+            numero_subtema INTEGER NOT NULL,
+            embedding BLOB, -- Puede ser NULL hasta que la IA lo genere
             FOREIGN KEY (id_tema) REFERENCES Temas(id_tema)
         )
     ''')
@@ -60,17 +61,17 @@ def crear_base_de_datos():
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Presentacion (
-            id_presentacion INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_unidad_aprendizaje INTEGER,
-            presentacion VARCHAR(50),
+            id_presentacion TEXT PRIMARY KEY,
+            id_unidad_aprendizaje TEXT NOT NULL,
+            presentacion TEXT NOT NULL,
             FOREIGN KEY (id_unidad_aprendizaje) REFERENCES Unidad_de_Aprendizaje(id_unidad_aprendizaje)
         )
     ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Presentacion_Subtema (
-            id_presentacion INTEGER,
-            id_subtema INTEGER,
+            id_presentacion TEXT NOT NULL,
+            id_subtema TEXT NOT NULL,
             PRIMARY KEY (id_presentacion, id_subtema),
             FOREIGN KEY (id_presentacion) REFERENCES Presentacion(id_presentacion),
             FOREIGN KEY (id_subtema) REFERENCES Subtema(id_subtema)
@@ -79,26 +80,26 @@ def crear_base_de_datos():
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Historial_de_Versiones (
-            id_version INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_presentacion INTEGER,
-            numero_version INT,
-            analisis BOOLEAN,
-            fecha_carga DATE,
-            tiempo_estimado TIME,
-            total_diapositivas INT,
-            hash VARCHAR(300),
-            calificacion_presentacion FLOAT,
-            temas_unidad_aprendizaje INT,
-            recomendacion_presentacion TEXT,
+            id_version TEXT PRIMARY KEY,
+            id_presentacion TEXT NOT NULL,
+            numero_version INTEGER NOT NULL DEFAULT 1,
+            analisis BOOLEAN NOT NULL DEFAULT 0,
+            fecha_carga DATE NOT NULL DEFAULT CURRENT_DATE,
+            tiempo_estimado TIME DEFAULT '00:00:00',
+            total_diapositivas INTEGER NOT NULL,
+            hash TEXT NOT NULL,
+            calificacion_presentacion FLOAT DEFAULT 0.0,
+            temas_unidad_aprendizaje INTEGER DEFAULT 0,
+            recomendacion_presentacion TEXT DEFAULT 'Pendiente de análisis',
             FOREIGN KEY (id_presentacion) REFERENCES Presentacion(id_presentacion)
         )
     ''')
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Analisis (
-            id_version INTEGER,
-            numero_diapositiva INT,
-            resultado TEXT,
+            id_version TEXT NOT NULL,
+            numero_diapositiva INTEGER NOT NULL,
+            resultado TEXT NOT NULL,
             PRIMARY KEY (id_version, numero_diapositiva),
             FOREIGN KEY (id_version) REFERENCES Historial_de_Versiones(id_version)
         )
@@ -110,4 +111,4 @@ def crear_base_de_datos():
 
 if __name__ == "__main__":
     path = crear_base_de_datos()
-    print(f"✅ Base de Datos creada según el diagrama en: {path}")
+    print(f"✅ Base de Datos robusta (UUID + No Nulos) creada en: {path}")

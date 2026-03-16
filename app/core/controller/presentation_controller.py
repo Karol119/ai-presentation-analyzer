@@ -1,27 +1,14 @@
-from app.core.logic.hash_generator import generar_hash_archivo
 from app.presentation.views.gui import interfaz_seleccionar_archivo
-from app.core.logic.file_validator import validar_tamano_archivo # <--- Validador de tamaño de archivo
-from app.core.logic.hash_generator import generar_hash_archivo   # <--- Generador de hash para archivos grandes
-from app.core.logic.text_extractor import extraer_datos_pptx      # <--- Extractor de texto de PPTX
-from app.core.logic.vectorizer import formatear_para_vectorizacion # <--- Formateador para vectorización
-from app.data.presentation_repository import guardar_todo        # <--- Función para guardar toda la información procesada
+from app.core.logic.file_validator import validar_tamano_archivo
+from app.core.logic.hash_generator import generar_hash_archivo
+from app.core.logic.text_extractor import extraer_datos_pptx, contar_diapositivas
+from app.core.logic.vectorizer import formatear_para_vectorizacion
+from app.data.queries import existe_hash_en_db
+from app.data.persistence import registrar_presentacion 
 
 def orquestar_proceso_completo():
     """
-    Orquesta el proceso completo de análisis de presentación.
-        Args:       
-            None
-
-        Returns:
-            (bool, str): Tupla con el resultado del proceso y un mensaje descriptivo.
-            
-        Flujo:
-            1. El usuario selecciona un archivo PPTX a través de la interfaz gráfica.
-            2. El sistema valida que el archivo no exceda los 30MB.
-            3. Si el archivo es válido, se extrae el texto de cada diapositiva.
-            4. El texto extraído se formatea para ser compatible con el proceso de vectorización.
-            5. Finalmente, se almacena toda la información procesada en una ubicación definida, y se devuelve un mensaje de éxito o error según corresponda.
-            
+    Orquesta el proceso completo siguiendo el flujo estructurado.
     """
     # 1. Selecciona el archivo
     ruta_pptx = interfaz_seleccionar_archivo()
@@ -34,20 +21,42 @@ def orquestar_proceso_completo():
         if not es_valido:
             return False, mensaje_val
         
-        # 3. El controlador llama a la función para el hash antes de procesar
+        # 3. Genera hash único
         hash_unico = generar_hash_archivo(ruta_pptx)
         print(f"-> Hash generado: {hash_unico}")
 
-        # 4. Extraer texto
+        # 4. Verifica existencia (Usa queries.py)
+        if existe_hash_en_db(hash_unico):
+            return False, "Esta presentación ya ha sido procesada anteriormente."
+        
+        # 5. Conteo de diapositivas
+        num_diapositivas = contar_diapositivas(ruta_pptx)
+        if num_diapositivas == 0:
+            return False, "No se pudo leer el archivo o está vacío."
+        
+        print(f"El archivo tiene {num_diapositivas} diapositivas. Iniciando extracción...")
+
+        # 6. Extraer texto
         datos_crudos = extraer_datos_pptx(ruta_pptx)
         
-        # 5. Vectorizar
+        # 7. Formatear datos (Preparación para JSON/Vectores)
         datos_listos = formatear_para_vectorizacion(datos_crudos)
         
-        # 6. Almacenar
-        ruta_final = guardar_todo(ruta_pptx, datos_listos)
+        # 8. ALMACENAR EN BASE DE DATOS (Usa persistence.py)
+        # Nota: 'ID-MATERIA-PRUEBA' debería venir de la selección del usuario en la GUI
+        id_materia_ejemplo = "ID-MATERIA-PRUEBA" 
         
-        return True, f"¡Éxito! Archivo procesado y guardado en: {ruta_final}"
+        exito_registro, id_pres = registrar_presentacion(
+            ruta_pptx, 
+            hash_unico, 
+            num_diapositivas, 
+            id_materia_ejemplo
+        )
+        
+        if exito_registro:
+            return True, f"¡Éxito! Registrado en BD con ID: {id_pres[:8]}"
+        else:
+            return False, "Error al persistir los datos en la base de datos."
 
     except Exception as e:
         return False, f"Error en el flujo: {str(e)}"
