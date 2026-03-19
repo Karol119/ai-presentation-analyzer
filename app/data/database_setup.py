@@ -1,114 +1,49 @@
 import sqlite3
 import os
 
-def crear_base_de_datos():
-    # Ruta de almacenamiento
+def actualizar_base_de_datos():
+    # Buscamos la base de datos en la misma ruta de tu script original
     base_dir = os.path.dirname(os.path.abspath(__file__))
     db_path = os.path.abspath(os.path.join(base_dir, "..", "..", "storage", "db", "ai_analyzer.db"))
     
-    # Crear carpetas si no existen
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    # Verificamos que el archivo realmente exista antes de intentar modificarlo
+    if not os.path.exists(db_path):
+        print(f"❌ No se encontró la base de datos en: {db_path}")
+        print("Asegúrate de que la ruta sea correcta o de haber creado la base primero.")
+        return
 
-    # Activar llaves foráneas en SQLite
-    cursor.execute("PRAGMA foreign_keys = ON;")
+    try:
+        # Nos conectamos a la base de datos existente
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
 
-    # --- TABLAS DE LA ESTRUCTURA ACADÉMICA ---
-    
-    # Cambiamos INTEGER a TEXT para soportar UUIDs generados en Python
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Unidad_de_Aprendizaje (
-            id_unidad_aprendizaje TEXT PRIMARY KEY, 
-            unidad_aprendizaje TEXT NOT NULL UNIQUE,
-            activa BOOLEAN NOT NULL DEFAULT 1
-        )
-    ''')
+        # --- 1. ACTUALIZAR MATERIAS EXISTENTES ---
+        cursor.execute("UPDATE Unidad_de_Aprendizaje SET activa = 0;")
+        filas_actualizadas = cursor.rowcount
+        print(f"✔️ Se actualizaron {filas_actualizadas} unidades de aprendizaje a estado inactivo (0).")
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Unidad (
-            id_unidad_tematica TEXT PRIMARY KEY,
-            id_unidad_aprendizaje TEXT NOT NULL,
-            nombre_unidad_tematica TEXT NOT NULL,
-            numero_unidad INTEGER NOT NULL,
-            FOREIGN KEY (id_unidad_aprendizaje) REFERENCES Unidad_de_Aprendizaje(id_unidad_aprendizaje)
-        )
-    ''')
+        # --- 2. AGREGAR COLUMNA RUTA ---
+        # Usamos un bloque try-except específico por si ejecutas este script dos veces
+        try:
+            cursor.execute("ALTER TABLE Historial_de_Versiones ADD COLUMN ruta TEXT;")
+            print("✔️ Se agregó la columna 'ruta' a Historial_de_Versiones exitosamente.")
+        except sqlite3.OperationalError as e:
+            # SQLite arroja este error si la columna ya existe
+            if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                print("⚠️ La columna 'ruta' ya existía en la base de datos. No se hicieron cambios en la estructura.")
+            else:
+                raise e # Si es otro error de base de datos, lo mostramos
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Temas (
-            id_tema TEXT PRIMARY KEY,
-            id_unidad_tematica TEXT NOT NULL,
-            nombre_tema TEXT NOT NULL,
-            numero_tema INTEGER NOT NULL,
-            FOREIGN KEY (id_unidad_tematica) REFERENCES Unidad(id_unidad_tematica)
-        )
-    ''')
+        # Guardamos los cambios
+        conn.commit()
+        print("\n🚀 ¡Actualización de la base de datos completada con éxito!")
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Subtema (
-            id_subtema TEXT PRIMARY KEY,
-            id_tema TEXT NOT NULL,
-            nombre_subtema TEXT NOT NULL,
-            numero_subtema INTEGER NOT NULL,
-            embedding BLOB, -- Puede ser NULL hasta que la IA lo genere
-            FOREIGN KEY (id_tema) REFERENCES Temas(id_tema)
-        )
-    ''')
-
-    # --- TABLAS DE PRESENTACIONES Y ANÁLISIS ---
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Presentacion (
-            id_presentacion TEXT PRIMARY KEY,
-            id_unidad_aprendizaje TEXT NOT NULL,
-            presentacion TEXT NOT NULL,
-            FOREIGN KEY (id_unidad_aprendizaje) REFERENCES Unidad_de_Aprendizaje(id_unidad_aprendizaje)
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Presentacion_Subtema (
-            id_presentacion TEXT NOT NULL,
-            id_subtema TEXT NOT NULL,
-            PRIMARY KEY (id_presentacion, id_subtema),
-            FOREIGN KEY (id_presentacion) REFERENCES Presentacion(id_presentacion),
-            FOREIGN KEY (id_subtema) REFERENCES Subtema(id_subtema)
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Historial_de_Versiones (
-            id_version TEXT PRIMARY KEY,
-            id_presentacion TEXT NOT NULL,
-            numero_version INTEGER NOT NULL DEFAULT 1,
-            analisis BOOLEAN NOT NULL DEFAULT 0,
-            fecha_carga DATE NOT NULL DEFAULT CURRENT_DATE,
-            tiempo_estimado TIME DEFAULT '00:00:00',
-            total_diapositivas INTEGER NOT NULL,
-            hash TEXT NOT NULL,
-            calificacion_presentacion FLOAT DEFAULT 0.0,
-            temas_unidad_aprendizaje INTEGER DEFAULT 0,
-            recomendacion_presentacion TEXT DEFAULT 'Pendiente de análisis',
-            FOREIGN KEY (id_presentacion) REFERENCES Presentacion(id_presentacion)
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Analisis (
-            id_version TEXT NOT NULL,
-            numero_diapositiva INTEGER NOT NULL,
-            resultado TEXT NOT NULL,
-            PRIMARY KEY (id_version, numero_diapositiva),
-            FOREIGN KEY (id_version) REFERENCES Historial_de_Versiones(id_version)
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
-    return db_path
+    except sqlite3.Error as e:
+        print(f"❌ Ocurrió un error general con SQLite: {e}")
+    finally:
+        # Siempre es buena práctica cerrar la conexión
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
-    path = crear_base_de_datos()
-    print(f"✅ Base de Datos robusta (UUID + No Nulos) creada en: {path}")
+    actualizar_base_de_datos()

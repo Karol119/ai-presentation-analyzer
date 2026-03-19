@@ -15,5 +15,5 @@ def conectar_db():
         conn.execute("PRAGMA foreign_keys = ON;")
         return conn
     except sqlite3.Error as e:
-        print(f"❌ Error de conexión: {e}")
+        print(f"Error de conexión: {e}")
         return None
