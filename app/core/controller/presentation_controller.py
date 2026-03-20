@@ -2,13 +2,13 @@
 
 from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
-from app.core.logic.text_extractor import  contar_diapositivas
+from app.core.logic.text_extractor import contar_diapositivas
 from app.data.queries import existe_hash_en_db
-from app.data.persistence import registrar_presentacion 
+from app.data.persistence import registrar_presentacion, eliminar_presentacion_completa # <-- Añadir importación
 
 def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
-    Orquesta el proceso completo recibiendo la ruta y el ID desde main_gui.py
+    Orquesta el proceso de carga, validación y registro de una presentación.
     """
     try:
         # 1. Valida tamaño (30MB)
@@ -18,9 +18,8 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
         
         # 2. Genera hash único
         hash_unico = generar_hash_archivo(ruta_pptx)
-        print(f"-> Hash generado: {hash_unico}")
-
-        # 3. Verifica existencia (Usa queries.py)
+        
+        # 3. Verifica existencia
         if existe_hash_en_db(hash_unico):
             return False, "Esta presentación ya ha sido procesada anteriormente."
         
@@ -29,9 +28,7 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
         if num_diapositivas == 0:
             return False, "No se pudo leer el archivo o está vacío."
         
-        print(f"El archivo tiene {num_diapositivas} diapositivas. Iniciando extracción...")
-
-        # 7. ALMACENAR EN BASE DE DATOS (Usa persistence.py)
+        # 5. ALMACENAR EN BASE DE DATOS Y STORAGE
         exito_registro, id_pres = registrar_presentacion(
             ruta_pptx, 
             hash_unico, 
@@ -40,9 +37,22 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
         )
         
         if exito_registro:
-            return True, f"Registrado en BD con ID: {id_pres[:8]}"
+            return True, f"Registrado con éxito."
         else:
             return False, "Error al persistir los datos en la base de datos."
 
     except Exception as e:
         return False, f"Error en el flujo: {str(e)}"
+
+# =========================================================
+# NUEVA FUNCIÓN DE BORRADO (CAPA DE NEGOCIO)
+# =========================================================
+
+def orquestar_eliminacion_presentacion(nombre_presentacion, id_materia):
+    """
+    Actúa como puente entre la UI y la persistencia para eliminar 
+    física y lógicamente una presentación.
+    """
+    # Aquí podrías añadir lógica de negocio adicional en el futuro,
+    # como verificar si el usuario tiene permisos o registrar un log.
+    return eliminar_presentacion_completa(nombre_presentacion, id_materia)

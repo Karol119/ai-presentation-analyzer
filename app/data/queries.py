@@ -97,15 +97,17 @@ def obtener_temario_materia(nombre_materia):
 
 # app/data/queries.py
 
+# app/data/queries.py
+
 def obtener_presentaciones_por_materia(id_materia):
     """
-    Recupera solo las presentaciones vinculadas a una materia específica.
+    Recupera el nombre, la ruta del PPTX y la ruta de la miniatura.
     """
     conn = conectar_db()
     cursor = conn.cursor()
-    # Filtramos por id_unidad_aprendizaje para asegurar el aislamiento
+    # Añadimos hv.ruta_miniatura al SELECT
     query = """
-        SELECT p.presentacion, hv.ruta 
+        SELECT p.presentacion, hv.ruta, hv.ruta_miniatura
         FROM Presentacion p
         JOIN Historial_de_Versiones hv ON p.id_presentacion = hv.id_presentacion
         WHERE p.id_unidad_aprendizaje = ? AND hv.numero_version = 1
@@ -113,4 +115,4 @@ def obtener_presentaciones_por_materia(id_materia):
     cursor.execute(query, (id_materia,))
     resultados = cursor.fetchall()
     conn.close()
-    return resultados # Retorna lista de tuplas [(nombre, ruta), ...]
+    return resultados # Ahora retorna [(nombre, ruta_pptx, ruta_thumb), ...]

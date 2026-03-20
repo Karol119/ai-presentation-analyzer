@@ -1,14 +1,19 @@
 # app/presentation/views/main_gui.py
 import customtkinter as ctk
 
-# 1. Importaciones de Lógica y Datos
-from app.core.controller.presentation_controller import orquestar_proceso_completo
-from app.data.queries import (
-    obtener_presentaciones_por_materia,
-    obtener_todas_las_materias, 
-    obtener_materias_disponibles,
-    actualizar_estado_materia,
-    obtener_id_materia_por_nombre
+# 1. IMPORTACIÓN EXCLUSIVA DE CONTROLADORES (Capa de Negocio)
+# La interfaz no conoce la base de datos ni el sistema de archivos directamente
+from app.core.controller.presentation_controller import (
+    orquestar_proceso_completo, 
+    orquestar_eliminacion_presentacion
+)
+from app.core.controller.subject_controller import (
+    obtener_catalogo_materias_activas,
+    obtener_materias_para_agregar,
+    activar_materia,
+    desactivar_materia,
+    obtener_id_materia,
+    obtener_archivos_materia
 )
 
 # 2. Importación del Estado Central
@@ -66,11 +71,12 @@ def _actualizar_boton_analizar():
 def _seleccionar_materia(name: str):
     """Sincroniza el estado con la BD y cambia la vista a la materia seleccionada."""
     estado["active"] = name
-    id_materia = obtener_id_materia_por_nombre(name)
+    # Obtenemos el ID de la materia a través del controlador
+    id_materia = obtener_id_materia(name)
     
-    # Sincronización de aislamiento: Solo cargar archivos de ESTA materia
+    # Sincronización de aislamiento: Recupera (nombre, ruta_pptx, ruta_thumb) mediante el controlador
     if id_materia:
-        estado["subject_files"][name] = obtener_presentaciones_por_materia(id_materia)
+        estado["subject_files"][name] = obtener_archivos_materia(id_materia)
     
     refresh_sidebar_styles()
     show_panel(name)
@@ -78,29 +84,28 @@ def _seleccionar_materia(name: str):
     refresh_right_panel(name)
 
 def _eliminar_materia(name: str):
-    """Desactiva la materia en la BD y limpia la interfaz."""
+    """Desactiva la materia en la BD y limpia la interfaz delegando al controlador."""
     if len(estado["subjects"]) == 1: return
     
-    # Persistencia: Marcar activa=0 en la base de datos
-    actualizar_estado_materia(name, False)
-    
-    estado["subjects"].remove(name)
-    if name in estado["subject_files"]:
-        del estado["subject_files"][name]
+    # El controlador se encarga de actualizar el bit 'activa' en la BD
+    if desactivar_materia(name):
+        estado["subjects"].remove(name)
+        if name in estado["subject_files"]:
+            del estado["subject_files"][name]
+            
+        ui["sidebar_btns"].pop(name).destroy()
+        p = ui["panels"].pop(name, None)
+        if p: p.destroy()
         
-    ui["sidebar_btns"].pop(name).destroy()
-    p = ui["panels"].pop(name, None)
-    if p: p.destroy()
-    
-    if estado["active"] == name:
-        estado["active"] = estado["subjects"][0]
-        refresh_sidebar_styles()
-        
-    show_panel(estado["active"])
-    _actualizar_boton_analizar()
+        if estado["active"] == name:
+            estado["active"] = estado["subjects"][0]
+            refresh_sidebar_styles()
+            
+        show_panel(estado["active"])
+        _actualizar_boton_analizar()
 
 def _abrir_modal_agregar_materia():
-    """Muestra el modal IPN para activar nuevas materias de la BD."""
+    """Muestra el modal IPN para activar nuevas materias consumiendo el controlador."""
     win = ctk.CTkToplevel(ui["root"])
     win.title("Agregar materia - IPN")
     win.geometry("420x340")
@@ -120,7 +125,8 @@ def _abrir_modal_agregar_materia():
         text_color="#64748B"
     ).pack(pady=(0, 20), padx=28, anchor="w")
 
-    available = obtener_materias_disponibles()
+    # Obtenemos materias inactivas desde el controlador
+    available = obtener_materias_para_agregar()
 
     if not available:
         ctk.CTkLabel(win, text="No hay más materias disponibles.", font=ctk.CTkFont(size=12), text_color=COLOR_GUINDA).pack(pady=20)
@@ -142,17 +148,18 @@ def _abrir_modal_agregar_materia():
     def confirm():
         name = selected_var.get()
         if name:
-            actualizar_estado_materia(name, True)
-            estado["subjects"].append(name)
-            estado["subject_files"][name] = []
-            
-            from app.presentation.widgets.sidebar import create_sidebar_item
-            from app.presentation.widgets.content_panel import create_panel
-            
-            create_sidebar_item(name, _seleccionar_materia, _eliminar_materia)
-            create_panel(name, _actualizar_boton_analizar)
-            _seleccionar_materia(name)
-        win.destroy()
+            # Activamos la materia a través del controlador
+            if activar_materia(name):
+                estado["subjects"].append(name)
+                estado["subject_files"][name] = []
+                
+                from app.presentation.widgets.sidebar import create_sidebar_item
+                from app.presentation.widgets.content_panel import create_panel
+                
+                create_sidebar_item(name, _seleccionar_materia, _eliminar_materia)
+                create_panel(name, _actualizar_boton_analizar)
+                _seleccionar_materia(name)
+            win.destroy()
 
     ctk.CTkButton(
         btn_row, text="Cancelar", command=win.destroy, 
@@ -167,16 +174,18 @@ def _abrir_modal_agregar_materia():
     ).pack(side="right")
 
 def _analyze():
-    """Ejecuta el análisis y muestra resultados en un modal institucional."""
+    """Ejecuta el análisis y muestra resultados delegando al PresentationController."""
     subject = estado["active"]
-    id_materia_real = obtener_id_materia_por_nombre(subject)
+    id_materia_real = obtener_id_materia(subject)
     
     if not id_materia_real: return
 
     resultados = []
-    for nombre, ruta_completa in estado["subject_files"][subject]:
-        if ruta_completa:
-            exito, mensaje = orquestar_proceso_completo(ruta_completa, id_materia_real)
+    # Iteramos sobre la estructura de 3 valores: (nombre, ruta_pptx, ruta_thumb)
+    for datos in estado["subject_files"][subject]:
+        nombre, ruta_pptx = datos[0], datos[1]
+        if ruta_pptx:
+            exito, mensaje = orquestar_proceso_completo(ruta_pptx, id_materia_real)
             icono = "✅" if exito else "❌"
             resultados.append(f"{icono} {nombre}:\n   {mensaje}")
 
@@ -209,6 +218,92 @@ def _analyze():
     ).pack(pady=24)
 
 # =========================================================
+# MODALES DE ESTADO (Éxito / Eliminación)
+# =========================================================
+
+def mostrar_modal_exito(mensaje):
+    """Muestra un modal de confirmación con estilo IPN."""
+    win = ctk.CTkToplevel(ui["root"])
+    win.title("Éxito")
+    win.geometry("400x240")
+    win.grab_set()
+    win.configure(fg_color="white")
+    win.resizable(False, False)
+
+    ctk.CTkLabel(
+        win, text="✔️", 
+        font=ctk.CTkFont(size=50), 
+        text_color=COLOR_ORO
+    ).pack(pady=(20, 10))
+
+    ctk.CTkLabel(
+        win, text=mensaje, 
+        font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold"),
+        text_color=COLOR_GUINDA,
+        wraplength=350
+    ).pack(pady=10)
+
+    ctk.CTkButton(
+        win, text="Cerrar", 
+        command=win.destroy,
+        fg_color=COLOR_GUINDA,
+        hover_color=COLOR_GUINDA_HOVER,
+        width=120, height=32,
+        corner_radius=8
+    ).pack(pady=(10, 20))
+
+def confirmar_eliminacion(nombre, subject, callback_confirmar):
+    """Muestra el modal institucional de advertencia para borrado en cascada."""
+    win = ctk.CTkToplevel(ui["root"])
+    win.title("Confirmar eliminación")
+    win.geometry("450x280")
+    win.grab_set()
+    win.configure(fg_color="white")
+    win.resizable(False, False)
+
+    # Icono de papelera en color de advertencia
+    ctk.CTkLabel(win, text="🗑️", font=ctk.CTkFont(size=45), text_color="#EF4444").pack(pady=(20, 10))
+    
+    ctk.CTkLabel(
+        win, text="¿Seguro que deseas borrar esta presentación?", 
+        font=ctk.CTkFont(size=15, weight="bold"), 
+        text_color=COLOR_GUINDA
+    ).pack()
+
+    ctk.CTkLabel(
+        win, text=f"{nombre}", 
+        font=ctk.CTkFont(size=12, slant="italic"), 
+        text_color="#64748B"
+    ).pack(pady=(2, 8))
+
+    ctk.CTkLabel(
+        win, text="Se borrarán todos los datos de esta presentación,\nincluyendo versiones anteriores y análisis previos.", 
+        font=ctk.CTkFont(size=11), 
+        text_color="#94A3B8", 
+        justify="center"
+    ).pack(padx=20, pady=5)
+
+    btn_row = ctk.CTkFrame(win, fg_color="transparent")
+    btn_row.pack(pady=20)
+
+    def proceder():
+        callback_confirmar()
+        win.destroy()
+
+    ctk.CTkButton(
+        btn_row, text="Aceptar", command=proceder, 
+        fg_color="#EF4444", hover_color="#DC2626", 
+        text_color="white", width=120, height=34, corner_radius=8
+    ).pack(side="left", padx=10)
+
+    ctk.CTkButton(
+        btn_row, text="Cancelar", command=win.destroy, 
+        fg_color="transparent", text_color="#64748B", 
+        border_width=1, border_color="#CBD5E1", 
+        width=120, height=34, corner_radius=8
+    ).pack(side="right", padx=10)
+
+# =========================================================
 # PUNTO DE ARRANQUE (INICIALIZACIÓN)
 # =========================================================
 
@@ -219,15 +314,15 @@ def iniciar_aplicacion():
     ui["root"].minsize(1000, 600)
     ui["root"].configure(fg_color=COLOR_GRIS_FONDO)
 
-    # 1. Carga de datos persistentes
-    all_active_subjects = obtener_todas_las_materias()
+    # ✅ CARGA INICIAL DESDE CONTROLADORES
+    all_active_subjects = obtener_catalogo_materias_activas()
     estado["subjects"] = all_active_subjects
     
-    # Sincronización de archivos por materia al iniciar
+    # Sincronización de archivos por materia al iniciar usando controladores
     estado["subject_files"] = {}
     for s in estado["subjects"]:
-        id_materia = obtener_id_materia_por_nombre(s)
-        estado["subject_files"][s] = obtener_presentaciones_por_materia(id_materia)
+        id_materia = obtener_id_materia(s)
+        estado["subject_files"][s] = obtener_archivos_materia(id_materia)
 
     estado["active"] = estado["subjects"][0] if estado["subjects"] else ""
 

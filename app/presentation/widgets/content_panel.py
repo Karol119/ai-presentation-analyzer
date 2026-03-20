@@ -2,10 +2,12 @@
 import customtkinter as ctk
 from tkinter import filedialog
 import os
+from PIL import Image 
 
 from app.presentation.views.ui_state import estado, ui
 from app.core.controller.presentation_controller import orquestar_proceso_completo
 from app.data.queries import obtener_id_materia_por_nombre, obtener_presentaciones_por_materia
+from app.data.persistence import eliminar_presentacion_completa # <--- IMPORTANTE
 
 # Paleta IPN
 COLOR_GUINDA = "#6A1B31"
@@ -30,14 +32,14 @@ def create_panel(name: str, comando_actualizar_boton):
     ctk.CTkLabel(
         header, text=name,
         font=ctk.CTkFont(family="Segoe UI", size=22, weight="bold"),
-        text_color=COLOR_GUINDA, # Título en Guinda
+        text_color=COLOR_GUINDA,
     ).pack(side="left")
 
     section = ctk.CTkFrame(panel, fg_color="transparent")
     section.pack(fill="x", padx=32, pady=(12, 10))
     
     ctk.CTkLabel(section, text="▶", font=ctk.CTkFont(size=11),
-                 text_color=COLOR_ORO).pack(side="left", padx=(0, 6)) # Flecha en Oro
+                 text_color=COLOR_ORO).pack(side="left", padx=(0, 6))
     
     ctk.CTkLabel(
         section, text="Mis Presentaciones",
@@ -63,7 +65,7 @@ def show_panel(name: str):
             p.place_forget()
 
 def rebuild_cards(subject: str, comando_actualizar_boton):
-    """Reconstruye visualmente las tarjetas de archivos y el botón de subir."""
+    """Reconstruye las tarjetas usando la tupla de 3 valores (nombre, ruta, ruta_thumb)."""
     panel = ui["panels"].get(subject)
     if not panel: return
     
@@ -74,16 +76,18 @@ def rebuild_cards(subject: str, comando_actualizar_boton):
     wrap = ctk.CTkFrame(scroll, fg_color="transparent")
     wrap.pack(anchor="nw")
     
-    # Dibujar tarjetas de archivos desde el estado (Sincronizado con BD)
-    for fname, ruta in estado["subject_files"].get(subject, []):
-        _make_file_card(wrap, subject, fname, comando_actualizar_boton)
+    # Iteramos sobre la lista: (nombre, ruta_pptx, ruta_miniatura)
+    for datos in estado["subject_files"].get(subject, []):
+        nombre = datos[0]
+        ruta_thumb = datos[2] 
+        _make_file_card(wrap, subject, nombre, ruta_thumb, comando_actualizar_boton)
         
-    # Dibujar la tarjeta para subir nuevo
     _make_upload_card(wrap, subject, comando_actualizar_boton)
 
 # --- Funciones Privadas del Widget ---
 
-def _make_file_card(parent, subject: str, name: str, comando_actualizar_boton):
+def _make_file_card(parent, subject: str, name: str, ruta_thumb, comando_actualizar_boton):
+    """Crea la tarjeta visual con miniatura de la primera diapositiva."""
     short = name if len(name) <= 20 else name[:17] + "…"
     outer = ctk.CTkFrame(parent, fg_color="transparent", width=152, height=174)
     outer.pack(side="left", padx=(0, 16), pady=4)
@@ -91,17 +95,29 @@ def _make_file_card(parent, subject: str, name: str, comando_actualizar_boton):
 
     card = ctk.CTkFrame(
         outer, width=144, height=164,
-        fg_color="white", border_width=1, border_color=COLOR_ORO, # Borde Oro
+        fg_color="white", border_width=1, border_color=COLOR_ORO,
         corner_radius=14,
     )
     card.place(x=0, y=6)
     card.pack_propagate(False)
 
-    ctk.CTkLabel(card, text="📄", font=ctk.CTkFont(size=40)).pack(pady=(20, 6))
+    # --- Lógica de Miniatura ---
+    try:
+        if ruta_thumb and os.path.exists(ruta_thumb):
+            img_data = Image.open(ruta_thumb)
+            img_ctk = ctk.CTkImage(light_image=img_data, size=(128, 85))
+            preview = ctk.CTkLabel(card, image=img_ctk, text="")
+            preview.pack(pady=(12, 4), padx=8)
+        else:
+            raise Exception("Imagen no encontrada")
+    except Exception:
+        ctk.CTkLabel(card, text="📄", font=ctk.CTkFont(size=40), 
+                     text_color=COLOR_GUINDA).pack(pady=(20, 6))
+
     ctk.CTkLabel(
         card, text=short, font=ctk.CTkFont(size=11, weight="bold"),
-        text_color=COLOR_GUINDA, wraplength=124, justify="center", # Texto Guinda
-    ).pack(padx=10)
+        text_color=COLOR_GUINDA, wraplength=124, justify="center",
+    ).pack(padx=10, pady=(2, 4))
 
     # Botón eliminar
     ctk.CTkButton(
@@ -125,7 +141,7 @@ def _make_upload_card(parent, subject: str, comando_actualizar_boton):
     inner.place(relx=0.5, rely=0.5, anchor="center")
 
     ctk.CTkLabel(inner, text="＋", font=ctk.CTkFont(size=32),
-                 text_color=COLOR_ORO).pack() # Plus en Oro
+                 text_color=COLOR_ORO).pack()
     ctk.CTkLabel(
         inner, text="Subir nueva\npresentación",
         font=ctk.CTkFont(size=12), text_color="#64748B", justify="center",
@@ -141,7 +157,6 @@ def _make_upload_card(parent, subject: str, comando_actualizar_boton):
     card.bind("<Leave>", lambda e: card.configure(fg_color="white", border_color="#CBD5E1"))
 
 def _pick_files(subject: str, comando_actualizar_boton):
-    """Maneja la selección y guardado físico/lógico del archivo."""
     paths = filedialog.askopenfilenames(
         title=f"Subir presentaciones — {subject}",
         filetypes=[("Presentaciones PowerPoint", "*.pptx")],
@@ -150,29 +165,64 @@ def _pick_files(subject: str, comando_actualizar_boton):
     if not paths: return
 
     id_materia = obtener_id_materia_por_nombre(subject)
-    
-    for p in paths:
-        # Orquestación: Validación -> Hash -> Almacenamiento -> Registro BD
-        exito, mensaje = orquestar_proceso_completo(p, id_materia)
-        if not exito:
-            print(f"❌ Fallo al procesar {os.path.basename(p)}: {mensaje}")
+    conteo_exitos = 0
+    ultimo_mensaje = ""
 
-    # Sincronizamos estado local con la base de datos para asegurar el aislamiento
+    for p in paths:
+        exito, mensaje = orquestar_proceso_completo(p, id_materia)
+        if exito:
+            conteo_exitos += 1
+            ultimo_mensaje = "¡La presentación se ha subido con éxito!"
+        else:
+            print(f"Aviso: {mensaje}")
+
+    if conteo_exitos > 0:
+        from app.presentation.views.main_gui import mostrar_modal_exito
+        mostrar_modal_exito(ultimo_mensaje)
+
+    # RECARGA DESDE BD
     estado["subject_files"][subject] = obtener_presentaciones_por_materia(id_materia)
-    
     rebuild_cards(subject, comando_actualizar_boton)
     
     from app.presentation.widgets.sidebar import refresh_badge
     refresh_badge(subject)
     comando_actualizar_boton()
+
+# app/presentation/widgets/content_panel.py
+
+# 1. IMPORTACIÓN CORRECTA (A través del controlador)
+from app.core.controller.presentation_controller import orquestar_eliminacion_presentacion
 
 def _remove_file(subject: str, name: str, comando_actualizar_boton):
-    """Elimina el archivo del estado y actualiza UI (la eliminación física es opcional)."""
-    estado["subject_files"][subject] = [
-        (n, f) for n, f in estado["subject_files"][subject] if n != name
-    ]
-    rebuild_cards(subject, comando_actualizar_boton)
+    """
+    Maneja la confirmación y ejecuta el borrado delegando la lógica
+    al orquestador de presentaciones.
+    """
+    # Importación local para evitar ciclos con main_gui
+    from app.presentation.views.main_gui import confirmar_eliminacion
     
-    from app.presentation.widgets.sidebar import refresh_badge
-    refresh_badge(subject)
-    comando_actualizar_boton()
+    def on_confirm():
+        # Obtenemos el ID necesario para la operación
+        id_materia = obtener_id_materia_por_nombre(subject)
+        
+        # ✅ CAMBIO CLAVE: Llamamos al orquestador, NO a la persistencia directamente
+        if orquestar_eliminacion_presentacion(name, id_materia):
+            
+            # Sincronizamos el estado local consultando la BD (aislamiento por materia)
+            estado["subject_files"][subject] = obtener_presentaciones_por_materia(id_materia)
+            
+            # Refrescamos la interfaz visual
+            rebuild_cards(subject, comando_actualizar_boton)
+            
+            # Actualizamos el contador (badge) de la sidebar
+            from app.presentation.widgets.sidebar import refresh_badge
+            refresh_badge(subject)
+            
+            # Notificamos a la topbar para habilitar/deshabilitar el botón de análisis
+            comando_actualizar_boton()
+        else:
+            # Aquí podrías mostrar un modal de error si la eliminación falla
+            print(f"Error: No se pudo eliminar la presentación '{name}'")
+
+    # Lanzamos el modal institucional de confirmación
+    confirmar_eliminacion(name, subject, on_confirm)
