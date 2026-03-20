@@ -6,6 +6,7 @@ from app.data.queries import (
     obtener_id_materia_por_nombre,
     obtener_presentaciones_por_materia
 )
+from app.data.queries import obtener_temario_materia
 
 def obtener_catalogo_materias_activas():
     """Orquesta la carga de materias habilitadas en el panel principal."""
@@ -33,3 +34,7 @@ def obtener_archivos_materia(id_materia):
     Retorna: [(nombre, ruta_pptx, ruta_miniatura), ...]
     """
     return obtener_presentaciones_por_materia(id_materia)
+
+def obtener_temario_completo(nombre_materia):
+    """Orquesta la obtención del árbol de temas (Unidad -> Tema -> Subtema)."""
+    return obtener_temario_materia(nombre_materia)

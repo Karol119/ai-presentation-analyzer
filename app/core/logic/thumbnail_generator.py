@@ -9,10 +9,9 @@ def generar_miniatura_aspose(ruta_pptx, ruta_salida_png):
             if len(pres.slides) > 0:
                 slide = pres.slides[0]
 
-                # get_image() devuelve un objeto de imagen — se guarda directo con la ruta
                 img = slide.get_image(0.5, 0.5)
-                img.save(ruta_salida_png)  # ✅ El formato PNG se infiere del .png en la ruta
-                img.dispose()             # Buena práctica: liberar recursos
+                img.save(ruta_salida_png) 
+                img.dispose()             
 
                 return True
         return False

@@ -2,57 +2,71 @@
 import customtkinter as ctk
 from app.presentation.views.ui_state import estado, ui
 
-# Paleta Institucional IPN
-COLOR_GUINDA = "#6A1B31"
+COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
-COLOR_ORO = "#BC955C"
-COLOR_ORO_HOVER = "#9E7C4A"
-COLOR_BORDE = "#E2E8F0"
+COLOR_ORO          = "#BC955C"
+COLOR_ORO_HOVER    = "#9E7C4A"
+
 
 def build_topbar(comando_toggle, comando_analyze):
-    """
-    Construye la barra superior de la aplicación con estilo ESCOM/IPN.
-    """
-    # Contenedor principal de la barra
-    bar = ctk.CTkFrame(ui["root"], fg_color="white", corner_radius=0, height=60)
+    bar = ctk.CTkFrame(ui["root"], fg_color="white", corner_radius=0, height=68)
     bar.pack(fill="x")
     bar.pack_propagate(False)
 
-    # Título del Prototipo
-    ctk.CTkLabel(
-        bar, text="AI Presentation Analyzer — Prototipo 01",
-        font=ctk.CTkFont(family="Segoe UI", size=15, weight="bold"),
-        text_color=COLOR_GUINDA, # Texto en Guinda
-    ).pack(side="left", padx=24)
+    logo_frame = ctk.CTkFrame(bar, fg_color="transparent")
+    logo_frame.pack(side="left", padx=28, pady=0)
 
-    # Botón de Toggle Contenido (Estilo Oro)
+    pill = ctk.CTkFrame(logo_frame, fg_color=COLOR_GUINDA, corner_radius=8,
+                        width=42, height=28)
+    pill.pack(side="left", padx=(0, 12))
+    pill.pack_propagate(False)
+    ctk.CTkLabel(pill, text="IPN",
+                 font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+                 text_color="white").place(relx=0.5, rely=0.5, anchor="center")
+
+    text_col = ctk.CTkFrame(logo_frame, fg_color="transparent")
+    text_col.pack(side="left")
+    ctk.CTkLabel(text_col,
+                 text="AI Presentation Analyzer",
+                 font=ctk.CTkFont(family="Segoe UI", size=15, weight="bold"),
+                 text_color="#1E293B").pack(anchor="w")
+    ctk.CTkLabel(text_col,
+                 text="ESCOM · Prototipo 1: Análisis de presentaciones",
+                 font=ctk.CTkFont(family="Segoe UI", size=10),
+                 text_color="#94A3B8").pack(anchor="w")
+
+    btn_frame = ctk.CTkFrame(bar, fg_color="transparent")
+    btn_frame.pack(side="right", padx=28)
+
     ui["toggle_btn"] = ctk.CTkButton(
-        bar, text="☰   Contenido", 
+        btn_frame,
+        text="☰   Contenido",
         font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
-        fg_color="transparent", 
-        hover_color="#F8FAFC", 
+        fg_color="transparent",
+        hover_color="#F1F5F9",
         text_color="#64748B",
-        border_width=1, 
-        border_color="#CBD5E1", 
-        corner_radius=8, 
-        height=34,
+        border_width=1,
+        border_color="#E2E8F0",
+        corner_radius=20,
+        height=36,
+        width=130,
         command=comando_toggle,
     )
-    ui["toggle_btn"].pack(side="right", padx=(12, 24), pady=12)
+    ui["toggle_btn"].pack(side="left", padx=(0, 10))
 
-    # Botón de Analizar (Estilo Guinda)
     ui["analyze_btn"] = ctk.CTkButton(
-        bar, text="Analizar presentación", 
-        font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
-        fg_color=COLOR_GUINDA, 
-        hover_color=COLOR_GUINDA_HOVER, 
+        btn_frame,
+        text="🔍  Analizar presentación",
+        font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+        fg_color="#94A3B8",
+        hover_color="#64748B",
         text_color="white",
-        corner_radius=8, 
-        height=38, 
-        state="disabled", 
+        corner_radius=20,
+        height=36,
+        width=190,
+        state="disabled",
         command=comando_analyze,
     )
-    ui["analyze_btn"].pack(side="right", padx=(24, 0), pady=10)
+    ui["analyze_btn"].pack(side="left")
 
-    # Línea divisoria inferior
-    ctk.CTkFrame(ui["root"], height=1, fg_color=COLOR_BORDE, corner_radius=0).pack(fill="x")
+    ctk.CTkFrame(ui["root"], height=1, fg_color="#E8ECF2").pack(fill="x")
