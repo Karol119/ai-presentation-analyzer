@@ -92,3 +92,25 @@ def obtener_temario_materia(nombre_materia):
             if str_s:
                 temario[-1]["temas"][-1]["subtemas"].append(str_s)
     return temario
+
+    # app/data/queries.py
+
+# app/data/queries.py
+
+def obtener_presentaciones_por_materia(id_materia):
+    """
+    Recupera solo las presentaciones vinculadas a una materia específica.
+    """
+    conn = conectar_db()
+    cursor = conn.cursor()
+    # Filtramos por id_unidad_aprendizaje para asegurar el aislamiento
+    query = """
+        SELECT p.presentacion, hv.ruta 
+        FROM Presentacion p
+        JOIN Historial_de_Versiones hv ON p.id_presentacion = hv.id_presentacion
+        WHERE p.id_unidad_aprendizaje = ? AND hv.numero_version = 1
+    """
+    cursor.execute(query, (id_materia,))
+    resultados = cursor.fetchall()
+    conn.close()
+    return resultados # Retorna lista de tuplas [(nombre, ruta), ...]
