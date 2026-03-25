@@ -7,7 +7,6 @@ def existe_hash_en_db(hash_archivo):
     if not conn: return False
     
     cursor = conn.cursor()
-    # Buscamos en el historial de versiones para evitar duplicados
     cursor.execute("SELECT 1 FROM Historial_de_Versiones WHERE hash = ?", (hash_archivo,))
     existe = cursor.fetchone() is not None
     
@@ -59,6 +58,55 @@ def obtener_id_materia_por_nombre(nombre):
     conn.close()
     return res[0] if res else None
 
+# --- NUEVAS FUNCIONES PARA BORRADO EN CASCADA ---
+
+def obtener_rutas_archivos_materia(id_materia):
+    """
+    Recupera todas las rutas físicas (PPTX y Miniaturas) asociadas 
+    a una materia para poder eliminarlas del disco.
+    """
+    conn = conectar_db()
+    cursor = conn.cursor()
+    query = """
+        SELECT hv.ruta, hv.ruta_miniatura
+        FROM Presentacion p
+        JOIN Historial_de_Versiones hv ON p.id_presentacion = hv.id_presentacion
+        WHERE p.id_unidad_aprendizaje = ?
+    """
+    cursor.execute(query, (id_materia,))
+    rutas = cursor.fetchall()
+    conn.close()
+    return rutas # Retorna [(ruta_pptx, ruta_thumb), ...]
+
+def eliminar_datos_materia_cascada(id_materia):
+    """
+    Elimina los registros de presentaciones y versiones de la BD 
+    antes de desactivar la materia.
+    """
+    conn = conectar_db()
+    if not conn: return False
+    try:
+        cursor = conn.cursor()
+        # 1. Eliminar versiones (dependen de presentación)
+        cursor.execute("""
+            DELETE FROM Historial_de_Versiones 
+            WHERE id_presentacion IN (SELECT id_presentacion FROM Presentacion WHERE id_unidad_aprendizaje = ?)
+        """, (id_materia,))
+        
+        # 2. Eliminar presentaciones
+        cursor.execute("DELETE FROM Presentacion WHERE id_unidad_aprendizaje = ?", (id_materia,))
+        
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error en borrado cascada BD: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+# ------------------------------------------------
+
 def obtener_temario_materia(nombre_materia):
     conn = conectar_db()
     cursor = conn.cursor()
@@ -93,19 +141,10 @@ def obtener_temario_materia(nombre_materia):
                 temario[-1]["temas"][-1]["subtemas"].append(str_s)
     return temario
 
-    # app/data/queries.py
-
-# app/data/queries.py
-
-# app/data/queries.py
-
 def obtener_presentaciones_por_materia(id_materia):
-    """
-    Recupera el nombre, la ruta del PPTX y la ruta de la miniatura.
-    """
+    """Recupera el nombre, la ruta del PPTX y la ruta de la miniatura."""
     conn = conectar_db()
     cursor = conn.cursor()
-    # Añadimos hv.ruta_miniatura al SELECT
     query = """
         SELECT p.presentacion, hv.ruta, hv.ruta_miniatura
         FROM Presentacion p
@@ -115,4 +154,4 @@ def obtener_presentaciones_por_materia(id_materia):
     cursor.execute(query, (id_materia,))
     resultados = cursor.fetchall()
     conn.close()
-    return resultados # Ahora retorna [(nombre, ruta_pptx, ruta_thumb), ...]
+    return resultados

@@ -44,15 +44,9 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
     except Exception as e:
         return False, f"Error en el flujo: {str(e)}"
 
-# =========================================================
-# NUEVA FUNCIÓN DE BORRADO (CAPA DE NEGOCIO)
-# =========================================================
-
 def orquestar_eliminacion_presentacion(nombre_presentacion, id_materia):
     """
     Actúa como puente entre la UI y la persistencia para eliminar 
     física y lógicamente una presentación.
     """
-    # Aquí podrías añadir lógica de negocio adicional en el futuro,
-    # como verificar si el usuario tiene permisos o registrar un log.
     return eliminar_presentacion_completa(nombre_presentacion, id_materia)

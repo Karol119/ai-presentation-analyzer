@@ -12,6 +12,7 @@ from app.core.controller.subject_controller import (
     desactivar_materia,
     obtener_id_materia,
     obtener_archivos_materia,
+    orquestar_desactivacion_materia,
 )
 from app.presentation.views.ui_state import estado, ui
 from app.presentation.widgets.topbar import build_topbar
@@ -69,23 +70,98 @@ def _seleccionar_materia(name: str):
     refresh_right_panel(name)
 
 
-def _eliminar_materia(name: str):
-    if len(estado["subjects"]) == 1:
-        return
-    if desactivar_materia(name):
-        estado["subjects"].remove(name)
-        if name in estado["subject_files"]:
-            del estado["subject_files"][name]
-        ui["sidebar_btns"].pop(name).destroy()
-        p = ui["panels"].pop(name, None)
-        if p:
-            p.destroy()
-        if estado["active"] == name:
-            estado["active"] = estado["subjects"][0]
-            refresh_sidebar_styles()
-        show_panel(estado["active"])
-        _actualizar_boton_analizar()
+# app/presentation/views/main_gui.py
 
+def _eliminar_materia(nombre_materia: str):
+    """
+    Muestra una alerta visual antes de proceder con el borrado 
+    de la materia y sus archivos. Permite borrar hasta la última materia.
+    """
+    # Ventana modal de advertencia
+    win = ctk.CTkToplevel(ui["root"])
+    win.title("Confirmar eliminación")
+    win.geometry("400x220")
+    win.grab_set() 
+    win.after(10, lambda: win.focus_force())
+
+    frame = ctk.CTkFrame(win, fg_color="white", corner_radius=15)
+    frame.pack(fill="both", expand=True, padx=15, pady=15)
+
+    ctk.CTkLabel(
+        frame, 
+        text="⚠ ¿Eliminar materia?",
+        font=ctk.CTkFont(size=16, weight="bold"),
+        text_color="#EF4444"
+    ).pack(pady=(10, 5))
+
+    ctk.CTkLabel(
+        frame,
+        text=f"Se borrarán permanentemente todos los archivos\ny el historial de '{nombre_materia}'.",
+        font=ctk.CTkFont(size=12),
+        text_color="#64748B"
+    ).pack(pady=5)
+
+    btn_row = ctk.CTkFrame(frame, fg_color="transparent")
+    btn_row.pack(side="bottom", fill="x", pady=15)
+
+    def confirmar():
+        win.destroy()
+        _ejecutar_borrado_real_materia(nombre_materia)
+
+    ctk.CTkButton(
+        btn_row, text="Eliminar todo", command=confirmar,
+        fg_color="#EF4444", hover_color="#DC2626", text_color="white",
+        width=120, height=34, corner_radius=8
+    ).pack(side="left", padx=15)
+
+    ctk.CTkButton(
+        btn_row, text="Cancelar", command=win.destroy,
+        fg_color="transparent", text_color="#64748B", border_width=1,
+        border_color="#CBD5E1", width=120, height=34, corner_radius=8
+    ).pack(side="right", padx=15)
+
+def _ejecutar_borrado_real_materia(nombre_materia):
+    # 1. Llamar al controlador para borrar archivos y registros en BD
+    exito, mensaje = orquestar_desactivacion_materia(nombre_materia)
+    
+    if exito:
+        # 2. Remover del estado global
+        if nombre_materia in estado["subjects"]:
+            estado["subjects"].remove(nombre_materia)
+        
+        if nombre_materia in estado["subject_files"]:
+            del estado["subject_files"][nombre_materia]
+
+        # 3. Limpiar diccionarios de UI y destruir widgets de la sidebar
+        ui["sidebar_btns"] = {} 
+        for widget in ui["sidebar_list"].winfo_children():
+            widget.destroy()
+
+        # 4. Manejo de la lógica según si quedan materias o no
+        if not estado["subjects"]:
+            # CASO: No quedan materias
+            estado["active"] = ""
+            # Ocultamos paneles y mostramos vista de bienvenida
+            from app.presentation.widgets.content_panel import show_empty_state
+            show_empty_state()
+            # Limpiamos el panel derecho (temario)
+            refresh_right_panel("")
+            # Actualizamos botón de analizar (se deshabilitará)
+            _actualizar_boton_analizar()
+        else:
+            # CASO: Aún quedan materias
+            if estado["active"] == nombre_materia:
+                estado["active"] = estado["subjects"][0]
+            
+            # Volver a llenar la sidebar con las materias restantes
+            from app.presentation.widgets.sidebar import create_sidebar_item
+            for s in estado["subjects"]:
+                create_sidebar_item(s, _seleccionar_materia, _eliminar_materia)
+                
+            # Refrescar visualmente la selección actual
+            refresh_sidebar_styles()
+            show_panel(estado["active"])
+            refresh_right_panel(estado["active"])
 
 def _abrir_modal_agregar_materia():
     win = ctk.CTkToplevel(ui["root"])
@@ -356,6 +432,60 @@ def confirmar_eliminacion(nombre, subject, callback_confirmar):
         corner_radius=10,
     ).pack(side="right", padx=10)
 
+def confirmar_eliminacion_materia(nombre, callback_confirmar):
+    """Muestra un modal de advertencia institucional para el borrado de la materia."""
+    win = ctk.CTkToplevel(ui["root"])
+    win.title("Confirmar eliminación de materia")
+    win.geometry("460x320")
+    win.grab_set()
+    win.configure(fg_color="white")
+    win.resizable(False, False)
+
+    # Franja de advertencia roja
+    ctk.CTkFrame(win, fg_color="#EF4444", height=6, corner_radius=0).pack(fill="x")
+
+    icon_bg = ctk.CTkFrame(win, fg_color="#FEF2F2", corner_radius=40, width=64, height=64)
+    icon_bg.pack(pady=(22, 8))
+    icon_bg.pack_propagate(False)
+    ctk.CTkLabel(icon_bg, text="⚠️", font=ctk.CTkFont(size=28), text_color="#EF4444").place(relx=0.5, rely=0.5, anchor="center")
+
+    ctk.CTkLabel(
+        win, text="¿Eliminar materia completa?",
+        font=ctk.CTkFont(family="Segoe UI", size=15, weight="bold"),
+        text_color=COLOR_GUINDA
+    ).pack()
+
+    ctk.CTkLabel(
+        win, text=nombre,
+        font=ctk.CTkFont(size=12, slant="italic"),
+        text_color="#64748B"
+    ).pack(pady=(2, 6))
+
+    ctk.CTkLabel(
+        win, 
+        text="Esta acción desactivará la materia y ELIMINARÁ permanentemente\ntodas sus presentaciones, miniaturas y análisis del disco duro.",
+        font=ctk.CTkFont(size=11), text_color="#94A3B8", justify="center", wraplength=380
+    ).pack(padx=20, pady=(0, 20))
+
+    btn_row = ctk.CTkFrame(win, fg_color="transparent")
+    btn_row.pack(pady=(0, 20))
+
+    def proceder():
+        callback_confirmar()
+        win.destroy()
+
+    ctk.CTkButton(
+        btn_row, text="Eliminar todo", command=proceder,
+        fg_color="#EF4444", hover_color="#DC2626", text_color="white",
+        width=140, height=36, corner_radius=10
+    ).pack(side="left", padx=10)
+
+    ctk.CTkButton(
+        btn_row, text="Cancelar", command=win.destroy,
+        fg_color="transparent", text_color="#64748B", border_width=1,
+        border_color="#E2E8F0", width=140, height=36, corner_radius=10
+    ).pack(side="right", padx=10)
+
 
 
 def iniciar_aplicacion():
@@ -388,3 +518,5 @@ def iniciar_aplicacion():
         _seleccionar_materia(estado["active"])
 
     ui["root"].mainloop()
+
+    

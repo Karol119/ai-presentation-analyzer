@@ -78,6 +78,44 @@ def show_panel(name: str):
         else:
             p.place_forget()
 
+# app/presentation/widgets/content_panel.py
+
+def show_empty_state():
+    """Muestra una vista de bienvenida cuando no hay materias activas."""
+    # Ocultamos todos los paneles actuales
+    for p in ui["panels"].values():
+        p.place_forget()
+        
+    # Creamos o recuperamos el panel de estado vacío
+    if "empty_view" not in ui:
+        view = ctk.CTkFrame(ui["content_area"], fg_color="white", corner_radius=14)
+        ui["empty_view"] = view
+        
+        container = ctk.CTkFrame(view, fg_color="transparent")
+        container.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Icono o Ilustración
+        ctk.CTkLabel(
+            container, text="📚", font=ctk.CTkFont(size=60)
+        ).pack(pady=10)
+        
+        ctk.CTkLabel(
+            container, 
+            text="¡Bienvenido al Analizador!",
+            font=ctk.CTkFont(family="Segoe UI", size=20, weight="bold"),
+            text_color=COLOR_GUINDA
+        ).pack()
+        
+        ctk.CTkLabel(
+            container, 
+            text="Aún no tienes materias activas.\nPresiona '+ Agregar materia' en el panel izquierdo para comenzar.",
+            font=ctk.CTkFont(family="Segoe UI", size=13),
+            text_color="#64748B",
+            justify="center"
+        ).pack(pady=10)
+
+    ui["empty_view"].place(relx=0, rely=0, relwidth=1, relheight=1)
+
 def rebuild_cards(subject: str, comando_actualizar_boton):
     panel = ui["panels"].get(subject)
     if not panel: return
