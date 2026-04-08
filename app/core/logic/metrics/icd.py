@@ -1,3 +1,4 @@
+# app/core/logic/metrics/icd.py
 """
 icd.py
 Calcula el Índice de Complejidad de Diapositiva (ICD).

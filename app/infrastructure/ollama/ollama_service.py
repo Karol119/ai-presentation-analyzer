@@ -1,3 +1,4 @@
+# app/infrastructure/ollama/ollama_service.py
 import requests
 
 OLLAMA_URL  = "http://localhost:11434/api/generate"

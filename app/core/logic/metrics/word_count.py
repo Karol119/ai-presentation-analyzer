@@ -1,3 +1,4 @@
+# app/core/logic/metrics/word_count.py
 """
 word_count.py
 Métrica de palabras por diapositiva (WPS).

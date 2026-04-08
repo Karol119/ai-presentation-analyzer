@@ -1,3 +1,4 @@
+# app/core/logic/metrics/narrative_thread.py
 """
 narrative_thread.py
 Métrica de hilo narrativo (NTS).
@@ -162,4 +163,4 @@ def _resumen_vacio():
         "resultados":[], "nts_promedio":0.0,
         "slides_relacionadas":0, "slides_debiles":0,
         "slides_desconectadas":0, "pares_rotura":[],
-    } 
+    }

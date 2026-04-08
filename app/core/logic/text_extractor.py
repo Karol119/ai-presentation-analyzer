@@ -1,3 +1,4 @@
+# app/core/logic/text_extractor.py
 import os
 import re
 from pptx import Presentation
