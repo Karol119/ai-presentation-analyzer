@@ -75,12 +75,7 @@ def generar_recomendacion_slide(slide_data, score_slide):
     # ── Caso 3: Slide saturada — sugerir división antes de resumir ───────────
     sugerencia_division = None
     if wps_m.get("zona") in ("saturada", "densa") and wps_m.get("exceso", 0) > 50:
-        sugerencia_division = (
-            f"Esta diapositiva tiene {wps_m.get('palabras',0)} palabras — "
-            f"considera dividirla en {_cuantas_slides(wps_m.get('palabras',0))} diapositivas "
-            f"temáticas de 40-75 palabras cada una en lugar de resumirla."
-        )
-        base["sugerencia_division"] = sugerencia_division
+        pass
 
     base["necesitaba_rec"] = True
 

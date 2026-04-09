@@ -60,11 +60,13 @@ def construir_contexto_metricas(score_slide):
                 f"  - Cantidad de texto: {m['palabras']} palabras ✓ "
                 f"MANTÉN entre {max(m['palabras']-5,40)} y {min(m['palabras']+5,75)} palabras"
             )
+        # Busca esta sección en construir_contexto_metricas:
         elif m.get("exceso", 0) > 50:
             lineas_mejorar.append(
-                f"  - Cantidad de texto: {m['palabras']} palabras (MUY SATURADA) → "
-                f"Divide el contenido en {round(m['palabras']/57)} partes temáticas. "
-                f"Muestra aquí solo la primera parte (40-75 palabras)."
+                f" - Cantidad de texto: {m['palabras']} palabras (MUY SATURADA) → "
+                f"Analiza si el contenido es demasiado extenso para una sola diapositiva. "
+                f"Si es posible, resúmelo manteniendo la esencia entre 40-75 palabras. "
+                f"Si consideras que se pierde información vital, indica en 'justificacion' que se sugiere dividir."
             )
         elif m.get("exceso", 0) > 0:
             lineas_mejorar.append(
@@ -139,8 +141,9 @@ Responde con este JSON exacto:
 {{
   "titulo_nuevo": "string",
   "contenido_nuevo": "string",
-  "cambios_realizados": ["cambio 1", "cambio 2"],
-  "justificacion": "una oración"
+  "cambios_realizados": [],
+  "justificacion": "string",
+  "requiere_division_fisica": boolean  // <--- Añade esto
 }}"""
 
 
