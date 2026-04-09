@@ -48,3 +48,6 @@ logs/
 
 # Caché si deciden hacer pruebas unitarias después
 .pytest_cache/
+
+__pycache__/
+*.pyc
