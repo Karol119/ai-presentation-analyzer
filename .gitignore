@@ -15,9 +15,6 @@ uploads/
 *.pptx
 *.json
 
-# Archivos autogenerados por PyQt6 (si deciden compilar los .ui a .py)
-ui_*.py
-*_rc.py
 
 # Archivos generados al crear el ejecutable (.exe) con PyInstaller
 build/
