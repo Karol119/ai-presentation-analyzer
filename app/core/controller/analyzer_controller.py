@@ -65,11 +65,12 @@ def analizar_presentacion(ruta_pptx, usar_llm=True, generar_recomendaciones=True
         ss["slide_number"] = n
         scores_slides.append(ss)
 
-    print(f"\n[score] Global: {score_global['score_global']} ({score_global['zona_global']})")
-    print(f"        ICD:{score_global['scores_metrica']['icd']}  "
-          f"WPS:{score_global['scores_metrica']['wps']}  "
-          f"HSS:{score_global['scores_metrica']['hss']}  "
-          f"NTS:{score_global['scores_metrica']['nts']}")
+    sg = score_global
+    print(f"\n[score] {sg['score_global']} ({sg['zona_global']}) — "
+          f"ICD:{sg['scores_metrica']['icd']} "
+          f"WPS:{sg['scores_metrica']['wps']} "
+          f"HSS:{sg['scores_metrica']['hss']} "
+          f"NTS:{sg['scores_metrica']['nts']}")
 
     recomendaciones   = []
     resumen_ejecutivo = None
@@ -79,18 +80,32 @@ def analizar_presentacion(ruta_pptx, usar_llm=True, generar_recomendaciones=True
         slide_map = {s["slide_number"]: s for s in slides_contenido}
 
         for ss in scores_slides:
-            n         = ss["slide_number"]
+            n          = ss["slide_number"]
             slide_data = slide_map.get(n, {})
-            rec = generar_recomendacion_slide(slide_data, ss)
+            rec        = generar_recomendacion_slide(slide_data, ss)
             recomendaciones.append(rec)
+
+            # Log por slide
+            if rec.get("necesitaba_rec"):
+                if rec.get("slides_division"):
+                    print(f"  [{n:02d}] DIVIDIR → {len(rec['slides_division'])} slides "
+                          f"({rec.get('sugerencia_division','')})")
+                elif rec.get("error"):
+                    print(f"  [{n:02d}] ERROR: {rec['error']}")
+                else:
+                    v = rec.get("verificacion") or {}
+                    ok = "✓ en rango" if v.get("wps_zona") == "optima" else f"WPS:{v.get('wps_zona','?')}"
+                    print(f"  [{n:02d}] generada ({rec.get('intentos',1)} intentos) "
+                          f"→ {v.get('palabras','?')} pal, ICD:{v.get('icd','?')} [{ok}]")
+            elif rec.get("omitida_razon"):
+                print(f"  [{n:02d}] omitida")
 
         resumen_ejecutivo = generar_resumen_presentacion(
             datos["filename"], score_global, r_icd, r_wps, r_hss, r_nts
         )
     elif generar_recomendaciones:
-        print("[rec] Ollama no disponible — recomendaciones omitidas")
+        print("[rec] Ollama no disponible")
 
-    # ── Tabla de diagnóstico ──────────────────────────────────────────────────
     imprimir_tabla_diagnostico(scores_slides, r_icd, r_wps, r_hss, r_nts, recomendaciones)
 
     if resumen_ejecutivo:
