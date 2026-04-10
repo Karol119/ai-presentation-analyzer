@@ -13,6 +13,8 @@ from app.core.controller.subject_controller import (
     obtener_id_materia, 
     obtener_archivos_materia
 )
+# ✅ Importamos la nueva alerta desde dialogs
+from app.presentation.widgets.dialogs import advertir_presentacion_existente
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
@@ -244,12 +246,8 @@ def _make_upload_card(parent, subject, comando_actualizar_boton):
     card.bind("<Button-1>", pick)
     for w in inner.winfo_children(): w.bind("<Button-1>", pick)
 
-# En app/presentation/widgets/content_panel.py
-
 def _pick_files(subject, comando_actualizar_boton):
-
-    from app.presentation.views.main_gui import mostrar_modal_advertencia # Importar el nuevo modal
-    
+    """Orquesta la selección y carga de archivos PPTX."""
     paths = filedialog.askopenfilenames(filetypes=[("PPTX", "*.pptx")])
     if not paths: return
     
@@ -266,11 +264,10 @@ def _pick_files(subject, comando_actualizar_boton):
                 # Otros errores (tamaño, vacío, etc.)
                 print(f"Error al subir {p}: {mensaje}")
 
-    # Si hubo duplicados, mostramos la notificación
     if presentaciones_omitidas:
         nombres = ", ".join(presentaciones_omitidas)
-        msg = f"Las siguiente presentacion ya existe: {nombres}"
-        mostrar_modal_advertencia(msg)
+        msg = f"Las presentacion {nombres} ya existe"
+        advertir_presentacion_existente(ui["root"], msg)
     
     # Refrescar la interfaz pase lo que pase
     estado["subject_files"][subject] = obtener_archivos_materia(id_m)
@@ -278,6 +275,10 @@ def _pick_files(subject, comando_actualizar_boton):
     comando_actualizar_boton()
 
 def _remove_file(subject, name, comando_actualizar_boton):
+    """
+    Nota: Esta función sigue usando la lógica anterior. 
+    Mantenida completa según tu solicitud.
+    """
     from app.presentation.views.main_gui import confirmar_eliminacion
     def on_confirm():
         id_m = obtener_id_materia(subject)
