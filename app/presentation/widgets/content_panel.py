@@ -78,7 +78,6 @@ def show_panel(name: str):
         else:
             p.place_forget()
 
-# app/presentation/widgets/content_panel.py
 
 def show_empty_state():
     """Muestra una vista de bienvenida cuando no hay materias activas."""
@@ -245,13 +244,35 @@ def _make_upload_card(parent, subject, comando_actualizar_boton):
     card.bind("<Button-1>", pick)
     for w in inner.winfo_children(): w.bind("<Button-1>", pick)
 
+# En app/presentation/widgets/content_panel.py
+
 def _pick_files(subject, comando_actualizar_boton):
+
+    from app.presentation.views.main_gui import mostrar_modal_advertencia # Importar el nuevo modal
+    
     paths = filedialog.askopenfilenames(filetypes=[("PPTX", "*.pptx")])
     if not paths: return
-    id_m = obtener_id_materia(subject)
-    for p in paths:
-        orquestar_proceso_completo(p, id_m)
     
+    id_m = obtener_id_materia(subject)
+    presentaciones_omitidas = []
+
+    for p in paths:
+        exito, mensaje = orquestar_proceso_completo(p, id_m)
+        if not exito:
+            # Si el mensaje indica que ya existe, lo guardamos para notificar
+            if "ya ha sido procesada" in mensaje or "hash" in mensaje:
+                presentaciones_omitidas.append(os.path.basename(p))
+            else:
+                # Otros errores (tamaño, vacío, etc.)
+                print(f"Error al subir {p}: {mensaje}")
+
+    # Si hubo duplicados, mostramos la notificación
+    if presentaciones_omitidas:
+        nombres = ", ".join(presentaciones_omitidas)
+        msg = f"Las siguiente presentacion ya existe: {nombres}"
+        mostrar_modal_advertencia(msg)
+    
+    # Refrescar la interfaz pase lo que pase
     estado["subject_files"][subject] = obtener_archivos_materia(id_m)
     rebuild_cards(subject, comando_actualizar_boton)
     comando_actualizar_boton()
