@@ -25,6 +25,7 @@ from app.presentation.widgets.dialogs import (
     confirmar_eliminacion_archivo
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
+from app.presentation.views import navigator
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
@@ -223,10 +224,11 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     items_frame.pack(fill="both", expand=True, padx=6, pady=(8, 4))
 
     texto_analisis = "📊   Ver análisis" if ya_analizada else "🔍   Analizar presentación"
+    cmd_analisis   = _placeholder if ya_analizada else lambda: _iniciar_analisis(subject, name, toggle_menu)
 
     opciones = [
         ("🖥   Presentar clase",  "#1E293B", _placeholder),
-        (texto_analisis,          "#1E293B", _placeholder),
+        (texto_analisis,          "#1E293B", cmd_analisis),
         ("🕓   Ver historial",    "#1E293B", _placeholder),
         ("📈   Ver rendimiento",  "#1E293B", _placeholder),
     ]
@@ -263,6 +265,41 @@ def _menu_item(parent, text: str, color: str, command):
 
 def _placeholder():
     pass
+
+
+def _iniciar_analisis(subject: str, nombre_presentacion: str, toggle_menu):
+    """
+    Flujo completo al pulsar 'Analizar presentación':
+      1. Cierra el menú de la tarjeta
+      2. Muestra el modal de carga
+      3. Ejecuta el análisis simulado en worker thread
+      4. Cierra el modal y navega a la vista de análisis
+    """
+    import time
+
+    # 1. Cerrar el menú de opciones de la tarjeta
+    toggle_menu(False)
+
+    # 2. Mostrar modal de carga bloqueante
+    loading_modal = mostrar_modal_cargando(ui["root"], "Analizando presentación...")
+
+    def tarea_analisis():
+        """Worker thread: análisis simulado."""
+        time.sleep(2)   # Simulación — aquí irá la lógica real de análisis
+
+    def finalizar(resultado):
+        """Callback en el hilo principal tras terminar el análisis."""
+        # 3. Cerrar modal
+        if loading_modal.winfo_exists():
+            loading_modal.destroy()
+
+        # 4. Navegar a la vista de análisis
+        navigator.ir_a_analisis(subject, nombre_presentacion)
+
+    ejecutar_tarea_asincrona(
+        target_task=tarea_analisis,
+        on_finished_callback=finalizar,
+    )
 
 def _make_upload_card(parent, subject, comando_actualizar_boton):
     """Crea y retorna la tarjeta de carga (sin posicionarla)."""
