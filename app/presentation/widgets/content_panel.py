@@ -128,26 +128,45 @@ def show_empty_state():
     ui["empty_view"].place(relx=0, rely=0, relwidth=1, relheight=1)
 
 def rebuild_cards(subject: str, comando_actualizar_boton):
+    """Reconstruye la cuadrícula de tarjetas de presentaciones en formato rectangular."""
     panel = ui["panels"].get(subject)
     if not panel: return
 
     scroll = panel._cards_scroll
+    # Limpieza total de los widgets previos para redibujar
     for w in scroll.winfo_children():
         w.destroy()
 
+    # Contenedor principal que permite la expansión horizontal
     wrap = ctk.CTkFrame(scroll, fg_color="transparent")
-    wrap.pack(anchor="nw")
+    wrap.pack(fill="x", expand=True, anchor="nw")
 
+    # Configuración de flujo de la cuadrícula
+    MAX_COLUMNS = 4
+    current_row = 0
+    current_col = 0
+
+    # 1. Generar tarjetas de archivos existentes
     for datos in estado["subject_files"].get(subject, []):
         nombre, ruta_thumb = datos[0], datos[2]
-        _make_file_card(wrap, subject, nombre, ruta_thumb, comando_actualizar_boton)
+        # Creamos el widget pero NO lo empaquetamos dentro de la función interna
+        card_widget = _make_file_card(wrap, subject, nombre, ruta_thumb, comando_actualizar_boton)
+        # Lo posicionamos usando la cuadrícula del padre
+        card_widget.grid(row=current_row, column=current_col, padx=(0, 18), pady=8, sticky="nw")
+        
+        current_col += 1
+        if current_col >= MAX_COLUMNS:
+            current_col = 0
+            current_row += 1
 
-    _make_upload_card(wrap, subject, comando_actualizar_boton)
+    # 2. Generar tarjeta de "Subir presentación" al final de la lista
+    upload_card = _make_upload_card(wrap, subject, comando_actualizar_boton)
+    upload_card.grid(row=current_row, column=current_col, padx=(0, 18), pady=8, sticky="nw")
 
 
 def _make_file_card(parent, subject: str, name: str, ruta_thumb, comando_actualizar_boton):
+    """Crea y retorna el widget de tarjeta de archivo (sin posicionarlo)."""
     outer = ctk.CTkFrame(parent, fg_color="transparent", width=CARD_W, height=CARD_H)
-    outer.pack(side="left", padx=(0, 18), pady=8)
     outer.pack_propagate(False)
 
     card = ctk.CTkFrame(
@@ -157,6 +176,7 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, comando_actuali
     card.place(x=3, y=3)
     card.pack_propagate(False)
 
+    # --- Lógica de Caras (Preview/Menú) idéntica a tu código actual ---
     # Cara Preview
     face_prev = ctk.CTkFrame(card, fg_color="transparent", corner_radius=0)
     face_prev.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -188,7 +208,7 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, comando_actuali
             face_prev.place(relx=0, rely=0, relwidth=1, relheight=1)
             card.configure(border_color="#E2E8F0")
 
-    ctk.CTkButton(face_prev, text="☰  Ver opciones", height=30, fg_color="#F8FAFC", 
+    ctk.CTkButton(face_prev, text="☰   Ver opciones", height=30, fg_color="#F8FAFC", 
                   text_color="#475569", font=ctk.CTkFont(size=11, weight="bold"),
                   command=lambda: toggle_menu(True)).pack(fill="x", padx=12, pady=(0, 12), side="bottom")
 
@@ -223,6 +243,8 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, comando_actuali
                   hover_color="#FEF2F2", font=ctk.CTkFont(size=11, weight="bold"),
                   anchor="w", command=on_delete).pack(fill="x", padx=6, pady=(4, 8), side="bottom")
 
+    return outer # Retornamos el contenedor para usarlo con .grid()
+
 def _menu_item(parent, text: str, color: str, command):
     """Crea un botón de opción dentro del menú de la tarjeta."""
     ctk.CTkButton(
@@ -242,9 +264,9 @@ def _placeholder():
     pass
 
 def _make_upload_card(parent, subject, comando_actualizar_boton):
-    card = ctk.CTkFrame(parent, width=CARD_W-6, height=CARD_H-6, fg_color="#FAFBFD", 
+    """Crea y retorna la tarjeta de carga (sin posicionarla)."""
+    card = ctk.CTkFrame(parent, width=CARD_W, height=CARD_H, fg_color="#FAFBFD", 
                         border_width=2, border_color="#E2E8F0", corner_radius=16, cursor="hand2")
-    card.pack(side="left", padx=(0, 18), pady=8)
     card.pack_propagate(False)
 
     inner = ctk.CTkFrame(card, fg_color="transparent")
@@ -255,6 +277,8 @@ def _make_upload_card(parent, subject, comando_actualizar_boton):
     def pick(e=None): _pick_files(subject, comando_actualizar_boton)
     card.bind("<Button-1>", pick)
     for w in inner.winfo_children(): w.bind("<Button-1>", pick)
+    
+    return card # Retornamos el widget
 
 def _pick_files(subject: str, comando_actualizar_boton: Callable):
     """
