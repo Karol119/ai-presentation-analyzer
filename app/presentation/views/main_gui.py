@@ -70,8 +70,6 @@ def _seleccionar_materia(name: str):
     refresh_right_panel(name)
 
 
-
-
 def _eliminar_materia(nombre_materia: str):
     """
     Muestra una alerta visual antes de proceder con el borrado 

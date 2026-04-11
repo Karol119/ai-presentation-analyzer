@@ -92,3 +92,55 @@ def confirmar_eliminacion_archivo(parent, nombre_archivo, callback_confirmar):
 
     ctk.CTkButton(btn_row, text="Eliminar", command=proceder, fg_color="#EF4444", hover_color="#DC2626", text_color="white", width=130, height=36, corner_radius=10).pack(side="left", padx=10)
     ctk.CTkButton(btn_row, text="Cancelar", command=win.destroy, fg_color="transparent", text_color="#64748B", border_width=1, border_color="#E2E8F0", width=130, height=36, corner_radius=10).pack(side="right", padx=10)
+
+def mostrar_modal_cargando(parent, mensaje="Procesando presentación(es)..."):
+    """
+    Crea un modal visual que indica que el sistema está cargando/procesando.
+    Retorna la ventana para que pueda ser destruida externamente.
+    """
+    win = ctk.CTkToplevel(parent)
+    win.title("Cargando")
+    win.geometry("360x180")
+    win.grab_set()  # Bloquea interacción con la ventana principal
+    win.configure(fg_color="white")
+    win.resizable(False, False)
+    
+    # Franja superior color Oro (Identidad)
+    ctk.CTkFrame(win, fg_color=COLOR_ORO, height=6, corner_radius=0).pack(fill="x")
+    
+    # Contenedor para centrar
+    container = ctk.CTkFrame(win, fg_color="transparent")
+    container.place(relx=0.5, rely=0.5, anchor="center")
+    
+    # Icono o Texto de carga
+    ctk.CTkLabel(
+        container, 
+        text="⏳", 
+        font=ctk.CTkFont(size=32)
+    ).pack(pady=(0, 10))
+    
+    # Texto descriptivo
+    ctk.CTkLabel(
+        container, 
+        text=mensaje, 
+        font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
+        text_color="#1E293B", 
+        wraplength=320, 
+        justify="center"
+    ).pack(pady=(0, 15))
+    
+    # ✅ Barra de progreso indeterminada (se mueve constantemente)
+    progress = ctk.CTkProgressBar(
+        container, 
+        orientation="horizontal",
+        mode="indefinite", # Modo carga
+        width=280, 
+        height=10, 
+        corner_radius=5,
+        progress_color=COLOR_GUINDA, 
+        fg_color="#F1F5F9"
+    )
+    progress.pack()
+    progress.start() # Inicia la animación
+    
+    return win # Retornamos la ventana para poder cerrarla después

@@ -3,8 +3,12 @@ import customtkinter as ctk
 from tkinter import filedialog
 import os
 from PIL import Image
+from typing import Callable
 
+# Estado y UI
 from app.presentation.views.ui_state import estado, ui
+
+# Controladores (Capa de Negocio)
 from app.core.controller.presentation_controller import (
     orquestar_proceso_completo,
     orquestar_eliminacion_presentacion,
@@ -13,8 +17,14 @@ from app.core.controller.subject_controller import (
     obtener_id_materia, 
     obtener_archivos_materia
 )
-# ✅ Importamos la nueva alerta desde dialogs
-from app.presentation.widgets.dialogs import advertir_presentacion_existente
+
+# Utilidades y Widgets de Presentación (Capa de Presentación)
+from app.presentation.widgets.dialogs import (
+    mostrar_modal_cargando, 
+    advertir_presentacion_existente,
+    confirmar_eliminacion_archivo
+)
+from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
@@ -246,33 +256,58 @@ def _make_upload_card(parent, subject, comando_actualizar_boton):
     card.bind("<Button-1>", pick)
     for w in inner.winfo_children(): w.bind("<Button-1>", pick)
 
-def _pick_files(subject, comando_actualizar_boton):
-    """Orquesta la selección y carga de archivos PPTX."""
-    paths = filedialog.askopenfilenames(filetypes=[("PPTX", "*.pptx")])
-    if not paths: return
+def _pick_files(subject: str, comando_actualizar_boton: Callable):
+    """
+    Orquesta la selección y el procesamiento de presentaciones mediante delegación 
+    de hilos, asegurando que la interfaz permanezca reactiva.
+    """
+    file_paths = filedialog.askopenfilenames(filetypes=[("PPTX", "*.pptx")])
+    if not file_paths:
+        return
     
-    id_m = obtener_id_materia(subject)
-    presentaciones_omitidas = []
+    # Bloqueo preventivo de la interfaz mediante modal (Grab Set)
+    loading_modal = mostrar_modal_cargando(ui["root"], "Cargando...")
+    subject_id = obtener_id_materia(subject)
 
-    for p in paths:
-        exito, mensaje = orquestar_proceso_completo(p, id_m)
-        if not exito:
-            # Si el mensaje indica que ya existe, lo guardamos para notificar
-            if "ya ha sido procesada" in mensaje or "hash" in mensaje:
-                presentaciones_omitidas.append(os.path.basename(p))
-            else:
-                # Otros errores (tamaño, vacío, etc.)
-                print(f"Error al subir {p}: {mensaje}")
+    def processing_task() -> list:
+        """
+        Lógica ejecutada en Worker Thread. 
+        Se comunica con el controlador para procesar los archivos físicamente.
+        """
+        skipped_files = []
+        for path in file_paths:
+            # ✅ Corregido: Usamos 'message' consistentemente
+            success, message = orquestar_proceso_completo(path, subject_id)
+            if not success:
+                # El controlador reporta si el archivo es un duplicado por Hash
+                if "ya ha sido procesada" in message or "hash" in message:
+                    skipped_files.append(os.path.basename(path))
+        return skipped_files
 
-    if presentaciones_omitidas:
-        nombres = ", ".join(presentaciones_omitidas)
-        msg = f"Las presentacion {nombres} ya existe"
-        advertir_presentacion_existente(ui["root"], msg)
-    
-    # Refrescar la interfaz pase lo que pase
-    estado["subject_files"][subject] = obtener_archivos_materia(id_m)
-    rebuild_cards(subject, comando_actualizar_boton)
-    comando_actualizar_boton()
+    def finalize_ui_update(skipped_presentations: list):
+        """
+        Callback de retorno al hilo principal (Main Thread).
+        Actualiza los widgets y notifica resultados al usuario.
+        """
+        # Verificamos que el modal exista antes de intentar destruirlo
+        if loading_modal.winfo_exists():
+            loading_modal.destroy()
+        
+        if skipped_presentations:
+            file_names = "\n• " + "\n• ".join(skipped_presentations)
+            alert_msg = f"Las siguientes presentaciones ya se encuentran registradas:{file_names}"
+            advertir_presentacion_existente(ui["root"], alert_msg)
+        
+        # Sincronización del estado global y refresco de tarjetas
+        estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
+        rebuild_cards(subject, comando_actualizar_boton)
+        comando_actualizar_boton()
+
+    # Delegación asíncrona para evitar el congelamiento de la ventana
+    ejecutar_tarea_asincrona(
+        target_task=processing_task, 
+        on_finished_callback=finalize_ui_update
+    )
 
 def _remove_file(subject, name, comando_actualizar_boton):
     """
