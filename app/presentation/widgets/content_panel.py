@@ -148,9 +148,8 @@ def rebuild_cards(subject: str, comando_actualizar_boton):
 
     # 1. Generar tarjetas de archivos existentes
     for datos in estado["subject_files"].get(subject, []):
-        nombre, ruta_thumb = datos[0], datos[2]
-        # Creamos el widget pero NO lo empaquetamos dentro de la función interna
-        card_widget = _make_file_card(wrap, subject, nombre, ruta_thumb, comando_actualizar_boton)
+        nombre, ruta_thumb, ya_analizada = datos[0], datos[2], bool(datos[3])
+        card_widget = _make_file_card(wrap, subject, nombre, ruta_thumb, ya_analizada, comando_actualizar_boton)
         # Lo posicionamos usando la cuadrícula del padre
         card_widget.grid(row=current_row, column=current_col, padx=(0, 18), pady=8, sticky="nw")
         
@@ -164,7 +163,7 @@ def rebuild_cards(subject: str, comando_actualizar_boton):
     upload_card.grid(row=current_row, column=current_col, padx=(0, 18), pady=8, sticky="nw")
 
 
-def _make_file_card(parent, subject: str, name: str, ruta_thumb, comando_actualizar_boton):
+def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: bool, comando_actualizar_boton):
     """Crea y retorna el widget de tarjeta de archivo (sin posicionarlo)."""
     outer = ctk.CTkFrame(parent, fg_color="transparent", width=CARD_W, height=CARD_H)
     outer.pack_propagate(False)
@@ -223,9 +222,11 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, comando_actuali
     items_frame = ctk.CTkFrame(face_menu, fg_color="transparent")
     items_frame.pack(fill="both", expand=True, padx=6, pady=(8, 4))
 
+    texto_analisis = "📊   Ver análisis" if ya_analizada else "🔍   Analizar presentación"
+
     opciones = [
         ("🖥   Presentar clase",  "#1E293B", _placeholder),
-        ("📊   Ver análisis",     "#1E293B", _placeholder),
+        (texto_analisis,          "#1E293B", _placeholder),
         ("🕓   Ver historial",    "#1E293B", _placeholder),
         ("📈   Ver rendimiento",  "#1E293B", _placeholder),
     ]

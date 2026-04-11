@@ -8,7 +8,7 @@ COLOR_ORO          = "#BC955C"
 COLOR_ORO_HOVER    = "#9E7C4A"
 
 
-def build_topbar(comando_toggle, comando_analyze):
+def build_topbar(comando_toggle):
     bar = ctk.CTkFrame(ui["root"], fg_color="white", corner_radius=0, height=68)
     bar.pack(fill="x")
     bar.pack_propagate(False)
@@ -53,20 +53,5 @@ def build_topbar(comando_toggle, comando_analyze):
         command=comando_toggle,
     )
     ui["toggle_btn"].pack(side="left", padx=(0, 10))
-
-    ui["analyze_btn"] = ctk.CTkButton(
-        btn_frame,
-        text="🔍  Analizar presentación",
-        font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
-        fg_color="#94A3B8",
-        hover_color="#64748B",
-        text_color="white",
-        corner_radius=20,
-        height=36,
-        width=190,
-        state="disabled",
-        command=comando_analyze,
-    )
-    ui["analyze_btn"].pack(side="left")
 
     ctk.CTkFrame(ui["root"], height=1, fg_color="#E8ECF2").pack(fill="x")

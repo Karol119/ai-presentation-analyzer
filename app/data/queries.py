@@ -142,11 +142,15 @@ def obtener_temario_materia(nombre_materia):
     return temario
 
 def obtener_presentaciones_por_materia(id_materia):
-    """Recupera el nombre, la ruta del PPTX y la ruta de la miniatura."""
+    """
+    Recupera el nombre, ruta PPTX, ruta miniatura y estado de análisis.
+    Retorna: [(nombre, ruta_pptx, ruta_miniatura, ya_analizada), ...]
+    donde ya_analizada es 1 si el campo analisis no es NULL, 0 si lo es.
+    """
     conn = conectar_db()
     cursor = conn.cursor()
     query = """
-        SELECT p.presentacion, hv.ruta, hv.ruta_miniatura
+        SELECT p.presentacion, hv.ruta, hv.ruta_miniatura, hv.analisis
         FROM Presentacion p
         JOIN Historial_de_Versiones hv ON p.id_presentacion = hv.id_presentacion
         WHERE p.id_unidad_aprendizaje = ? AND hv.numero_version = 1

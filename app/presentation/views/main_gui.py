@@ -51,12 +51,7 @@ def _toggle_right_panel():
 
 
 def _actualizar_boton_analizar():
-    has_files = bool(estado["subject_files"].get(estado["active"]))
-    ui["analyze_btn"].configure(
-        state="normal" if has_files else "disabled",
-        fg_color=COLOR_GUINDA if has_files else "#94A3B8",
-        hover_color=COLOR_GUINDA_HOVER if has_files else "#64748B",
-    )
+    pass  # El botón "Analizar" fue movido a las tarjetas; esta función se conserva como callback.
 
 
 def _seleccionar_materia(name: str):
@@ -542,7 +537,7 @@ def iniciar_aplicacion():
 
     estado["active"] = estado["subjects"][0] if estado["subjects"] else ""
 
-    build_topbar(_toggle_right_panel, _analyze)
+    build_topbar(_toggle_right_panel)
 
     ui["body"] = ctk.CTkFrame(ui["root"], fg_color="transparent", corner_radius=0)
     ui["body"].pack(fill="both", expand=True)
@@ -555,5 +550,3 @@ def iniciar_aplicacion():
         _seleccionar_materia(estado["active"])
 
     ui["root"].mainloop()
-
-    
