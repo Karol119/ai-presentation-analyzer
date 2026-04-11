@@ -1,0 +1,26 @@
+Estoy haciendo un analizador de presentaciones para docentes de nivel superior. 
+El proposito del analiazador es evaluar cada diapositiva de la presentancion 4 metricas:
+- Complejidad del contenido, aqui lo que se busca es que le lenguaje sea apropiado para esrudiantes de ni nivel superior que es el publico objetivo de las presentaciones que se van a evaluar. 
+    El calculo de de esta metrcia se hace mediante las siguinetes formulas 
+1 Flesch-Szigriszt para nivel superior (literatura): Los textos académicos universitarios se ubican entre FSZ = 35 (bastante difícil) y FSZ = 65 (normal). Fuente: Barrio-Cantalejo et al. y clasificación original de Flesch adaptada por Szigriszt-Pazos para el español.
+2 Conversión a CF: Invirtiendo ese rango → CF = (100−65)/100 = 0.35 como mínimo y CF = (100−35)/100 = 0.65 como máximo.
+3 Densidad léxica en textos académicos (literatura): La investigación en lingüística de corpus (Halliday, Ure) establece que los textos académicos escritos tienen una densidad léxica de 45% – 65%, lo que da DLN = 0.45 a 0.65.
+4 Cálculo del límite inferior: Con los valores mínimos del rango académico:
+ICD = (0.6 × 0.35 + 0.4 × 0.45) × 10 = (0.21 + 0.18) × 10 = 3.9 ≈ 4.0
+5 Cálculo del límite superior: Con los valores máximos del rango académico:
+ICD = (0.6 × 0.65 + 0.4 × 0.65) × 10 = (0.39 + 0.26) × 10 = 6.5
+Se establece en 6.0 como límite conservador para una diapositiva (no un artículo extenso).
+
+- Cantidad de palabras: Busca identificar cuantas palabras tiene una diapositiva la cual de acuerdo a la literatura debe de tener maximo 75 palabras para no saturar al estudiante.
+- Estructura de la diapositiva: Esta busca que cada diapositiva contenga un encabezado y en caso de tener ese encabezado debe de estar relacionado con el contenido 
+- Hilo Narrativo: Se identifica si la diapositiva actual  tiene relacion con a diapositivas adyacentes.
+
+Estas metricas se evaluan y se les proporcciona una calificacion, si no estan en el rango adecuado o no cumplne las normas 
+
+Despues de calcular cada metrica, se le pasan los resultados al modelo de ollama 3.2, con el cual se busaca regenerar el contenido de las diapositivas con contenido que respete las reglas de cada metrica, sin quitar los conceptos o las definiciones que el docente queria plasmas en su presentacion.
+La idea es que el contenido sea lo mejor para el aprendizaje de los estudiantes.
+Po ello tambien se busca un equilibrio, principalmente en las metricas de complejidad y la cantidad de plabaras 
+Para complejidad: La IA lo que debe de buscar es como cambiar el contenido de modo que obtenga el rango adecuado de complejidad, sin alterar mucho las otras metricas sino ahora fallaran enn las otras 
+Para la cantidad de palbaras, no se debe de mandar a restructurar si tiene menos de las 75 palabras maximas ya que no hay problema, donde se debe de ver que hacer es cuando hay mas de las 75 palabras, el modelo debe de analizar el contenido y ver cual es la mejor accion a tomar, si reestructurar el texto, osea ajustarlo, noresumir para que entre en rango o si hay varias ideas diseñar mas diapositivas apartir de esa. 
+Obviamente Esas nuevas diapositivas deben de estar acorde a las metrcias y deben de respetar cada metrcia y den de estar en rango todo. 
+ALgo importante que eh notado es que como es eneseñanza hay conceptos que no se deben de omitir mucho porque pierden conceptos importantes, se debe de buscar un equilibrio
