@@ -1,0 +1,28 @@
+No divide textos grandes
+
+da este error 
+[rec] Generando recomendaciones...
+  [01] generada (3 intentos) → 30 pal, ICD:8.93 [WPS:escasa]
+  [02] generada (1 intentos) → 43 pal, ICD:8.88 [✓ en rango]
+Traceback (most recent call last):
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\tests\test_icd.py", line 77, in <module>
+    main()
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\tests\test_icd.py", line 51, in main
+    resultado = analizar_presentacion(ruta, usar_llm=True)
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\app\core\controller\analyzer_controller.py", line 85, in analizar_presentacion
+    rec        = generar_recomendacion_slide(slide_data, ss)
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\app\infrastructure\ollama\recommendation_service.py", line 274, in generar_recomendacion_slide       
+    titulo_nuevo    = resultado.get("titulo_nuevo", titulo)
+AttributeError: 'list' object has no attribute 'get'
+
+Traceback (most recent call last):
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\tests\test_icd.py", line 77, in <module>
+    main()
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\tests\test_icd.py", line 51, in main
+    resultado = analizar_presentacion(ruta, usar_llm=True)
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\app\core\controller\analyzer_controller.py", line 85, in analizar_presentacion
+    rec        = generar_recomendacion_slide(slide_data, ss)
+  File "C:\Users\kgonz\Desktop\TT\ai-presentation-analyzer\app\infrastructure\ollama\recommendation_service.py", line 274, in generar_recomendacion_slide       
+    titulo_nuevo    = resultado[0].get("titulo_nuevo", titulo)
+KeyError: 0
+(ai-presentat
