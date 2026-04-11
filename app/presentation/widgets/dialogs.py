@@ -54,3 +54,41 @@ def advertir_presentacion_existente(parent, mensaje):
         height=36, 
         corner_radius=10
     ).pack(pady=(0, 24))
+
+def confirmar_eliminacion_archivo(parent, nombre_archivo, callback_confirmar):
+    """
+    Modal de seguridad para confirmar la eliminación de una presentación específica.
+    """
+    win = ctk.CTkToplevel(parent)
+    win.title("Confirmar eliminación")
+    win.geometry("460x300")
+    win.grab_set()
+    win.configure(fg_color="white")
+    win.resizable(False, False)
+
+    # Franja de advertencia roja
+    ctk.CTkFrame(win, fg_color="#EF4444", height=6, corner_radius=0).pack(fill="x")
+
+    icon_bg = ctk.CTkFrame(win, fg_color="#FEF2F2", corner_radius=40, width=64, height=64)
+    icon_bg.pack(pady=(22, 8))
+    icon_bg.pack_propagate(False)
+    ctk.CTkLabel(icon_bg, text="🗑", font=ctk.CTkFont(size=28), text_color="#EF4444").place(relx=0.5, rely=0.5, anchor="center")
+
+    ctk.CTkLabel(win, text="¿Eliminar esta presentación?", font=ctk.CTkFont(family="Segoe UI", size=15, weight="bold"), text_color=COLOR_GUINDA).pack()
+    ctk.CTkLabel(win, text=nombre_archivo, font=ctk.CTkFont(size=12, slant="italic"), text_color="#64748B").pack(pady=(2, 6))
+
+    ctk.CTkLabel(
+        win, 
+        text="Se eliminarán todos los datos, versiones y análisis previos de este archivo.",
+        font=ctk.CTkFont(size=11), text_color="#94A3B8", justify="center", wraplength=360
+    ).pack(padx=20, pady=(0, 16))
+
+    btn_row = ctk.CTkFrame(win, fg_color="transparent")
+    btn_row.pack(pady=(0, 20))
+
+    def proceder():
+        callback_confirmar()
+        win.destroy()
+
+    ctk.CTkButton(btn_row, text="Eliminar", command=proceder, fg_color="#EF4444", hover_color="#DC2626", text_color="white", width=130, height=36, corner_radius=10).pack(side="left", padx=10)
+    ctk.CTkButton(btn_row, text="Cancelar", command=win.destroy, fg_color="transparent", text_color="#64748B", border_width=1, border_color="#E2E8F0", width=130, height=36, corner_radius=10).pack(side="right", padx=10)

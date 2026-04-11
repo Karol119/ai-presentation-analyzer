@@ -70,7 +70,7 @@ def _seleccionar_materia(name: str):
     refresh_right_panel(name)
 
 
-# app/presentation/views/main_gui.py
+
 
 def _eliminar_materia(nombre_materia: str):
     """
