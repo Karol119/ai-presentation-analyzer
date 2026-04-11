@@ -1,17 +1,11 @@
 """
-recommendation_service.py — v8
+recommendation_service.py — v9 (Corregido para Tesis)
 
-Cambios principales:
-  1. División robusta: cuando _generar_division falla, NO hace fallback a resumir.
-     En cambio, genera una SUGERENCIA ESTRUCTURADA de cómo dividir el contenido
-     manualmente, y retorna sin inventar slides.
-
-  2. El frame del prompt cambia de "resumir" a "reestructurar":
-     - WPS saturada → reestructura en bullets manteniendo TODOS los conceptos
-     - ICD complejo  → simplifica el LENGUAJE, no recorta ideas
-     El docente recibe el mismo contenido reorganizado, no recortado.
-
-  3. Logging explícito de _generar_division para diagnosticar fallos.
+Cambios principales integrados:
+  1. Corrección de omisión: Ya no omite la recomendación si la complejidad (ICD) necesita mejora.
+  2. Límite de caracteres: Se aumentó drásticamente para no truncar párrafos.
+  3. Validación de división: Se agregó un ciclo de reintentos para verificar que las nuevas diapositivas cumplan con las métricas.
+  4. Contexto completo: Se eliminaron los truncamientos en los prompts para que la IA detecte todos los subtemas.
 """
 
 import json
@@ -21,7 +15,8 @@ import requests
 OLLAMA_URL          = "http://localhost:11434/api/generate"
 MODELO              = "llama3.2"
 TIMEOUT_SEG         = 45
-MAX_CONTENIDO_CHARS = 400
+# [MODIFICADO - PUNTO 2]: Aumentado a 2500 para evitar que tome solo el primer párrafo
+MAX_CONTENIDO_CHARS = 2500 
 MAX_REINTENTOS      = 3
 UMBRAL_FORZAR_DIV   = 100
 UMBRAL_WPS_OMITIR   = 39
@@ -31,7 +26,7 @@ UMBRAL_WPS_OMITIR   = 39
 
 def _metricas_texto(titulo, contenido):
     from app.core.logic.metrics.icd        import calcular_icd
-    from app.core.logic.metrics.word_count  import calcular_wps
+    from app.core.logic.metrics.word_count import calcular_wps
     slide_sim = {
         "slide_number": 0, "title": titulo or "",
         "content": [contenido] if contenido else [],
@@ -98,9 +93,10 @@ def _decidir_accion(titulo, contenido, exceso):
         n_temas = _contar_subtemas(contenido)
         return "dividir", max(2, n_temas), f"exceso de {exceso} palabras con múltiples temas"
 
+    # [MODIFICADO - PUNTO 4]: Se eliminó el truncamiento de contenido[:600]
     prompt = _PROMPT_DECISION.format(
         titulo=titulo or "(sin título)",
-        contenido=contenido[:600],
+        contenido=contenido, 
         palabras=len(contenido.split())
     )
     try:
@@ -140,7 +136,6 @@ Responde SOLO con un array JSON de {n} objetos:
 [{{"titulo": "string de 3-6 palabras", "contenido": "string de 40-75 palabras"}}, ...]"""
 
 
-# CAMBIO PRINCIPAL — v8: frame de REESTRUCTURACIÓN, no resumen
 _PROMPT_REESTRUCTURAR = """Eres un experto en presentaciones académicas universitarias.
 
 Tu tarea es REESTRUCTURAR el contenido de esta diapositiva.
@@ -168,10 +163,6 @@ Cuerpo:
 # ── Sugerencia de división cuando el LLM falla ───────────────────────────────
 
 def _generar_sugerencia_division(titulo, contenido, n_slides):
-    """
-    Cuando _generar_division falla, genera una sugerencia textual
-    de cómo dividir el contenido, sin inventar el contenido de las slides.
-    """
     lineas = [l.strip() for l in contenido.split("\n") if l.strip()]
     encabezados = [l for l in lineas if len(l.split()) <= 6 and not l.endswith(".")]
 
@@ -190,27 +181,26 @@ def _generar_sugerencia_division(titulo, contenido, n_slides):
 
 # ── División con logging ──────────────────────────────────────────────────────
 
-def _generar_division(titulo, contenido, palabras, n_slides):
+# [MODIFICADO - PUNTO 4]: Se eliminó el truncamiento de contenido[:1200] y se agregó parámetro de temperatura
+def _generar_division(titulo, contenido, palabras, n_slides, temperatura=0.2):
     prompt = _PROMPT_DIVIDIR.format(
         n=n_slides, palabras=palabras, titulo=titulo,
-        contenido=contenido[:1200]   # más contexto para división completa
+        contenido=contenido 
     )
     print(f"[rec] _generar_division: solicitando {n_slides} slides para {palabras} palabras")
     try:
         r = requests.post(
             OLLAMA_URL,
             json={"model": MODELO, "prompt": prompt, "stream": False,
-                  "options": {"temperature": 0.2, "num_predict": 2000}},
+                  "options": {"temperature": temperatura, "num_predict": 2000}},
             timeout=90
         )
         r.raise_for_status()
         texto = r.json().get("response", "")
         parsed = _parsear_json(texto)
-        print(f"[rec] _generar_division: parsed type={type(parsed).__name__}, "
-              f"len={len(parsed) if isinstance(parsed, list) else 'N/A'}")
+        print(f"[rec] _generar_division: parsed type={type(parsed).__name__}")
         if isinstance(parsed, list) and len(parsed) >= 2:
             return parsed
-        print(f"[rec] _generar_division: respuesta raw (primeros 300c): {texto[:300]}")
     except Exception as e:
         print(f"[rec] _generar_division error: {e}")
     return None
@@ -249,7 +239,6 @@ def generar_recomendacion_slide(slide_data, score_slide):
     icd_m = metr.get("icd", {})
     wps_m = metr.get("wps", {})
 
-    # ── Irreducible + sin exceso WPS → omitir
     if icd_m.get("irreducible") and "icd" in aspectos_mejorar:
         exceso_wps = wps_m.get("exceso", 0)
         if not (exceso_wps > 0 and wps_m.get("zona") in ("saturada", "densa")):
@@ -259,16 +248,16 @@ def generar_recomendacion_slide(slide_data, score_slide):
             )
             return base
 
-    # ── WPS < 40 palabras → no ampliar
     palabras_orig = wps_m.get("palabras", 0)
     solo_wps      = aspectos_mejorar == ["wps"]
     tiene_imagen  = bool(slide_data.get("images", []))
 
+    # [MODIFICADO - PUNTO 1]: Solo se omite si el ICD NO está entre los aspectos a mejorar.
     if palabras_orig <= UMBRAL_WPS_OMITIR:
-        if solo_wps or (set(aspectos_mejorar) - {"icd"} == {"wps"}):
+        if "icd" not in aspectos_mejorar:
             base["omitida_razon"] = (
                 f"La diapositiva tiene {palabras_orig} palabras. "
-                "Las diapositivas cortas son válidas como presentación de conceptos clave."
+                "Las diapositivas cortas son válidas y su complejidad es adecuada."
             )
             return base
 
@@ -282,47 +271,70 @@ def generar_recomendacion_slide(slide_data, score_slide):
     contenido = "\n".join(slide_data.get("content", []))
     exceso    = wps_m.get("exceso", 0)
 
-    # ── Bloque de división — completamente separado del ciclo de reestructurar
+    # ── Bloque de división ────────────────────────────────────────────────────
     if wps_m.get("zona") in ("saturada", "densa") and exceso > 0:
         decision, n_slides, razon = _decidir_accion(titulo, contenido, exceso)
         base["decision"] = decision
 
         if decision == "dividir":
-            slides_div = _generar_division(titulo, contenido, palabras_orig, n_slides)
+            mejor_div = None
+            mejor_verif_div = None
+            todas_en_rango = False
 
-            if isinstance(slides_div, list) and len(slides_div) >= 2:
-                # División exitosa
-                verificacion_div = []
-                for s in slides_div:
-                    v = _metricas_texto(s.get("titulo", ""), s.get("contenido", ""))
-                    verificacion_div.append({
-                        "titulo":   s.get("titulo", ""),
-                        "palabras": v.get("palabras"),
-                        "wps_zona": v.get("wps_zona"),
-                        "icd":      v.get("icd"),
-                        "icd_zona": v.get("icd_zona"),
-                        "en_rango": (v.get("wps_zona") == "optima"
-                                     and v.get("icd_zona") == "apropiado"),
-                    })
-                base["slides_division"]       = slides_div
-                base["verificacion_division"] = verificacion_div
-                base["sugerencia_division"]   = f"Dividido en {len(slides_div)} diapositivas. {razon}"
-                return base   # ← retorno inmediato
+            # [MODIFICADO - PUNTO 3]: Ciclo de validación para la división
+            for intento in range(1, MAX_REINTENTOS + 1):
+                base["intentos"] = intento
+                temp_dinamica = 0.2 + (intento * 0.1) # Variamos ligeramente para evitar repetir error
+                
+                slides_div = _generar_division(titulo, contenido, palabras_orig, n_slides, temperatura=temp_dinamica)
 
+                if isinstance(slides_div, list) and len(slides_div) >= 2:
+                    verificacion_div = []
+                    todas_en_rango_intento = True
+
+                    for s in slides_div:
+                        v = _metricas_texto(s.get("titulo", ""), s.get("contenido", ""))
+                        en_rango = (v.get("wps_zona") == "optima" and v.get("icd_zona") == "apropiado")
+                        
+                        verificacion_div.append({
+                            "titulo":   s.get("titulo", ""),
+                            "palabras": v.get("palabras"),
+                            "wps_zona": v.get("wps_zona"),
+                            "icd":      v.get("icd"),
+                            "icd_zona": v.get("icd_zona"),
+                            "en_rango": en_rango,
+                        })
+                        
+                        if not en_rango:
+                            todas_en_rango_intento = False
+
+                    mejor_div = slides_div
+                    mejor_verif_div = verificacion_div
+
+                    if todas_en_rango_intento:
+                        todas_en_rango = True
+                        break # Si todas cumplen, rompemos el ciclo de intentos
+
+            if mejor_div:
+                base["slides_division"]       = mejor_div
+                base["verificacion_division"] = mejor_verif_div
+                base["sugerencia_division"]   = f"Dividido en {len(mejor_div)} diapositivas tras {base['intentos']} intentos. {razon}"
+                
+                # Si terminaron los intentos y no todas quedaron en rango, se marca
+                if not todas_en_rango:
+                    base["no_resuelto"] = True
+                return base 
             else:
-                # División falló — generar sugerencia sin inventar contenido
                 print(f"[rec] División falló para slide {num} — generando sugerencia")
                 base["decision"]            = "division_fallida"
-                base["sugerencia_division"] = _generar_sugerencia_division(
-                    titulo, contenido, n_slides
-                )
+                base["sugerencia_division"] = _generar_sugerencia_division(titulo, contenido, n_slides)
                 base["omitida_razon"] = (
                     f"El contenido ({palabras_orig} palabras) necesita dividirse en "
                     f"{n_slides} diapositivas. {base['sugerencia_division']}"
                 )
-                return base   # ← retorno sin inventar contenido
+                return base
 
-    # ── Ciclo de reestructuración (CAMBIO: frame distinto al resumen) ─────────
+    # ── Ciclo de reestructuración ─────────────────────────────────────────────
     contexto           = construir_contexto_metricas(score_slide)
     contenido_truncado = contenido[:MAX_CONTENIDO_CHARS]
     mejor_resultado    = None
@@ -330,7 +342,6 @@ def generar_recomendacion_slide(slide_data, score_slide):
 
     for intento in range(1, MAX_REINTENTOS + 1):
         base["intentos"] = intento
-
         contexto_iter = contexto
 
         if intento > 1 and base.get("verificacion"):
@@ -452,38 +463,18 @@ def _llamar_ollama(prompt, num_predict=1000, temperatura=0.1):
 
 
 def _parsear_json(texto):
-    """
-    Parser con 5 estrategias.
-    Estrategia 5 extrae pares titulo/contenido cuando llama3.2
-    responde sin corchetes de array.
-    """
     if not texto:
         return None
-    try:
-        return json.loads(texto)
-    except Exception:
-        pass
-    limpio = re.sub(r'```(?:json)?|```', '', texto).strip()
-    try:
-        return json.loads(limpio)
-    except Exception:
-        pass
-    m = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}', texto, re.DOTALL)
-    if m:
+        
+    # Extracción de estructura JSON omitiendo texto conversacional o markdown
+    match = re.search(r'(\[.*\]|\{.*\})', texto, re.DOTALL)
+    
+    if match:
+        bloque_json = match.group(1)
         try:
-            return json.loads(m.group())
-        except Exception:
-            pass
-    m = re.search(r'\[.*\]', texto, re.DOTALL)
-    if m:
-        try:
-            return json.loads(m.group())
-        except Exception:
-            pass
-    pares = re.findall(
-        r'"titulo"\s*:\s*"([^"]+)"\s*,\s*"contenido"\s*:\s*"([^"]+)"',
-        texto, re.DOTALL
-    )
-    if len(pares) >= 2:
-        return [{"titulo": t.strip(), "contenido": c.strip()} for t, c in pares]
+            return json.loads(bloque_json)
+        except json.JSONDecodeError as e:
+            print(f"[parser] Error de decodificación JSON: {e}")
+            return None
+            
     return None
