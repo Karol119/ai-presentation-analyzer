@@ -1,4 +1,42 @@
-Omite la recomendacion si las palabras son escasa ignorando que las demas metricas si necesiatan la recoemndacion de la impartición
-Cuando hace la division no evalua con las metrcias si las nuevas propuestas de las diapsoitivas ya cumplen con lo que se necesita en cada metrcca 
-1En ciertas  diapositivas no me permitio la division del contenido 
-Cuando hay mas de un parrafo solo toma el primero y de ahi hace la modificacion del contenido no de todo 
+REDUCE MUCHO EL CONTENIDO, POR EJEMPLO EN LA PRIMERA DIVISION QUE COMPETE A ESTE TEXTO 
+Regulación de la expresión génica
+La regulación de la expresión génica constituye un proceso multifactorial altamente dinámico mediante el cual las células modulan la transcripción y traducción de genes específicos en respuesta a estímulos intracelulares y extracelulares, involucrando mecanismos epigenéticos como la metilación del ADN, modificaciones postraduccionales de histonas y la acción de complejos remodeladores de cromatina que alteran la accesibilidad del ADN a la maquinaria transcripcional.
+Asimismo, factores de transcripción, secuencias potenciadoras (enhancers) y elementos silenciadores interactúan de manera sinérgica o antagonista para determinar la tasa de expresión génica en contextos fisiológicos y patológicos.
+Bioenergética y metabolismo celular
+El metabolismo celular comprende una red intrincada de rutas catabólicas y anabólicas interconectadas que permiten la transformación de biomoléculas con el fin de mantener la homeostasis energética, destacando procesos como la glucólisis, el ciclo de Krebs y la cadena de transporte de electrones, los cuales operan de manera coordinada para maximizar la producción de ATP a través de mecanismos de fosforilación a nivel de sustrato y fosforilación oxidativa.
+La regulación de estas rutas depende de la disponibilidad de sustratos, la actividad enzimática modulada por cofactores y la retroalimentación negativa ejercida por los productos metabólicos.
+Señalización celular y transducción de señales
+La señalización celular implica la recepción, transducción y amplificación de señales extracelulares mediante receptores específicos, tales como los receptores acoplados a proteínas G y los receptores tirosina quinasa, los cuales desencadenan cascadas de señalización intracelular que incluyen segundos mensajeros como el AMP cíclico y el calcio, así como la activación de quinasas y fosfatasas.
+Estos procesos permiten la integración de múltiples estímulos y la generación de respuestas celulares específicas, incluyendo proliferación, diferenciación, apoptosis o cambios en la expresión génica, dependiendo del contexto fisiológico.
+
+
+COMO PUEDES VER SON 3 IDEAS DIFERNETES 
+LA PRIMER IDEA LA DEJO ASI 
+Regulacion de la Expresion Genica Dinamica
+La regulación de la expresión génica es un proceso dinámico que modula la transcripción y traducción de genes en respuesta a estímulos intracelulares y extracelulares, involucrando mecanismos epigenéticos como la metilación del ADN.
+DE 90 PALABRAS QUE TIENE LA PRIMER IDEA 
+La regulación de la expresión génica constituye un proceso multifactorial altamente dinámico mediante el cual las células modulan la transcripción y traducción de genes específicos en respuesta a estímulos intracelulares y extracelulares, involucrando mecanismos epigenéticos como la metilación del ADN, modificaciones postraduccionales de histonas y la acción de complejos remodeladores de cromatina que alteran la accesibilidad del ADN a la maquinaria transcripcional.
+Asimismo, factores de transcripción, secuencias potenciadoras (enhancers) y elementos silenciadores interactúan de manera sinérgica o antagonista para determinar la tasa de expresión génica en contextos fisiológicos y patológicos.
+Bioenergética y metabolismo celular
+LO RESUMIO EN 33, CREO QUE AL SER ENSEÑANZA AY CONCEPTOS QUE SE DEBEN DE TOCAR BIEN Y NO SOLO HACER UN RESUMEN, EL CHISTE ES TRANSCRIBIR LO MISMO PERO DE OTRAS PALABRAS PARA QUE CUMPLAN CON LO CADA METRICA 
+
+POR LO QUE VEO EN LA DIVISION DE LAS OTRAS DOS IDEAS SEPARO POR PARRAFO Y NO POR IDEA, NO SE DEBERA A QUE CAMBIASTE LO DE LA SEMILLA Y LA TEMPERATURA ?
+
+
+ESTA NUEVA VERSION ESTA SACANDO MUCHOS MAS ERRORES
+rec] _generar_division: Paso 2 (Título) - fragmento 3
+  [02] DIVIDIR → 3 slides (Dividido en 3 diapositivas tras 3 intentos. exceso de 208 palabras con múltiples temas)
+  [03] ERROR: Respuesta no es dict (intento 3)
+  [04] ERROR: Respuesta no es dict (intento 3)
+  [05] ERROR: Respuesta no es dict (intento 3)
+
+Slide    ICD Zona ICD       Pal WPS           HSS Coherencia      NTS Hilo         Score  Estado rec
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  [02]   6.68 complejo       283 saturada      5.0 no_verificable  10.0 relacionada   5.77  ⚠ dividir
+  [03]   6.12 complejo        39 escasa       10.0 coherente       9.3 relacionada   9.75  ✗ error
+  [04]   7.44 complejo        33 escasa       10.0 coherente       3.6 debil         7.60  ✗ error
+  [05]   6.79 complejo        39 escasa       10.0 coherente       0.0 desconectada  7.88  ✗ error
+
+  ME NARCA EÑ ERROR LA RECOMENDACION PARA ALGUNAS DIAPOSITIVAS
+
+  eSTA DEJANDO CON UNA COMPLEJIDAD MUY ALTA LAS DIAPOSITIVAS QUE GENRA 
