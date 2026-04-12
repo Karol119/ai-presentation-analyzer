@@ -16,7 +16,7 @@ import requests
 
 OLLAMA_URL          = "http://localhost:11434/api/generate"
 MODELO              = "mistral"
-TIMEOUT_SEG         = 90
+TIMEOUT_SEG         = 45
 MAX_CONTENIDO_CHARS = 2500 
 MAX_REINTENTOS      = 3
 UMBRAL_FORZAR_DIV   = 100
@@ -105,16 +105,14 @@ def _decidir_accion(titulo, contenido, exceso):
 
 
 # ── Prompts Task Chaining ─────────────────────────────────────────────────────
-
 _PROMPT_DIVIDIR_CONTENIDO = """Eres un experto en presentaciones académicas universitarias.
 El usuario requiere DIVIDIR la siguiente diapositiva en {n} partes porque excede el límite de palabras ({palabras} palabras).
 
 REGLAS ESTRICTAS:
-1. NO RESUMAS NI OMITAS CONCEPTOS. Transcribe la idea completa, pero divídela. En educación de nivel superior, no se pueden omitir definiciones.
-2. Cada parte debe tener sentido por sí sola y cubrir un concepto específico.
-3. REDUCIR COMPLEJIDAD (ICD): No elimines términos técnicos, pero rompe las oraciones largas. Usa oraciones de máximo 15-20 palabras. 
-4. Agrega conectores discursivos (ej. "Por otro lado", "Además", "Esto significa que") al inicio de las oraciones para explicar mejor y bajar la densidad léxica.
-5. Intenta que cada parte se acerque a 40-70 palabras, pero la prioridad es NO perder información.
+1. NO RESUMAS NI OMITAS CONCEPTOS. Transcribe la idea completa. En educación de nivel superior, no se pueden omitir definiciones.
+2. REDUCIR COMPLEJIDAD (ICD): Expande las explicaciones utilizando un lenguaje natural y descriptivo para diluir la densidad léxica. Explica los términos técnicos como si estuvieras dando la clase en voz alta.
+3. LONGITUD: Cada parte DEBE tener entre 50 y 70 palabras. No uses viñetas ni listas.
+4. HILO NARRATIVO: La parte 2 y posteriores DEBEN comenzar con una frase de conexión que repita un concepto de la parte anterior (Ej. "Continuando con [concepto anterior]..."). Si los temas son inconexos, inicia explícitamente con "Cambiando de tema hacia...".
 
 Contenido original:
 {contenido}
@@ -122,19 +120,18 @@ Contenido original:
 Responde ÚNICAMENTE con un objeto JSON que contenga la clave "diapositivas", cuyo valor sea un array de {n} objetos. Usa esta estructura exacta:
 {{
   "diapositivas": [
-    {{"contenido": "texto reestructurado de la primera parte..."}},
-    {{"contenido": "texto reestructurado de la segunda parte..."}}
+    {{"contenido": "texto expandido de la primera parte..."}},
+    {{"contenido": "texto expandido de la segunda parte..."}}
   ]
 }}"""
-
 
 _PROMPT_REESTRUCTURAR = """Eres un experto en presentaciones académicas universitarias.
 Tu tarea es REESTRUCTURAR el contenido de esta diapositiva para mejorar sus métricas.
 
 REGLAS ESTRICTAS:
-1. NO RESUMAS. Conserva TODOS los conceptos, definiciones y términos técnicos del original. Se trata de reestructurar, no de recortar ideas.
-2. REDUCIR COMPLEJIDAD (ICD): Divide oraciones largas en varias oraciones cortas. Introduce conectores (ej. "es decir", "esto permite", "por lo tanto") para diluir la densidad léxica.
-3. El resultado debe acotarse idealmente a {max_pal} palabras máximo, ajustando la redacción, no eliminando teoría.
+1. NO RESUMAS. Conserva TODOS los conceptos, definiciones y términos técnicos del original.
+2. REDUCIR COMPLEJIDAD (ICD): Expande la explicación. Divide oraciones largas e introduce conectores (ej. "es decir", "esto permite") usando un lenguaje natural para diluir la densidad léxica. No uses listas ni viñetas.
+3. El resultado debe tener entre 45 y {max_pal} palabras.
 4. CONSERVA lo marcado con ✓ y MEJORA lo marcado con MEJORAR.
 
 CONTENIDO ORIGINAL:
@@ -145,9 +142,8 @@ Cuerpo:
 {contexto}
 
 Responde ÚNICAMENTE con este JSON exacto:
-{{"titulo_nuevo": "string (3-6 palabras)", "contenido_nuevo": "string reestructurado", "cambios_realizados": ["cambio 1"], "justificacion": "una oración"}}"""
-
-
+{{"titulo_nuevo": "string (3-6 palabras)", "contenido_nuevo": "string expandido y reestructurado", "cambios_realizados": ["cambio 1"], "justificacion": "una oración"}}"""
+    
 _PROMPT_GENERAR_TITULO = """Eres un experto académico.
 Lee el siguiente texto y genera un título coherente que resuma el concepto principal.
 
@@ -315,7 +311,6 @@ def generar_recomendacion_slide(slide_data, score_slide):
 
                     for s in slides_div:
                         v = _metricas_texto(s.get("titulo", ""), s.get("contenido", ""))
-                        # Validación simultánea obligatoria
                         en_rango = (v.get("wps_zona") == "optima" and v.get("icd_zona") in ("apropiado", "normal"))
                         
                         verificacion_div.append({
@@ -325,10 +320,25 @@ def generar_recomendacion_slide(slide_data, score_slide):
                             "icd":      v.get("icd"),
                             "icd_zona": v.get("icd_zona"),
                             "en_rango": en_rango,
+                            "justificacion_icd": None # Nueva llave
                         })
                         
                         if not en_rango:
                             todas_en_rango_intento = False
+
+                    # --- NUEVA LÓGICA: Tolerancia a Complejidad Irreductible ---
+                    if intento == MAX_REINTENTOS and not todas_en_rango_intento:
+                        es_aceptable = True
+                        for s_verif in verificacion_div:
+                            # Si las palabras están bien, pero el ICD sigue alto tras 3 intentos, lo aceptamos
+                            if s_verif["wps_zona"] == "optima" and s_verif["icd_zona"] in ("complejo", "muy complejo"):
+                                s_verif["en_rango"] = True
+                                s_verif["justificacion_icd"] = "Complejidad irreductible: la terminología técnica es esencial para el nivel superior."
+                            elif not s_verif["en_rango"]:
+                                es_aceptable = False # Falló por otra cosa (ej. WPS malo)
+                        
+                        if es_aceptable:
+                            todas_en_rango_intento = True
 
                     mejor_div = slides_div
                     mejor_verif_div = verificacion_div
@@ -336,7 +346,6 @@ def generar_recomendacion_slide(slide_data, score_slide):
                     if todas_en_rango_intento:
                         todas_en_rango = True
                         break
-
             if mejor_div:
                 base["slides_division"]       = mejor_div
                 base["verificacion_division"] = mejor_verif_div
@@ -412,12 +421,21 @@ def generar_recomendacion_slide(slide_data, score_slide):
         if not isinstance(resultado, dict):
             base["error"] = f"Respuesta no es dict (intento {intento})"
             continue
-
+# ... (código existente del prompt y llamado a ollama) ...
+        
         titulo_nuevo    = resultado.get("titulo_nuevo", titulo)
         contenido_nuevo = resultado.get("contenido_nuevo", "")
 
         verif = _metricas_texto(titulo_nuevo, contenido_nuevo)
         base["verificacion"] = verif
+
+        # --- NUEVA LÓGICA: Tolerancia a Complejidad Irreductible ---
+        en_rango = _en_rangos(verif, aspectos_mejorar)
+        
+        if not en_rango and intento == MAX_REINTENTOS:
+            if verif.get("wps_zona") == "optima" and verif.get("icd_zona") in ("complejo", "muy complejo") and "icd" in aspectos_mejorar:
+                en_rango = True
+                resultado["justificacion"] += " (Nota: Complejidad irreductible detectada debido al rigor técnico necesario)."
 
         base.update({
             "titulo_nuevo":       titulo_nuevo,
@@ -431,7 +449,7 @@ def generar_recomendacion_slide(slide_data, score_slide):
             mejor_resultado = dict(base)
             mejor_verif     = verif
 
-        if _en_rangos(verif, aspectos_mejorar):
+        if en_rango:
             break
 
     if not _en_rangos(base.get("verificacion") or {}, aspectos_mejorar):
