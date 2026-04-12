@@ -105,70 +105,162 @@ def _decidir_accion(titulo, contenido, exceso):
     return "reestructurar", 2, "fallback"
 
 
-# ── Prompts Task Chaining ─────────────────────────────────────────────────────
-_PROMPT_DIVIDIR_CONTENIDO = """Eres un experto en presentaciones académicas universitarias.
-El usuario requiere DIVIDIR la siguiente diapositiva en {n} partes porque excede el límite de palabras ({palabras} palabras).
+# ── Prompts Task Chaining ──────
 
-REGLAS ESTRICTAS:
-1. NO RESUMAS NI OMITAS CONCEPTOS. Transcribe la idea completa. En educación de nivel superior, no se pueden omitir definiciones.
-2. REDUCIR COMPLEJIDAD (ICD): Expande las explicaciones utilizando un lenguaje natural y descriptivo para diluir la densidad léxica. Explica los términos técnicos como si estuvieras dando la clase en voz alta.
-3. LONGITUD: Cada parte DEBE tener entre 50 y 70 palabras. No uses viñetas ni listas.
-4. HILO NARRATIVO: La parte 2 y posteriores DEBEN comenzar con una frase de conexión que repita un concepto de la parte anterior (Ej. "Continuando con [concepto anterior]..."). Si los temas son inconexos, inicia explícitamente con "Cambiando de tema hacia...".
+_PROMPT_DIVIDIR_CONTENIDO = """Eres un docente universitario que adapta material académico complejo para que sea más fácil de aprender.
 
-Contenido original:
+TAREA: El siguiente contenido tiene {palabras} palabras y debe dividirse en {n} diapositivas.
+
+════════════════════════════════════════
+CONTENIDO ORIGINAL:
+════════════════════════════════════════
 {contenido}
 
-Responde ÚNICAMENTE con un objeto JSON que contenga la clave "diapositivas", cuyo valor sea un array de {n} objetos. Usa esta estructura exacta:
+════════════════════════════════════════
+INSTRUCCIONES — SIGUE ESTOS PASOS EN ORDEN:
+════════════════════════════════════════
+
+PASO 1 — IDENTIFICA LOS BLOQUES TEMÁTICOS:
+Lee el contenido y encuentra exactamente {n} ideas o temas distintos.
+Cada bloque será una diapositiva. No pierdas ningún concepto.
+
+PASO 2 — REDACTA CADA DIAPOSITIVA ASÍ:
+Para cada bloque temático, escribe una explicación de 55 a 70 palabras siguiendo estas reglas:
+
+  a) ORACIONES CORTAS: Máximo 10 palabras por oración. Usa punto seguido para separar.
+     MAL:  "La estabilidad ecosistémica depende de mecanismos de autorregulación como la resiliencia y la resistencia frente a perturbaciones ambientales complejas."
+     BIEN: "La estabilidad de un ecosistema depende de su capacidad de recuperación. Esto se llama resiliencia. También existe la resistencia ante perturbaciones externas."
+
+  b) TÉRMINOS TÉCNICOS: Cuando uses un término técnico, explícalo en la siguiente oración.
+     Ejemplo: "Esto se llama fotosíntesis. En este proceso, la planta convierte luz solar en energía química."
+
+  c) SUSTITUCIONES OBLIGATORIAS (cuando no sean términos técnicos):
+     "constituye" → "es"        | "mediante" → "con"       | "asimismo" → "también"
+     "caracterizado" → "que tiene" | "proporciona" → "da"  | "tales como" → "como"
+     "destacando" → "en especial"  | "implican" → "causan" | "conforme a" → "según"
+     "mediadas" → "realizadas"     | "particularmente" → "sobre todo"
+
+  d) EXPANSIÓN: Si el bloque tiene menos de 55 palabras, EXPANDE explicando con más detalle.
+     Añade ejemplos concretos, analogías o consecuencias del concepto.
+     Ejemplo de expansión: En vez de "Los ecosistemas son complejos" escribe:
+     "Los ecosistemas son sistemas muy complejos. En ellos conviven seres vivos y elementos sin vida. Ambos se relacionan de forma constante. Un ejemplo es un lago: los peces, las algas, el agua y el suelo forman un sistema integrado."
+
+PASO 3 — CONECTA LAS DIAPOSITIVAS (HILO NARRATIVO):
+  - Al final de la diapositiva 1, agrega: "A continuación veremos [tema de la diapositiva 2]."
+  - Las diapositivas 2, 3... DEBEN iniciar repitiendo el concepto clave de la anterior.
+    Formatos válidos:
+    * "Este [concepto previo] se relaciona con..."
+    * "Continuando con [concepto previo], ahora veremos..."
+    * "[Concepto previo] es importante porque..."
+
+PASO 4 — VERIFICA ANTES DE RESPONDER:
+  Para CADA diapositiva, cuenta las palabras. Debe tener entre 55 y 70.
+  Si tiene menos de 55: agrega una explicación o ejemplo del concepto.
+  Si tiene más de 70: acorta alguna oración sin eliminar conceptos.
+
+════════════════════════════════════════
+RESPUESTA — SOLO este JSON sin texto adicional:
+════════════════════════════════════════
 {{
   "diapositivas": [
-    {{"contenido": "texto expandido de la primera parte..."}},
-    {{"contenido": "texto expandido de la segunda parte..."}}
+    {{"contenido": "texto diapositiva 1 con 55-70 palabras"}},
+    {{"contenido": "texto diapositiva 2 con 55-70 palabras"}}
   ]
-}}"""
+}}
+No uses comillas dobles dentro de los valores. Para ejemplos usa comillas simples."""
 
-_PROMPT_REESTRUCTURAR = """Eres un experto en redacción académica para nivel universitario.
-Tu tarea es REFORMULAR el siguiente texto para que sea más fácil de leer, sin perder ningún concepto.
 
-MÉTRICAS ACTUALES (quieres bajar ambas):
-- Promedio sílabas por palabra: {prom_sil_pal:.2f} → objetivo: menos de 2.3
-- Promedio palabras por frase: {prom_pal_fra:.2f} → objetivo: menos de 12
+_PROMPT_REESTRUCTURAR = """Eres un docente universitario que adapta textos académicos para que sean más fáciles de leer sin perder rigor.
 
-REGLAS — en orden de prioridad:
-1. PARTE LAS FRASES LARGAS. Cada oración debe tener máximo 12 palabras. Si una frase supera eso, divídela en dos con un punto.
-2. SUSTITUYE palabras largas por sinónimos más cortos cuando existan. Ejemplos: "constituye" → "es", "mediante" → "con", "asimismo" → "también", "caracterizado por" → "que tiene".
-3. Conserva TODOS los términos técnicos que no tienen sinónimo simple (ej. "fotosíntesis", "glucólisis"). Esos no se tocan.
-4. NO añadas texto nuevo ni explicaciones extra. Solo reformula lo que ya existe.
-5. El resultado debe tener máximo {max_pal} palabras.
-6. Responde SIEMPRE en español.
+TAREA: Reformula el siguiente texto para que cumpla las métricas de una buena diapositiva académica.
 
+════════════════════════════════════════
+MÉTRICAS ACTUALES (necesitas mejorarlas):
+════════════════════════════════════════
+- Sílabas promedio por palabra : {prom_sil_pal:.2f}  → OBJETIVO: menos de 2.3
+- Palabras promedio por oración: {prom_pal_fra:.2f}  → OBJETIVO: menos de 12
+- Total de palabras            : {palabras_actual}   → OBJETIVO: máximo {max_pal}
+
+════════════════════════════════════════
 TEXTO ORIGINAL:
+════════════════════════════════════════
 Título: {titulo}
 Cuerpo:
 {contenido}
 
 {contexto}
 
-Responde ÚNICAMENTE con este JSON exacto (sin texto adicional):
-{{"titulo_nuevo": "string en español, máximo 6 palabras, comprensible sin leer el contenido", "contenido_nuevo": "texto reformulado", "cambios_realizados": ["cambio 1", "cambio 2"], "justificacion": "una oración"}}"""   
+════════════════════════════════════════
+PASOS DE REFORMULACIÓN:
+════════════════════════════════════════
+
+PASO 1 — PARTE LAS ORACIONES LARGAS:
+Cada oración debe tener MÁXIMO 10 palabras.
+Si una oración supera 10 palabras, ponle un punto y continúa.
+
+Ejemplo:
+ORIGINAL: "La estabilidad ecosistémica depende de mecanismos de autorregulación como la resiliencia y la resistencia frente a perturbaciones externas."
+REFORMULADO: "La estabilidad de un ecosistema depende de su capacidad de recuperación. Esto se llama resiliencia. También existe la resistencia ante perturbaciones externas."
+
+PASO 2 — SUSTITUYE PALABRAS LARGAS:
+Reemplaza palabras de 4 o más sílabas cuando tengan sinónimo más corto:
+  "constituye" → "es"           | "mediante" → "con"
+  "asimismo" → "también"        | "proporciona" → "da"
+  "caracterizado" → "que tiene" | "implementar" → "usar"
+  "fundamentalmente" → "sobre todo" | "desarrollar" → "crear"
+  "tales como" → "como"         | "mediadas" → "realizadas"
+  "conforme a" → "según"        | "particularmente" → "sobre todo"
+  "destacando" → "en especial"  | "implican" → "causan"
+
+EXCEPCIÓN: Términos técnicos sin sinónimo simple NO se cambian.
+Si usas un término técnico, explícalo en la siguiente oración.
+
+PASO 3 — CONSERVA TODOS LOS CONCEPTOS:
+No elimines ninguna definición ni término técnico del docente.
+Si no caben en {max_pal} palabras, indica en "accion_sugerida": "dividir en N diapositivas".
+
+PASO 4 — VERIFICA:
+  a) ¿Cada oración tiene ≤ 10 palabras? Si no, vuelve al Paso 1.
+  b) ¿El cuerpo tiene ≤ {max_pal} palabras? Si no, acorta sin eliminar conceptos.
+  c) ¿Están todos los conceptos del original? Si falta alguno, agrégalo.
+
+════════════════════════════════════════
+RESPUESTA — SOLO este JSON sin texto adicional:
+════════════════════════════════════════
+{{"titulo_nuevo": "título de 3 a 6 palabras en español", "contenido_nuevo": "texto reformulado aquí", "cambios_realizados": "descripción de cambios sin usar comillas", "justificacion": "una oración explicando el enfoque", "accion_sugerida": "ninguna  O  dividir en N diapositivas"}}
+No uses comillas dobles dentro de los valores."""
 
 
 _PROMPT_GENERAR_TITULO = """Eres un experto en diseño de presentaciones educativas para nivel universitario en México.
-Lee el siguiente texto y genera un título claro y directo que resuma el concepto principal.
+
+TAREA: Genera un título claro y directo para el siguiente contenido.
 
 REGLAS:
-- El título DEBE estar en español.
-- El título DEBE tener entre 3 y 6 palabras.
-- El título debe ser comprensible para un estudiante sin necesidad de leer el contenido.
-- Prefiere frases simples sobre sustantivos técnicos encadenados.
-- MALO: "Mecanismos de autorregulación y biodiversidad funcional en estabilidad ecosistémica"
-- BUENO: "Cómo se estabiliza un ecosistema"
-- NO uses comillas.
+1. En español.
+2. Entre 3 y 6 palabras.
+3. Comprensible sin leer el contenido.
+4. Usa frases con verbo activo, no cadenas de sustantivos técnicos.
+5. Sin comillas.
 
-Texto:
+EJEMPLOS:
+  MALO : "Mecanismos de autorregulación ecosistémica biodiversa"
+  BUENO: "Cómo se regula un ecosistema"
+
+  MALO : "Transferencia energética en sistemas termodinámicos"
+  BUENO: "Cómo fluye la energía"
+
+  MALO : "Procesos biogeoquímicos de circulación elemental"
+  BUENO: "Ciclos de nutrientes en la naturaleza"
+
+CONTENIDO:
 {contenido}
 
-Responde SOLO con este JSON (sin texto adicional):
+RESPUESTA — SOLO este JSON sin texto adicional:
 {{"titulo": "tu titulo aqui"}}"""
+
+
+
+
 
 # ── Sugerencia de división cuando el LLM falla ───────────────────────────────
 
@@ -406,13 +498,15 @@ def generar_recomendacion_slide(slide_data, score_slide):
 
         icd_data = next((r for r in score_slide.get("icd_resultados", [])), {})
 
+        # En recommendation_service.py, donde construyes el prompt de reestructurar
         prompt = _PROMPT_REESTRUCTURAR.format(
             titulo=titulo,
             contenido=contenido_truncado,
             contexto=contexto_iter,
             max_pal=69,
-            prom_sil_pal=icd_data.get("prom_sil_pal", 2.5),   # <-- nuevo
-            prom_pal_fra=icd_data.get("prom_pal_fra", 14.0),   # <-- nuevo
+            palabras_actual=len(contenido_truncado.split()),  # ← esto faltaba
+            prom_sil_pal=icd_data.get("prom_sil_pal", 2.5),
+            prom_pal_fra=icd_data.get("prom_pal_fra", 14.0),
         )
 
         temp      = 0.1 if intento > 1 else 0.0
@@ -425,7 +519,6 @@ def generar_recomendacion_slide(slide_data, score_slide):
         if not isinstance(resultado, dict):
             base["error"] = f"Respuesta no es dict (intento {intento})"
             continue
-# ... (código existente del prompt y llamado a ollama) ...
         
         titulo_nuevo    = resultado.get("titulo_nuevo", titulo)
         contenido_nuevo = resultado.get("contenido_nuevo", "")

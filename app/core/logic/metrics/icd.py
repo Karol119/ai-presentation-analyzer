@@ -9,7 +9,7 @@ Fórmula:
 Escala para nivel superior:
     0.0 – 2.0  → muy simple
     2.0 – 4.0  → simple
-    4.0 – 6.0  → apropiado  ← rango objetivo
+    4.0 – 6.5  → apropiado  ← rango objetivo
     6.0 – 8.0  → complejo
     8.0 – 10.0 → muy complejo
 """
@@ -24,7 +24,7 @@ PESO_DLN = 0.4
 _ESCALA = [
     (2.0,  "muy simple"),
     (4.0,  "simple"),
-    (6.0,  "apropiado"),
+    (6.5,  "apropiado"),
     (8.0,  "complejo"),
     (10.0, "muy complejo"),
 ]

@@ -71,7 +71,7 @@ def analizar_presentacion(ruta_pptx, usar_llm=True, generar_recomendaciones=True
           f"WPS:{sg['scores_metrica']['wps']} "
           f"HSS:{sg['scores_metrica']['hss']} "
           f"NTS:{sg['scores_metrica']['nts']}")
-
+##-----------------------------------------------------------------------------------------
     recomendaciones   = []
     resumen_ejecutivo = None
 
