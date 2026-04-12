@@ -1,0 +1,4 @@
+Omite la recomendacion si las palabras son escasa ignorando que las demas metricas si necesiatan la recoemndacion de la impartición
+Cuando hace la division no evalua con las metrcias si las nuevas propuestas de las diapsoitivas ya cumplen con lo que se necesita en cada metrcca 
+1En ciertas  diapositivas no me permitio la division del contenido 
+Cuando hay mas de un parrafo solo toma el primero y de ahi hace la modificacion del contenido no de todo 

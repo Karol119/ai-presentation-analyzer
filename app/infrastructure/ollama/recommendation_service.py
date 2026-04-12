@@ -15,8 +15,8 @@ import re
 import requests
 
 OLLAMA_URL          = "http://localhost:11434/api/generate"
-MODELO              = "llama3.2"
-TIMEOUT_SEG         = 45
+MODELO              = "mistral"
+TIMEOUT_SEG         = 90
 MAX_CONTENIDO_CHARS = 2500 
 MAX_REINTENTOS      = 3
 UMBRAL_FORZAR_DIV   = 100
@@ -107,20 +107,45 @@ def _decidir_accion(titulo, contenido, exceso):
 # ── Prompts Task Chaining ─────────────────────────────────────────────────────
 
 _PROMPT_DIVIDIR_CONTENIDO = """Eres un experto en presentaciones académicas universitarias.
-Divide el siguiente contenido en exactamente {n} partes separadas.
+El usuario requiere DIVIDIR la siguiente diapositiva en {n} partes porque excede el límite de palabras ({palabras} palabras).
 
-REGLAS ESTRICTAS PARA CADA PARTE:
-- Tener entre 40 y 69 palabras de contenido (NUNCA más de 69).
-- Cubrir un solo subtema o concepto.
-- Conservar TODOS los conceptos del original.
-- REDUCIR COMPLEJIDAD: Usa oraciones cortas (máximo 15 palabras) y palabras cotidianas.
-- COHESIÓN: INCLUYE un conector discursivo (ej. "Por otro lado", "Además", "En consecuencia") al inicio de las partes 2 en adelante.
+REGLAS ESTRICTAS:
+1. NO RESUMAS NI OMITAS CONCEPTOS. Transcribe la idea completa, pero divídela. En educación de nivel superior, no se pueden omitir definiciones.
+2. Cada parte debe tener sentido por sí sola y cubrir un concepto específico.
+3. REDUCIR COMPLEJIDAD (ICD): No elimines términos técnicos, pero rompe las oraciones largas. Usa oraciones de máximo 15-20 palabras. 
+4. Agrega conectores discursivos (ej. "Por otro lado", "Además", "Esto significa que") al inicio de las oraciones para explicar mejor y bajar la densidad léxica.
+5. Intenta que cada parte se acerque a 40-70 palabras, pero la prioridad es NO perder información.
 
-Contenido original ({palabras} palabras):
+Contenido original:
 {contenido}
 
-Responde SOLO con un array JSON de {n} objetos:
-[{{"contenido": "string de 40 a 69 palabras"}}, ...]"""
+Responde ÚNICAMENTE con un objeto JSON que contenga la clave "diapositivas", cuyo valor sea un array de {n} objetos. Usa esta estructura exacta:
+{{
+  "diapositivas": [
+    {{"contenido": "texto reestructurado de la primera parte..."}},
+    {{"contenido": "texto reestructurado de la segunda parte..."}}
+  ]
+}}"""
+
+
+_PROMPT_REESTRUCTURAR = """Eres un experto en presentaciones académicas universitarias.
+Tu tarea es REESTRUCTURAR el contenido de esta diapositiva para mejorar sus métricas.
+
+REGLAS ESTRICTAS:
+1. NO RESUMAS. Conserva TODOS los conceptos, definiciones y términos técnicos del original. Se trata de reestructurar, no de recortar ideas.
+2. REDUCIR COMPLEJIDAD (ICD): Divide oraciones largas en varias oraciones cortas. Introduce conectores (ej. "es decir", "esto permite", "por lo tanto") para diluir la densidad léxica.
+3. El resultado debe acotarse idealmente a {max_pal} palabras máximo, ajustando la redacción, no eliminando teoría.
+4. CONSERVA lo marcado con ✓ y MEJORA lo marcado con MEJORAR.
+
+CONTENIDO ORIGINAL:
+Título: {titulo}
+Cuerpo:
+{contenido}
+
+{contexto}
+
+Responde ÚNICAMENTE con este JSON exacto:
+{{"titulo_nuevo": "string (3-6 palabras)", "contenido_nuevo": "string reestructurado", "cambios_realizados": ["cambio 1"], "justificacion": "una oración"}}"""
 
 
 _PROMPT_GENERAR_TITULO = """Eres un experto académico.
@@ -135,27 +160,6 @@ Texto:
 
 Responde SOLO con este JSON:
 {{"titulo": "tu titulo aqui"}}"""
-
-
-_PROMPT_REESTRUCTURAR = """Eres un experto en presentaciones académicas universitarias.
-Tu tarea es REESTRUCTURAR el contenido de esta diapositiva.
-
-REGLAS:
-1. Conserva TODOS los conceptos e ideas del contenido original.
-2. Simplifica la sintaxis: oraciones más cortas, vocabulario accesible.
-3. El resultado debe tener ENTRE {min_pal} Y {max_pal} PALABRAS.
-4. CONSERVA lo marcado con ✓ y MEJORA lo marcado con MEJORAR.
-5. Responde SOLO con el JSON.
-
-CONTENIDO ORIGINAL:
-Título: {titulo}
-Cuerpo:
-{contenido}
-
-{contexto}
-
-{{"titulo_nuevo": "string (3-6 palabras)", "contenido_nuevo": "string reorganizado", "cambios_realizados": ["cambio 1"], "justificacion": "una oración"}}"""
-
 
 # ── Sugerencia de división cuando el LLM falla ───────────────────────────────
 
@@ -188,6 +192,19 @@ def _generar_division_encadenada(titulo, contenido, palabras, n_slides, temperat
     
     parsed_contenidos = _llamar_ollama(prompt_contenido, num_predict=2000, temperatura=temperatura)
     
+    # --- NUEVA LÓGICA DE EXTRACCIÓN ---
+    # Si Ollama devuelve un diccionario, buscamos el array en sus valores
+    if isinstance(parsed_contenidos, dict):
+        if "diapositivas" in parsed_contenidos:
+            parsed_contenidos = parsed_contenidos["diapositivas"]
+        else:
+            # Fallback robusto: buscar el primer valor que sea una lista
+            for val in parsed_contenidos.values():
+                if isinstance(val, list):
+                    parsed_contenidos = val
+                    break
+    # ----------------------------------
+    
     if not isinstance(parsed_contenidos, list) or len(parsed_contenidos) < 2:
         print("[rec] Error en Paso 1: No se generó la lista de contenidos adecuadamente.")
         return None
@@ -196,7 +213,8 @@ def _generar_division_encadenada(titulo, contenido, palabras, n_slides, temperat
     
     # PASO 2: Generar título coherente para cada bloque de contenido
     for idx, item in enumerate(parsed_contenidos):
-        cont = item.get("contenido", "")
+        # Llama a veces anida las respuestas si no sigue la estructura al 100%
+        cont = item.get("contenido", "") if isinstance(item, dict) else str(item)
         if not cont:
             continue
             
@@ -387,6 +405,10 @@ def generar_recomendacion_slide(slide_data, score_slide):
         temp      = 0.1 if intento > 1 else 0.0
         resultado = _llamar_ollama(prompt, num_predict=1000, temperatura=temp)
 
+        # Manejo de error si Llama lo metió dentro de un array por accidente
+        if isinstance(resultado, list) and len(resultado) > 0:
+            resultado = resultado[0]
+
         if not isinstance(resultado, dict):
             base["error"] = f"Respuesta no es dict (intento {intento})"
             continue
@@ -443,22 +465,34 @@ def generar_resumen_presentacion(nombre, score_global, icd, wps, hss, nts):
 def _llamar_ollama(prompt, num_predict=1000, temperatura=0.0):
     for i in range(2):
         try:
-            p = prompt if i == 0 else prompt + "\n\nResponde SOLO con el JSON entre llaves {}."
+            # Si es el segundo intento, somos más explícitos
+            p = prompt if i == 0 else prompt + "\n\nResponde ÚNICAMENTE con JSON válido."
             r = requests.post(
                 OLLAMA_URL,
-                json={"model": MODELO, "prompt": p, "stream": False,
-                      "options": {
-                          "temperature": temperatura,
-                          "top_p": 0.1,
-                          "seed": 42,
-                          "num_predict": num_predict
-                      }},
+                json={
+                    "model": MODELO, 
+                    "prompt": p, 
+                    "stream": False,
+                    "format": "json", # <-- CLAVE PARA EVITAR ERRORES DE PARSEO
+                    "options": {
+                        "temperature": temperatura,
+                        "top_p": 0.1,
+                        "seed": 42,
+                        "num_predict": num_predict
+                    }
+                },
                 timeout=TIMEOUT_SEG
             )
             r.raise_for_status()
-            parsed = _parsear_json(r.json().get("response", ""))
+            
+            respuesta_texto = r.json().get("response", "").strip()
+            if not respuesta_texto:
+                return None
+                
+            parsed = json.loads(respuesta_texto) # <-- Parseo directo, sin Regex
             if isinstance(parsed, (dict, list)):
                 return parsed
+                
         except Exception as e:
             print(f"[rec] _llamar_ollama intento {i+1} error: {e}")
     return None
