@@ -9,6 +9,7 @@ Integraciones activas:
   5. Instrucciones explícitas de conectores discursivos (NTS) y reducción léxica (ICD).
   6. Lógica estricta de omisión para diapositivas intencionalmente cortas.
 """
+from app.core.logic.metrics.narrative_thread import calcular_similitud
 
 import json
 import re
@@ -125,36 +126,48 @@ Responde ÚNICAMENTE con un objeto JSON que contenga la clave "diapositivas", cu
   ]
 }}"""
 
-_PROMPT_REESTRUCTURAR = """Eres un experto en presentaciones académicas universitarias.
-Tu tarea es REESTRUCTURAR el contenido de esta diapositiva para mejorar sus métricas.
+_PROMPT_REESTRUCTURAR = """Eres un experto en redacción académica para nivel universitario.
+Tu tarea es REFORMULAR el siguiente texto para que sea más fácil de leer, sin perder ningún concepto.
 
-REGLAS ESTRICTAS:
-1. NO RESUMAS. Conserva TODOS los conceptos, definiciones y términos técnicos del original.
-2. REDUCIR COMPLEJIDAD (ICD): Expande la explicación. Divide oraciones largas e introduce conectores (ej. "es decir", "esto permite") usando un lenguaje natural para diluir la densidad léxica. No uses listas ni viñetas.
-3. El resultado debe tener entre 45 y {max_pal} palabras.
-4. CONSERVA lo marcado con ✓ y MEJORA lo marcado con MEJORAR.
+MÉTRICAS ACTUALES (quieres bajar ambas):
+- Promedio sílabas por palabra: {prom_sil_pal:.2f} → objetivo: menos de 2.3
+- Promedio palabras por frase: {prom_pal_fra:.2f} → objetivo: menos de 12
 
-CONTENIDO ORIGINAL:
+REGLAS — en orden de prioridad:
+1. PARTE LAS FRASES LARGAS. Cada oración debe tener máximo 12 palabras. Si una frase supera eso, divídela en dos con un punto.
+2. SUSTITUYE palabras largas por sinónimos más cortos cuando existan. Ejemplos: "constituye" → "es", "mediante" → "con", "asimismo" → "también", "caracterizado por" → "que tiene".
+3. Conserva TODOS los términos técnicos que no tienen sinónimo simple (ej. "fotosíntesis", "glucólisis"). Esos no se tocan.
+4. NO añadas texto nuevo ni explicaciones extra. Solo reformula lo que ya existe.
+5. El resultado debe tener máximo {max_pal} palabras.
+6. Responde SIEMPRE en español.
+
+TEXTO ORIGINAL:
 Título: {titulo}
 Cuerpo:
 {contenido}
 
 {contexto}
 
-Responde ÚNICAMENTE con este JSON exacto:
-{{"titulo_nuevo": "string (3-6 palabras)", "contenido_nuevo": "string expandido y reestructurado", "cambios_realizados": ["cambio 1"], "justificacion": "una oración"}}"""
-    
-_PROMPT_GENERAR_TITULO = """Eres un experto académico.
-Lee el siguiente texto y genera un título coherente que resuma el concepto principal.
+Responde ÚNICAMENTE con este JSON exacto (sin texto adicional):
+{{"titulo_nuevo": "string en español, máximo 6 palabras, comprensible sin leer el contenido", "contenido_nuevo": "texto reformulado", "cambios_realizados": ["cambio 1", "cambio 2"], "justificacion": "una oración"}}"""   
+
+
+_PROMPT_GENERAR_TITULO = """Eres un experto en diseño de presentaciones educativas para nivel universitario en México.
+Lee el siguiente texto y genera un título claro y directo que resuma el concepto principal.
 
 REGLAS:
+- El título DEBE estar en español.
 - El título DEBE tener entre 3 y 6 palabras.
+- El título debe ser comprensible para un estudiante sin necesidad de leer el contenido.
+- Prefiere frases simples sobre sustantivos técnicos encadenados.
+- MALO: "Mecanismos de autorregulación y biodiversidad funcional en estabilidad ecosistémica"
+- BUENO: "Cómo se estabiliza un ecosistema"
 - NO uses comillas.
 
 Texto:
 {contenido}
 
-Responde SOLO con este JSON:
+Responde SOLO con este JSON (sin texto adicional):
 {{"titulo": "tu titulo aqui"}}"""
 
 # ── Sugerencia de división cuando el LLM falla ───────────────────────────────
@@ -306,24 +319,13 @@ def generar_recomendacion_slide(slide_data, score_slide):
                 slides_div = _generar_division_encadenada(titulo, contenido, palabras_orig, n_slides, temperatura=temp_dinamica)
 
                 if isinstance(slides_div, list) and len(slides_div) >= 2:
-                    verificacion_div = []
+                    # AQUÍ SE MANDA A LLAMAR TU NUEVA FUNCIÓN
+                    verificacion_div = _verificar_division_con_nts(slides_div)
                     todas_en_rango_intento = True
 
-                    for s in slides_div:
-                        v = _metricas_texto(s.get("titulo", ""), s.get("contenido", ""))
-                        en_rango = (v.get("wps_zona") == "optima" and v.get("icd_zona") in ("apropiado", "normal"))
-                        
-                        verificacion_div.append({
-                            "titulo":   s.get("titulo", ""),
-                            "palabras": v.get("palabras"),
-                            "wps_zona": v.get("wps_zona"),
-                            "icd":      v.get("icd"),
-                            "icd_zona": v.get("icd_zona"),
-                            "en_rango": en_rango,
-                            "justificacion_icd": None # Nueva llave
-                        })
-                        
-                        if not en_rango:
+                    # Verificamos si pasaron el filtro
+                    for s_verif in verificacion_div:
+                        if not s_verif["en_rango"]:
                             todas_en_rango_intento = False
 
                     # --- NUEVA LÓGICA: Tolerancia a Complejidad Irreductible ---
@@ -402,13 +404,15 @@ def generar_recomendacion_slide(slide_data, score_slide):
             if notas:
                 contexto_iter += f"\n⚠ CORRECCIÓN INTENTO {intento}:\n" + "\n".join(notas)
 
+        icd_data = next((r for r in score_slide.get("icd_resultados", [])), {})
+
         prompt = _PROMPT_REESTRUCTURAR.format(
             titulo=titulo,
             contenido=contenido_truncado,
             contexto=contexto_iter,
-            pal_orig=palabras_orig,
-            min_pal=40,
-            max_pal=69 # Límite ajustado para presupuesto de título
+            max_pal=69,
+            prom_sil_pal=icd_data.get("prom_sil_pal", 2.5),   # <-- nuevo
+            prom_pal_fra=icd_data.get("prom_pal_fra", 14.0),   # <-- nuevo
         )
 
         temp      = 0.1 if intento > 1 else 0.0
@@ -531,3 +535,36 @@ def _parsear_json(texto):
             return None
             
     return None
+
+def _verificar_division_con_nts(slides_div):
+    """Calcula métricas de cada slide incluyendo similitud con sus vecinas."""
+    
+    verificacion_div = []
+    for idx, s in enumerate(slides_div):
+        v = _metricas_texto(s.get("titulo", ""), s.get("contenido", ""))
+        
+        # Calcular similitud con slide anterior y siguiente
+        texto_actual = s.get("contenido", "")
+        texto_anterior = slides_div[idx - 1].get("contenido", "") if idx > 0 else None
+        texto_siguiente = slides_div[idx + 1].get("contenido", "") if idx < len(slides_div) - 1 else None
+        
+        sim_ant = calcular_similitud(texto_anterior, texto_actual) if texto_anterior else None
+        sim_sig = calcular_similitud(texto_actual, texto_siguiente) if texto_siguiente else None
+        sims = [s for s in [sim_ant, sim_sig] if s is not None]
+        nts_score = (sum(sims) / len(sims)) * 10 if sims else 0.0
+        
+        en_rango_wps = v.get("wps_zona") == "optima"
+        en_rango_icd = v.get("icd_zona") in ("apropiado", "normal")
+        
+        verificacion_div.append({
+            "titulo":   s.get("titulo", ""),
+            "palabras": v.get("palabras"),
+            "wps_zona": v.get("wps_zona"),
+            "icd":      v.get("icd"),
+            "icd_zona": v.get("icd_zona"),
+            "nts_score": round(nts_score, 2),      # <-- nuevo
+            "en_rango": en_rango_wps,
+            "justificacion_icd": None,
+        })
+    
+    return verificacion_div

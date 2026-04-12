@@ -164,3 +164,16 @@ def _resumen_vacio():
         "slides_relacionadas":0, "slides_debiles":0,
         "slides_desconectadas":0, "pares_rotura":[],
     }
+    
+def calcular_similitud(texto1, texto2):
+    """
+    Calcula la similitud del coseno entre dos textos sin formato.
+    Utilizado por el recommendation_service para validar divisiones.
+    """
+    if not texto1 or not texto2:
+        return 0.0
+    
+    v1 = _vectorizar(texto1)
+    v2 = _vectorizar(texto2)
+    
+    return _coseno(v1, v2)
