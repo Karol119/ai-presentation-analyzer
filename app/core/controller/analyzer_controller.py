@@ -5,13 +5,9 @@ from app.core.logic.metrics.word_count             import calcular_wps_presentac
 from app.core.logic.metrics.header_structure       import calcular_hss_presentacion
 from app.core.logic.metrics.narrative_thread       import calcular_nts
 from app.core.logic.presentation_score             import calcular_score_global, calcular_score_slide
-from app.core.logic.recommendation_prompt          import imprimir_tabla_diagnostico
 from app.infrastructure.ollama.ollama_service      import clasificar_tipo_diapositiva, verificar_conexion
 from app.infrastructure.ollama.coherencia_service  import verificar_coherencia_titulo
-from app.infrastructure.ollama.recommendation_service import (
-    generar_recomendacion_slide,
-    generar_resumen_presentacion
-)
+
 
 
 def analizar_presentacion(ruta_pptx, usar_llm=True, generar_recomendaciones=True):
@@ -71,57 +67,3 @@ def analizar_presentacion(ruta_pptx, usar_llm=True, generar_recomendaciones=True
           f"WPS:{sg['scores_metrica']['wps']} "
           f"HSS:{sg['scores_metrica']['hss']} "
           f"NTS:{sg['scores_metrica']['nts']}")
-##-----------------------------------------------------------------------------------------
-    recomendaciones   = []
-    resumen_ejecutivo = None
-
-    if generar_recomendaciones and llm_disponible:
-        print("\n[rec] Generando recomendaciones...")
-        slide_map = {s["slide_number"]: s for s in slides_contenido}
-
-        for ss in scores_slides:
-            n          = ss["slide_number"]
-            slide_data = slide_map.get(n, {})
-            rec        = generar_recomendacion_slide(slide_data, ss)
-            recomendaciones.append(rec)
-
-            # Log por slide
-            if rec.get("necesitaba_rec"):
-                if rec.get("slides_division"):
-                    print(f"  [{n:02d}] DIVIDIR → {len(rec['slides_division'])} slides "
-                          f"({rec.get('sugerencia_division','')})")
-                elif rec.get("error"):
-                    print(f"  [{n:02d}] ERROR: {rec['error']}")
-                else:
-                    v = rec.get("verificacion") or {}
-                    ok = "✓ en rango" if v.get("wps_zona") == "optima" else f"WPS:{v.get('wps_zona','?')}"
-                    print(f"  [{n:02d}] generada ({rec.get('intentos',1)} intentos) "
-                          f"→ {v.get('palabras','?')} pal, ICD:{v.get('icd','?')} [{ok}]")
-            elif rec.get("omitida_razon"):
-                print(f"  [{n:02d}] omitida")
-
-        resumen_ejecutivo = generar_resumen_presentacion(
-            datos["filename"], score_global, r_icd, r_wps, r_hss, r_nts
-        )
-    elif generar_recomendaciones:
-        print("[rec] Ollama no disponible")
-
-    imprimir_tabla_diagnostico(scores_slides, r_icd, r_wps, r_hss, r_nts, recomendaciones)
-
-    if resumen_ejecutivo:
-        print(f"\n[Resumen para el docente]\n{resumen_ejecutivo}\n")
-
-    datos.update({
-        "llm_disponible":        llm_disponible,
-        "resumen_clasificacion": conteo,
-        "icd":                   r_icd,
-        "wps":                   r_wps,
-        "hss":                   r_hss,
-        "nts":                   r_nts,
-        "score_global":          score_global,
-        "scores_slides":         scores_slides,
-        "recomendaciones":       recomendaciones,
-        "resumen_ejecutivo":     resumen_ejecutivo,
-    })
-
-    return datos

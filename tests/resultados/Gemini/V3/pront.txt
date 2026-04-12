@@ -1,8 +1,0 @@
-AL momento de divir no se esta validando que la complejidad entre en el rango adecuado de 4 a 6, me los esta dejando con un rango superior, o tu dime acorde a lo que has visto tu analisis, porque esta este porblema con la complejidad y como se puede solucionar
-Al igual que con la complejidad no se esta evaluando que las diapositivavs que se ceran tengan relacion unas con las otras, y de hecho puede haber casoso en los que en efecto, nose pueda hacer nada para unirlos pero ne esos cosas la recomendacion seria minimo agregar el texto de que tal y tal diapositiva no se ueden relacionar ... y el motivo por el cual no sepuede. 
-Al igual que con la complejidad se entende que dependiendo e la materia ay veces que las palabras no se pueden cambiar mucho por el simple hecho de que esas son las palabrass con las que se deben decirse y puede que baje sus ignificado o entendimiento si se reemplaza. pero si que la IA justuiique del porque pasa eso y debe ser una justificacion valida y solida.
-El porposito de la recomendacion con la IA es que propiamnete al analizar sus resultados ya no haya porblemas y aqui los hay 
-y si va a haber porque realemnte ya no sepuede hacer nada se debe de justificar bien, y debe de tener fundamente y se debe de refeljar.
-
-Otra cosa por ejemlpo en el de biologia no alcaza a analizar completo todo el texto y excluyo esta idea en su recomendacion 
-El metabolismo celular comprende una red intrincada de rutas catabólicas y anabólicas que permiten la transformación de biomoléculas con el fin de mantener la homeostasia energética. Procesos como la glucólisis, el ciclo de Krebs y la cadena de transporte de electrones operan de manera coordinada para maximizar la producción de ATP."
