@@ -13,29 +13,24 @@ Estructura:
 """
 
 import customtkinter as ctk
-
 from app.presentation.views.ui_state import ui
 from app.presentation.widgets.analysis.presentation_panel import build_presentation_panel
 from app.presentation.widgets.analysis.results_panel import build_results_panel
 
-COLOR_GUINDA = "#6A1B31"
 
-
-def mostrar_vista_analisis(subject: str, nombre_presentacion: str):
+def mostrar_vista_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str):
     """
     Construye y empaqueta la vista de análisis completa.
     Llamado exclusivamente por navigator.ir_a_analisis().
     """
-    # Contenedor raíz de la vista — mismo nivel que ui["body"]
     ui["analysis_body"] = ctk.CTkFrame(
         ui["root"],
-        fg_color="#EEF2F7",   # Mismo fondo que la app principal
+        fg_color="#EEF2F7",
         corner_radius=0,
     )
     ui["analysis_body"].pack(fill="both", expand=True)
 
-    # Construir los dos paneles pasando el contexto necesario
-    build_presentation_panel(subject, nombre_presentacion)
+    build_presentation_panel(subject, nombre_presentacion, ruta_pdf)
     build_results_panel(subject, nombre_presentacion)
 
 

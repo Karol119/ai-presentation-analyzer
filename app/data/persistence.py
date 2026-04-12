@@ -5,7 +5,7 @@ import os
 import shutil
 from datetime import datetime
 from app.data.database_manager import conectar_db
-from app.core.logic.thumbnail_generator import generar_miniatura_aspose # Asegúrate de crear este archivo
+from app.core.logic.slide_processor import generar_miniatura, generar_pdf
 
 def registrar_presentacion(ruta_origen, hash_unico, num_diapositivas, id_materia):
     """
@@ -35,13 +35,15 @@ def registrar_presentacion(ruta_origen, hash_unico, num_diapositivas, id_materia
         # Copiamos el archivo físicamente al storage
         shutil.copy2(ruta_origen, ruta_destino)
 
-        # --- NUEVO: Generación de Miniatura ---
+        # --- Generación de Miniatura ---
         nombre_sin_ext = os.path.splitext(nombre_archivo)[0]
         ruta_thumb = os.path.join(carpeta_destino, f"{nombre_sin_ext}_thumb.png")
-        
-        # Generamos la imagen de la primera diapositiva
-        generar_miniatura_aspose(ruta_destino, ruta_thumb)
-        # ---------------------------------------
+        generar_miniatura(ruta_destino, ruta_thumb)
+
+        # --- Generación de PDF (para visor y modo presentación) ---
+        ruta_pdf = os.path.join(carpeta_destino, f"{nombre_sin_ext}.pdf")
+        generar_pdf(ruta_destino, ruta_pdf)
+        # -----------------------------------------------------------
 
         # 3. Guardar en tabla: Presentacion
         id_presentacion = str(uuid.uuid4())
@@ -57,9 +59,9 @@ def registrar_presentacion(ruta_origen, hash_unico, num_diapositivas, id_materia
         # Se incluye 'ruta' y la nueva columna 'ruta_miniatura'
         cursor.execute("""
             INSERT INTO Historial_de_Versiones 
-            (id_version, id_presentacion, numero_version, fecha_carga, total_diapositivas, hash, ruta, ruta_miniatura)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (id_version, id_presentacion, 1, fecha_actual, num_diapositivas, hash_unico, ruta_destino, ruta_thumb))
+            (id_version, id_presentacion, numero_version, fecha_carga, total_diapositivas, hash, ruta, ruta_miniatura, ruta_pdf)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (id_version, id_presentacion, 1, fecha_actual, num_diapositivas, hash_unico, ruta_destino, ruta_thumb, ruta_pdf))
 
         conn.commit()
         return True, id_presentacion
@@ -81,7 +83,7 @@ def eliminar_presentacion_completa(nombre_presentacion, id_materia):
     try:
         # 1. Obtener las rutas de los archivos antes de borrar el registro
         query_rutas = """
-            SELECT hv.ruta, hv.ruta_miniatura 
+            SELECT hv.ruta, hv.ruta_miniatura, hv.ruta_pdf
             FROM Historial_de_Versiones hv
             JOIN Presentacion p ON hv.id_presentacion = p.id_presentacion
             WHERE p.presentacion = ? AND p.id_unidad_aprendizaje = ?
@@ -89,19 +91,15 @@ def eliminar_presentacion_completa(nombre_presentacion, id_materia):
         cursor.execute(query_rutas, (nombre_presentacion, id_materia))
         archivos = cursor.fetchall()
 
-        # 2. Borrar de la base de datos
-        # Al borrar de 'Presentacion', la FK con CASCADE borrará 'Historial_de_Versiones'
         cursor.execute("""
             DELETE FROM Presentacion 
             WHERE presentacion = ? AND id_unidad_aprendizaje = ?
         """, (nombre_presentacion, id_materia))
-        
-        # 3. Borrar archivos físicos del almacenamiento
-        for ruta_pptx, ruta_thumb in archivos:
-            if ruta_pptx and os.path.exists(ruta_pptx):
-                os.remove(ruta_pptx)
-            if ruta_thumb and os.path.exists(ruta_thumb):
-                os.remove(ruta_thumb)
+
+        for ruta_pptx, ruta_thumb, ruta_pdf in archivos:
+            for ruta in (ruta_pptx, ruta_thumb, ruta_pdf):
+                if ruta and os.path.exists(ruta):
+                    os.remove(ruta)
 
         conn.commit()
         return True

@@ -55,11 +55,10 @@ def orquestar_desactivacion_materia(nombre_materia):
     try:
         # 1. ACCIÓN FÍSICA: Obtener rutas y borrar archivos del disco
         archivos = obtener_rutas_archivos_materia(id_materia)
-        for ruta_pptx, ruta_thumb in archivos:
-            if ruta_pptx and os.path.exists(ruta_pptx):
-                os.remove(ruta_pptx)
-            if ruta_thumb and os.path.exists(ruta_thumb):
-                os.remove(ruta_thumb)
+        for ruta_pptx, ruta_thumb, ruta_pdf in archivos:
+            for ruta in (ruta_pptx, ruta_thumb, ruta_pdf):
+                if ruta and os.path.exists(ruta):
+                    os.remove(ruta)
 
         # 2. ACCIÓN EN BD (PARTE A): Borrar registros de presentaciones y versiones
         # Esto es necesario antes de desactivar la materia para que no queden datos basura

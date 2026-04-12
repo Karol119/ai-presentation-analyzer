@@ -6,7 +6,7 @@ Regla de oro: ninguna vista importa a otra vista directamente.
 Toda transición de pantalla pasa por este módulo.
 
 Vistas registradas:
-  - main_gui  → pantalla principal (sidebar + content + right panel)
+  - main_gui     → pantalla principal (sidebar + content + right panel)
   - analysis_gui → pantalla de análisis (presentation_panel + results_panel)
 """
 
@@ -15,9 +15,10 @@ from app.presentation.widgets.topbar import set_modo_analisis, set_modo_principa
 
 # Estado interno del navegador
 _estado_navegador = {
-    "vista_actual": "main",   # "main" | "analysis"
-    "subject": None,
-    "nombre_presentacion": None,
+    "vista_actual":         "main",   # "main" | "analysis"
+    "subject":              None,
+    "nombre_presentacion":  None,
+    "ruta_pdf":             None,
 }
 
 
@@ -25,31 +26,32 @@ _estado_navegador = {
 # API pública
 # ---------------------------------------------------------------------------
 
-def ir_a_analisis(subject: str, nombre_presentacion: str):
+def ir_a_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str):
     """
     Transición: vista principal → vista de análisis.
 
-    1. Oculta el body principal (sidebar + content + right panel)
+    1. Oculta el body principal
     2. Cambia el topbar al modo análisis
     3. Construye y muestra la vista de análisis
     """
     if _estado_navegador["vista_actual"] == "analysis":
         return  # Evitar transiciones duplicadas
 
-    _estado_navegador["vista_actual"]        = "analysis"
-    _estado_navegador["subject"]             = subject
-    _estado_navegador["nombre_presentacion"] = nombre_presentacion
+    _estado_navegador["vista_actual"]       = "analysis"
+    _estado_navegador["subject"]            = subject
+    _estado_navegador["nombre_presentacion"]= nombre_presentacion
+    _estado_navegador["ruta_pdf"]           = ruta_pdf
 
     # 1. Ocultar vista principal
     ui["body"].pack_forget()
 
-    # 2. Cambiar topbar — el callback de "Volver a inicio" apunta a ir_a_principal()
+    # 2. Cambiar topbar
     set_modo_analisis(nombre_presentacion, on_back=ir_a_principal)
 
     # 3. Construir y mostrar la vista de análisis
     #    Import local para evitar dependencias circulares en el arranque
     from app.presentation.views.analysis_gui import mostrar_vista_analisis
-    mostrar_vista_analisis(subject, nombre_presentacion)
+    mostrar_vista_analisis(subject, nombre_presentacion, ruta_pdf)
 
 
 def ir_a_principal():
@@ -77,7 +79,7 @@ def ir_a_principal():
 
 
 # ---------------------------------------------------------------------------
-# Consultas de estado (útiles para condicionar comportamiento en widgets)
+# Consultas de estado
 # ---------------------------------------------------------------------------
 
 def vista_actual() -> str:
@@ -87,11 +89,11 @@ def vista_actual() -> str:
 
 def get_contexto_analisis() -> dict:
     """
-    Retorna el contexto de la sesión de análisis activa.
-    Útil para que results_panel o presentation_panel recuperen
-    datos sin necesitar parámetros adicionales.
+    Retorna el contexto completo de la sesión de análisis activa.
+    Usado por presentation_panel y results_panel para obtener sus datos.
     """
     return {
         "subject":              _estado_navegador["subject"],
         "nombre_presentacion":  _estado_navegador["nombre_presentacion"],
+        "ruta_pdf":             _estado_navegador["ruta_pdf"],
     }

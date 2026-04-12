@@ -149,8 +149,8 @@ def rebuild_cards(subject: str, comando_actualizar_boton):
 
     # 1. Generar tarjetas de archivos existentes
     for datos in estado["subject_files"].get(subject, []):
-        nombre, ruta_thumb, ya_analizada = datos[0], datos[2], bool(datos[3])
-        card_widget = _make_file_card(wrap, subject, nombre, ruta_thumb, ya_analizada, comando_actualizar_boton)
+        nombre, ruta_thumb, ya_analizada, ruta_pdf = datos[0], datos[2], bool(datos[3]), datos[4]
+        card_widget = _make_file_card(wrap, subject, nombre, ruta_thumb, ya_analizada, ruta_pdf, comando_actualizar_boton)
         # Lo posicionamos usando la cuadrícula del padre
         card_widget.grid(row=current_row, column=current_col, padx=(0, 18), pady=8, sticky="nw")
         
@@ -164,7 +164,7 @@ def rebuild_cards(subject: str, comando_actualizar_boton):
     upload_card.grid(row=current_row, column=current_col, padx=(0, 18), pady=8, sticky="nw")
 
 
-def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: bool, comando_actualizar_boton):
+def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: bool, ruta_pdf: str, comando_actualizar_boton):
     """Crea y retorna el widget de tarjeta de archivo (sin posicionarlo)."""
     outer = ctk.CTkFrame(parent, fg_color="transparent", width=CARD_W, height=CARD_H)
     outer.pack_propagate(False)
@@ -224,7 +224,7 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     items_frame.pack(fill="both", expand=True, padx=6, pady=(8, 4))
 
     texto_analisis = "📊   Ver análisis" if ya_analizada else "🔍   Analizar presentación"
-    cmd_analisis   = _placeholder if ya_analizada else lambda: _iniciar_analisis(subject, name, toggle_menu)
+    cmd_analisis   = _placeholder if ya_analizada else lambda: _iniciar_analisis(subject, name, ruta_pdf, toggle_menu)
 
     opciones = [
         ("🖥   Presentar clase",  "#1E293B", _placeholder),
@@ -267,7 +267,7 @@ def _placeholder():
     pass
 
 
-def _iniciar_analisis(subject: str, nombre_presentacion: str, toggle_menu):
+def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_menu):
     """
     Flujo completo al pulsar 'Analizar presentación':
       1. Cierra el menú de la tarjeta
@@ -277,24 +277,17 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, toggle_menu):
     """
     import time
 
-    # 1. Cerrar el menú de opciones de la tarjeta
     toggle_menu(False)
-
-    # 2. Mostrar modal de carga bloqueante
     loading_modal = mostrar_modal_cargando(ui["root"], "Analizando presentación...")
 
     def tarea_analisis():
-        """Worker thread: análisis simulado."""
-        time.sleep(2)   # Simulación — aquí irá la lógica real de análisis
+        """Worker thread: análisis simulado — aquí irá la lógica real."""
+        time.sleep(2)
 
     def finalizar(resultado):
-        """Callback en el hilo principal tras terminar el análisis."""
-        # 3. Cerrar modal
         if loading_modal.winfo_exists():
             loading_modal.destroy()
-
-        # 4. Navegar a la vista de análisis
-        navigator.ir_a_analisis(subject, nombre_presentacion)
+        navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
 
     ejecutar_tarea_asincrona(
         target_task=tarea_analisis,
