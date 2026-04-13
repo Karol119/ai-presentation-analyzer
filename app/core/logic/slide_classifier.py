@@ -39,7 +39,7 @@ _RE_CITA_COMILLAS = re.compile(
     re.DOTALL
 )
 
-MIN_PALABRAS_UTIL = 8
+MIN_PALABRAS_UTIL = 15
 
 _REGLAS = [
     # ── Portada ───────────────────────────────────────────────────────────────

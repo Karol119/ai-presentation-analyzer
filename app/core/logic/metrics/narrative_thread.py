@@ -16,6 +16,27 @@ _STOPWORDS = {
 }
 
 def calcular_nts(slides_contenido, llm_fn=verificar_hilo_narrativo):
+    
+    if not slides_contenido:
+        return _resumen_vacio()
+
+    if len(slides_contenido) == 1:
+        n = slides_contenido[0].get("slide_number")
+        return {
+            "resultados": [{
+                "slide_number":  n,
+                "sim_anterior":  None,
+                "sim_siguiente": None,
+                "sim_promedio":  1.0,   # puntuación perfecta
+                "nts_score":     10.0,
+                "estado":        "relacionada",
+            }],
+            "nts_promedio":        10.0,
+            "slides_relacionadas": 1,
+            "slides_debiles":      0,
+            "slides_desconectadas":0,
+        }
+    
     if not slides_contenido or len(slides_contenido) < 2:
         return _resumen_vacio()
 
