@@ -14,6 +14,7 @@ from app.core.logic.metrics.word_count import calcular_wps_presentacion
 from app.core.logic.metrics.header_structure import calcular_hss_presentacion
 from app.core.logic.metrics.narrative_thread import calcular_nts
 from app.core.logic.presentation_score import calcular_score_global, calcular_score_slide
+from app.infrastructure.ollama.diagnostic_service import generar_diagnostico_metrico
 from app.infrastructure.ollama.ollama_service import verificar_conexion, clasificar_tipo_diapositiva
 from app.infrastructure.ollama.coherencia_service import verificar_coherencia_titulo
 from app.infrastructure.ollama.narrativa_service import verificar_hilo_narrativo
@@ -23,53 +24,93 @@ def seleccionar_archivo():
     root.withdraw()
     root.attributes('-topmost', True)
     return filedialog.askopenfilename(filetypes=[("PowerPoint", "*.pptx")])
-
 def main():
     ruta = seleccionar_archivo()
     if not ruta: return
 
     llm_ok = verificar_conexion()
     datos = extraer_datos_pptx(ruta)
-    
+
+    # --- 1. CLASIFICACIÓN ---
+    for s in datos["slides"]:
+        s["clasificacion"] = clasificar_diapositiva(
+            s,
+            llm_fn=clasificar_tipo_diapositiva if llm_ok else None
+        )
+
     slides_contenido = [s for s in datos["slides"] if not s.get("clasificacion", {}).get("excluir", False)]
 
-    # 1. Definimos las funciones de Mistral si está activo
-    fn_hss = verificar_coherencia_titulo if llm_ok else None
-    fn_nts = verificar_hilo_narrativo if llm_ok else None
-    
-    # Ejecutar motores
+    # --- 2. MÉTRICAS ---
     res_icd = calcular_icd_presentacion(slides_contenido)
     res_wps = calcular_wps_presentacion(slides_contenido)
-    res_hss = calcular_hss_presentacion(slides_contenido, llm_fn=fn_hss) # <--- Agregar esto
-    res_nts = calcular_nts(slides_contenido, llm_fn=fn_nts)
+    res_hss = calcular_hss_presentacion(slides_contenido, llm_fn=verificar_coherencia_titulo if llm_ok else None)
+    res_nts = calcular_nts(slides_contenido, llm_fn=verificar_hilo_narrativo if llm_ok else None)
 
     sg = calcular_score_global(res_icd, res_wps, res_hss, res_nts)
 
-    print(f"\n{'='*85}")
-    print(f" DIAGNÓSTICO INTEGRAL: {Path(ruta).name}")
-    print(f"{'='*85}")
+    print(f"\n{'='*85}\n DIAGNÓSTICO INTEGRAL: {Path(ruta).name}\n{'='*85}")
 
-    for s in slides_contenido:
-        n = s["slide_number"]
-        mi = next(r for r in res_icd["resultados"] if r["slide_number"] == n)
-        mw = next(r for r in res_wps["resultados"] if r["slide_number"] == n)
-        mh = next(r for r in res_hss["resultados"] if r["slide_number"] == n)
-        # NUEVO: Extraer NTS individual
-        mn = next(r for r in res_nts["resultados"] if r["slide_number"] == n)
-        
+    # --- 3. BUCLE DE DIAGNÓSTICO ---
+    for idx, s in enumerate(slides_contenido):
+        n    = s["slide_number"]
+        clas = s.get("clasificacion", {})
+
+        if clas.get("tipo") in ["portada", "indice", "referencias", "cierre"]:
+            print(f"\n[DIAPOSITIVA {n:02d}] - TIPO: {clas['tipo'].upper()} (Omitida)")
+            continue
+
+        mi = next((r for r in res_icd["resultados"] if r["slide_number"] == n), {})
+        mw = next((r for r in res_wps["resultados"] if r["slide_number"] == n), {})
+        mh = next((r for r in res_hss["resultados"] if r["slide_number"] == n), {})
+        mn = next((r for r in res_nts["resultados"] if r["slide_number"] == n), {})
+
         ss = calcular_score_slide(mi, mw, mh, mn)
 
-        print(f"\n[DIAPOSITIVA {n:02d}] - Score: {ss['score']} ({ss['zona'].upper()})")
-        print(f"  ├─ ICD: {mi['icd']} | Zona: {mi['zona']} (FSZ: {mi.get('fsz')})")
-        print(f"  ├─ WPS: {mw['palabras']} / 75")
-        print(f"  ├─ HSS: {mh['coherencia']} (Método: {mh['metodo_coherencia']})")
-        
-        # FIX: Uso de .get() para evitar errores si la clave falta por alguna razón
-        sim_ant = mn.get('sim_anterior')
-        print(f"  └─ NTS: {mn['estado']} (Puntos: {mn['nts_score']})")
-        if sim_ant is not None:
-            print(f"     (Lazo con anterior: {sim_ant})")
+        print(f"\n┌─ EVALUACIÓN DIAPOSITIVA {n:02d} {'─'*30}")
+        print(f"│ Score: {ss['score']} | Estado: {ss['zona'].upper()}")
+        print(f"├{'─'*55}")
 
+        if ss['necesita_recomendacion'] and llm_ok:
+            # Contexto NTS: texto plano de la slide anterior y siguiente (si existen)
+            slide_prev_texto = (
+                " ".join(slides_contenido[idx - 1].get("content", []))
+                if idx > 0 else None
+            )
+            slide_next_texto = (
+                " ".join(slides_contenido[idx + 1].get("content", []))
+                if idx < len(slides_contenido) - 1 else None
+            )
+
+            # ✅ Una sola llamada por slide
+            feedback = generar_diagnostico_metrico(
+                slide_data = s,
+                metricas   = ss['metricas'],
+                slide_prev = slide_prev_texto,
+                slide_next = slide_next_texto,
+            )
+
+            if "icd" in ss['aspectos_mejorar']:
+                print(f"│ 🧠 COMPLEJIDAD  (ICD: {mi.get('icd', 'N/A')})")
+                print(f"│    {feedback.get('icd', 'Ajustar nivel técnico.')}")
+
+            if "wps" in ss['aspectos_mejorar']:
+                print(f"│ 📝 PALABRAS     (WPS: {mw.get('palabras', 'N/A')})")
+                print(f"│    {feedback.get('wps', 'Reducir texto.')}")
+
+            if "hss" in ss['aspectos_mejorar']:
+                print(f"│ 🏗️  ESTRUCTURA   (HSS)")
+                print(f"│    {feedback.get('hss', 'Revisar título.')}")
+
+            if "nts" in ss['aspectos_mejorar']:
+                print(f"│ 🔗 NARRATIVA    (NTS)")
+                print(f"│    {feedback.get('nts', 'Mejorar conexión temática.')}")
+        else:
+            print(f"│ ✅ Diapositiva en rango óptimo. No se requieren ajustes.")
+
+        # ✅ El cierre va SIEMPRE al final, fuera del if/else
+        print(f"└{'─'*55}")
+
+    # --- 4. RESUMEN FINAL ---
     print(f"\n{'='*85}")
     print(f" RESUMEN FINAL DE LA PRESENTACIÓN")
     print(f"{'='*85}")

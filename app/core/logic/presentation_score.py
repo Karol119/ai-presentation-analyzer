@@ -77,100 +77,69 @@ def calcular_score_global(icd_resultado, wps_resultado, hss_resultado, nts_resul
 
 
 def calcular_score_slide(icd_r, wps_r, hss_r, nts_r):
-    icd_val = icd_r.get("icd") if icd_r and icd_r.get("calculable") else None
-    wps_val = wps_r.get("wps_score") if wps_r else None
-    hss_val = hss_r.get("hss_score") if hss_r else None
-    nts_val = nts_r.get("nts_score") if nts_r else None
+    """
+    Calcula el score de una slide evitando errores de tipo None.
+    """
+    # 1. Diccionario de métricas para el Asesor (con valores por defecto seguros)
+    metricas = {
+        "icd": {"valor": 0.0, "zona": "Sin texto", "estado": "REVISAR"},
+        "wps": {"valor": 0.0, "palabras": 0, "estado": "N/A"},
+        "hss": {"valor": 0.0, "coherencia": "N/A", "estado": "N/A"},
+        "nts": {"valor": 0.0, "estado_narrativo": "N/A", "estado": "N/A"}
+    }
+    
+    mejorar = []
+    valores_norm = {}
 
-    metricas  = {}
-    mejorar   = []
-    conservar = []
-
-    # ICD — con detección de irreducible
-    if icd_val is not None:
-        irreducible = _es_icd_irreducible(icd_r)
-        estado      = _estado_icd(icd_r.get("zona", ""), irreducible)
-        metricas["icd"] = {
-            "valor":       icd_val,
-            "zona":        icd_r.get("zona", ""),
-            "estado":      estado,
-            "irreducible": irreducible,
-        }
-        if estado == "MEJORAR":
-            mejorar.append("icd")
-        else:
-            conservar.append("icd")
+    # --- Validación Individual de Métricas ---
+    # ICD
+    if icd_r and icd_r.get("calculable") and icd_r.get("icd") is not None:
+        val = icd_r["icd"]
+        score_n = _normalizar_icd(val)
+        valores_norm["icd"] = score_n
+        metricas["icd"] = {"valor": val, "zona": icd_r.get("zona"), "estado": _estado_icd(icd_r.get("zona"), False)}
+        if metricas["icd"]["estado"] in ["MEJORAR", "ADVERTENCIA"]: mejorar.append("icd")
 
     # WPS
-    if wps_val is not None:
-        estado = _estado_wps(wps_r.get("zona", ""))
-        metricas["wps"] = {
-            "valor":    wps_val,
-            "palabras": wps_r.get("palabras", 0),
-            "zona":     wps_r.get("zona", ""),
-            "exceso":   wps_r.get("exceso", 0),
-            "deficit":  wps_r.get("deficit", 0),
-            "estado":   estado,
-        }
-        if estado == "MEJORAR":
-            mejorar.append("wps")
-        else:
-            conservar.append("wps")
+    if wps_r and wps_r.get("wps_score") is not None:
+        val = wps_r["wps_score"]
+        valores_norm["wps"] = val
+        metricas["wps"] = {"valor": val, "palabras": wps_r.get("palabras", 0), "estado": _estado_wps(wps_r.get("zona", ""))}
+        if metricas["wps"]["estado"] == "MEJORAR": mejorar.append("wps")
 
     # HSS
-    if hss_val is not None:
-        estado = _estado_hss(hss_r.get("coherencia", ""), hss_r.get("tiene_titulo", False))
-        metricas["hss"] = {
-            "valor":        hss_val,
-            "tiene_titulo": hss_r.get("tiene_titulo", False),
-            "coherencia":   hss_r.get("coherencia", ""),
-            "estado":       estado,
-        }
-        if estado == "MEJORAR":
-            mejorar.append("hss")
-        else:
-            conservar.append("hss")
+    if hss_r and hss_r.get("hss_score") is not None:
+        val = hss_r["hss_score"]
+        valores_norm["hss"] = val
+        metricas["hss"] = {"valor": val, "coherencia": hss_r.get("coherencia", "N/A"), "estado": "OK" if val > 7 else "MEJORAR"}
+        if val <= 7: mejorar.append("hss")
 
     # NTS
-    if nts_val is not None:
-        estado = _estado_nts(nts_r.get("estado", ""))
-        metricas["nts"] = {
-            "valor":            nts_val,
-            "estado_narrativo": nts_r.get("estado", ""),
-            "estado":           estado,
-        }
-        if estado == "MEJORAR":
-            mejorar.append("nts")
-        else:
-            conservar.append("nts")
+    if nts_r and nts_r.get("nts_score") is not None:
+        val = nts_r["nts_score"]
+        valores_norm["nts"] = val
+        metricas["nts"] = {"valor": val, "estado_narrativo": nts_r.get("estado", "N/A"), "estado": "OK" if val > 5 else "REVISAR"}
+        if val <= 5: mejorar.append("nts")
 
-    # Score ponderado
-    valores_norm = {}
-    if "icd" in metricas:
-        valores_norm["icd"] = _normalizar_icd(metricas["icd"]["valor"])
-    if "wps" in metricas:
-        valores_norm["wps"] = metricas["wps"]["valor"]
-    if "hss" in metricas:
-        valores_norm["hss"] = metricas["hss"]["valor"]
-    if "nts" in metricas:
-        valores_norm["nts"] = metricas["nts"]["valor"]
-
+    # --- Cálculo Ponderado Seguro ---
     if valores_norm:
-        total_pesos = sum(PESOS[k] for k in valores_norm)
-        score = sum(v * PESOS[k] for k, v in valores_norm.items()) / total_pesos
+        puntos_totales = 0.0
+        peso_acumulado = 0.0
+        for k, v in valores_norm.items():
+            # v SIEMPRE será float aquí, nunca None
+            puntos_totales += v * PESOS[k]
+            peso_acumulado += PESOS[k]
+        score = puntos_totales / peso_acumulado if peso_acumulado > 0 else 0.0
     else:
         score = 0.0
 
     return {
-        "slide_number":           icd_r.get("slide_number") if icd_r else None,
-        "score":                  round(score, 2),
-        "zona":                   _zona_global(score),
-        "metricas":               metricas,
-        "necesita_recomendacion": bool(mejorar),
-        "aspectos_mejorar":       mejorar,
-        "aspectos_conservar":     conservar,
+        "score": round(score, 2),
+        "zona": _zona_global(score),
+        "metricas": metricas,
+        "necesita_recomendacion": len(mejorar) > 0,
+        "aspectos_mejorar": mejorar
     }
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -190,21 +159,21 @@ def _es_icd_irreducible(icd_r):
 
 def _normalizar_icd(icd):
     """
-    Normaliza el ICD a una escala de 0-10.
-    Rango de excelencia (10 pts): 4.0 a 6.5.
+    Normaliza el ICD a 0-10. 
+    Maneja casos donde el ICD es None (no calculable).
     """
-    # Rango académico ideal según el cálculo del límite superior 
+    if icd is None:
+        # Si no es calculable por falta de texto, devolvemos un score neutro 
+        # o penalización mínima, dependiendo de tu criterio. 
+        # Para nivel superior, poco texto en una slide de contenido suele ser negativo.
+        return 0.0 
+    
     if 4.0 <= icd <= 6.5:
         return 10.0
     
-    # Penalización si el contenido es demasiado simple (< 4.0)
     if icd < 4.0:
-        # Si llega a 0.0, el score es 0.0 (4.0 * 2.5 = 10)
         return max(0.0, 10.0 - (4.0 - icd) * 2.5)
-    
-    # Penalización si el contenido es demasiado complejo (> 6.5)
     else:
-        # Si llega a 10.5, el score es 0.0 (4.0 * 2.5 = 10)
         return max(0.0, 10.0 - (icd - 6.5) * 2.5)
 
 
