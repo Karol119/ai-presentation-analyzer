@@ -13,7 +13,7 @@ import re
 
 _MAX_PALABRAS_FRASE = 20
 
-_RE_PUNTUACION = re.compile(r'[.!?;]\s+')
+_RE_PUNTUACION = re.compile(r'[.!?;]\s*|\n')
 _RE_BULLET     = re.compile(r'^\s*([•\-\*\u2022]|\d+[\.\)])\s+')
 
 # Tokens que NO son palabras del idioma — se excluyen del conteo de palabras
@@ -50,41 +50,33 @@ def preparar_texto_slide(slide_data):
 
 def segmentar_frases(texto):
     """
-    Divide el texto en frases respetando la estructura de diapositiva:
-      - Cada bullet = 1 frase
-      - Líneas con puntuación → dividir por . ! ? ;
-      - Líneas largas sin puntuación (> MAX palabras) → segmentar cada MAX palabras
-      - Líneas cortas sin puntuación → 1 frase
+    Mejora: Ahora considera cada línea (bullet) como una frase independiente
+    para evitar que el promedio de palabras/frase se dispare en listas.
     """
-    frases = []
-
-    for linea in _aplanar_lineas(texto):
+    frases_finales = []
+    # Dividimos primero por líneas para respetar la estructura de la slide
+    lineas = texto.split('\n')
+    
+    for linea in lineas:
         linea = linea.strip()
-        if not linea:
-            continue
-
+        if not linea: continue
+        
+        # Si es un bullet, es una frase automática
         if _RE_BULLET.match(linea):
-            frases.append(linea)
-            continue
-
-        if _RE_PUNTUACION.search(linea):
-            for parte in _RE_PUNTUACION.split(linea):
-                parte = parte.strip()
-                if parte:
-                    frases.append(parte)
-            continue
-
-        palabras = linea.split()
-        if len(palabras) > _MAX_PALABRAS_FRASE:
+            frases_finales.append(linea)
+        # Si tiene puntuación interna, subdividimos
+        elif _RE_PUNTUACION.search(linea):
+            partes = _RE_PUNTUACION.split(linea)
+            frases_finales.extend([p.strip() for p in partes if p.strip()])
+        # Si es una línea larga sin puntuación, segmentamos por longitud académica
+        elif len(linea.split()) > _MAX_PALABRAS_FRASE:
+            palabras = linea.split()
             for i in range(0, len(palabras), _MAX_PALABRAS_FRASE):
-                segmento = " ".join(palabras[i:i + _MAX_PALABRAS_FRASE])
-                if segmento:
-                    frases.append(segmento)
-            continue
-
-        frases.append(linea)
-
-    return [f for f in frases if f.strip()]
+                frases_finales.append(" ".join(palabras[i:i + _MAX_PALABRAS_FRASE]))
+        else:
+            frases_finales.append(linea)
+            
+    return frases_finales
 
 
 def contar_palabras(texto):
@@ -108,25 +100,31 @@ def contar_silabas(texto):
 
 
 def _silabas_palabra(palabra):
-    palabra = palabra.lower()
-    if not palabra:
-        return 0
-
-    silabas = 0
+    """
+    Mejora: Detección de hiatos y diptongos para mayor precisión en FSZ.
+    """
+    palabra = palabra.lower().strip()
+    if not palabra: return 0
+    
+    # Manejo de 'y' como vocal al final
+    if palabra.endswith('y'):
+        palabra = palabra[:-1] + 'i'
+        
+    count = 0
+    vowels = _VOCALES
     i = 0
-    n = len(palabra)
-
-    while i < n:
-        c = palabra[i]
-        if c in _VOCALES:
-            silabas += 1
-            if i + 1 < n and palabra[i + 1] in _VOCALES:
-                v1, v2 = c, palabra[i + 1]
-                if v1 in _DEBILES or v2 in _DEBILES:
-                    i += 1
+    while i < len(palabra):
+        if palabra[i] in vowels:
+            count += 1
+            # Si hay dos vocales juntas, checamos si es hiato o diptongo
+            if i + 1 < len(palabra) and palabra[i+1] in vowels:
+                v1, v2 = palabra[i], palabra[i+1]
+                # HIATO: Dos fuertes juntas (a-e, o-a, etc.) se cuentan como 2 sílabas
+                # Si NO es hiato (es decir, es diptongo), saltamos la vocal para contar solo 1
+                if not (v1 in _FUERTES and v2 in _FUERTES):
+                    i += 1 
         i += 1
-
-    return max(1, silabas)
+    return max(1, count)
 
 
 def _aplanar_lineas(texto):

@@ -2,7 +2,7 @@
 import requests
 
 OLLAMA_URL  = "http://localhost:11434/api/generate"
-MODELO      = "llama3.2"
+MODELO      = "mistral"
 TIMEOUT_SEG = 15
 
 _TIPOS_VALIDOS = {"portada", "indice", "referencias", "cierre", "contenido"}

@@ -35,16 +35,31 @@ SILAPAL_IRREDUCIBLE_UMBRAL = 2.7
 
 
 def calcular_score_global(icd_resultado, wps_resultado, hss_resultado, nts_resultado):
-    icd_score = icd_resultado.get("icd_promedio") or 0.0
-    icd_norm  = _normalizar_icd(icd_score)
+    """
+    Calcula el score global de la presentación.
+    MEJORA: Promedia las normalizaciones individuales para evitar que las 
+    diapositivas buenas compensen totalmente a las malas.
+    """
+    
+    # 1. ICD: Promediamos los scores ya normalizados de cada diapositiva calculable
+    icd_scores_ind = [
+        _normalizar_icd(r["icd"]) for r in icd_resultado.get("resultados", []) if r.get("calculable")
+    ]
+    icd_final = sum(icd_scores_ind) / len(icd_scores_ind) if icd_scores_ind else 0.0
+
+    # 2. Otros: Promedio directo de sus scores (WPS, HSS y NTS ya vienen normalizados)
+    wps_final = wps_resultado.get("wps_promedio", 0.0)
+    hss_final = hss_resultado.get("hss_promedio", 0.0)
+    nts_final = nts_resultado.get("nts_promedio", 0.0)
 
     scores = {
-        "icd": round(icd_norm, 2),
-        "wps": round(wps_resultado.get("wps_promedio", 0.0), 2),
-        "hss": round(hss_resultado.get("hss_promedio", 0.0), 2),
-        "nts": round(nts_resultado.get("nts_promedio", 0.0), 2),
+        "icd": round(icd_final, 2),
+        "wps": round(wps_final, 2),
+        "hss": round(hss_final, 2),
+        "nts": round(nts_final, 2),
     }
 
+    # Aplicar pesos definidos en la tesis (ICD: 35%, WPS: 25%, HSS: 25%, NTS: 15%)
     desglose = {
         f"{k}_pond": round(v * PESOS[k], 3)
         for k, v in scores.items()
@@ -174,13 +189,23 @@ def _es_icd_irreducible(icd_r):
 
 
 def _normalizar_icd(icd):
-    centro    = 5.0
-    radio     = 1.0
-    distancia = abs(icd - centro)
-    if distancia <= radio:
+    """
+    Normaliza el ICD a una escala de 0-10.
+    Rango de excelencia (10 pts): 4.0 a 6.5.
+    """
+    # Rango académico ideal según el cálculo del límite superior 
+    if 4.0 <= icd <= 6.5:
         return 10.0
-    penalizacion = (distancia - radio) * 2.0
-    return round(max(0.0, 10.0 - penalizacion), 2)
+    
+    # Penalización si el contenido es demasiado simple (< 4.0)
+    if icd < 4.0:
+        # Si llega a 0.0, el score es 0.0 (4.0 * 2.5 = 10)
+        return max(0.0, 10.0 - (4.0 - icd) * 2.5)
+    
+    # Penalización si el contenido es demasiado complejo (> 6.5)
+    else:
+        # Si llega a 10.5, el score es 0.0 (4.0 * 2.5 = 10)
+        return max(0.0, 10.0 - (icd - 6.5) * 2.5)
 
 
 def _estado_icd(zona, irreducible):

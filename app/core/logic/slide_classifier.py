@@ -54,8 +54,11 @@ _REGLAS = [
     ("R05", "indice",        0.92, lambda f: f["KT"]["indice"]),
     # R06 corregida: muchos bullets cortos solo es índice si el título sugiere agenda
     # Si no, puede ser lista de conceptos del tema → no clasificar como índice aquí
-    ("R06", "indice",        0.62, lambda f: f["B"] >= 4 and f["ABW"] <= 4 and f["W"] <= 30
-                                             and f["W_titulo"] <= 6),
+    ("R06a", "indice", 0.95, lambda f: f["KT"]["indice"] and f["B"] >= 2),
+    ("R06b", "indice", 0.55, lambda f: not f["KT"]["indice"] 
+                                     and f["B"] >= 5 
+                                     and f["ABW"] <= 3 
+                                     and f["W_titulo"] <= 3),
 
     # ── Referencias ───────────────────────────────────────────────────────────
     ("R07", "referencias",   0.92, lambda f: f["KT"]["referencias"]),

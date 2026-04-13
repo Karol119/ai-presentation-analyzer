@@ -58,24 +58,22 @@ def _procesar_diapositiva(slide, numero, alto_slide):
         "tiene_solo_imagen": False,
     }
 
-    # Título oficial del placeholder de PowerPoint
+    # 1. Título oficial: Corregido con los 3 argumentos necesarios
     if slide.shapes.title and slide.shapes.title.text.strip():
         titulo_raw = _limpiar_texto(slide.shapes.title.text)
-        # Descartar si el placeholder de título contiene solo un número decorativo
-        if not _es_numero_decorativo(titulo_raw):
+        # Pasamos el shape del título, el texto y el alto de la slide
+        if not _es_numero_decorativo(slide.shapes.title, titulo_raw, alto_slide):
             info["title"] = titulo_raw
 
     candidatos_titulo = []
 
+    # 2. Procesar todos los elementos (esto ya llama internamente a _es_numero_decorativo)
     for shape in slide.shapes:
         _procesar_shape(shape, info, candidatos_titulo, alto_slide)
 
-    # Resolver título por fallback
+    # 3. Resolver título por fallback (si no se detectó el oficial)
     if not info["title"] and candidatos_titulo:
-        candidatos_titulo.sort(
-            key=lambda x: (x["size"] or 0, -x["top"]),
-            reverse=True
-        )
+        candidatos_titulo.sort(key=lambda x: (x["size"] or 0, -x["top"]), reverse=True)
         mejor = candidatos_titulo[0]
         if mejor["words"] <= _MAX_PALABRAS_TITULO and len(mejor["text"]) <= _MAX_CHARS_TITULO:
             info["title"] = mejor["text"]
@@ -85,11 +83,8 @@ def _procesar_diapositiva(slide, numero, alto_slide):
             for c in candidatos_titulo:
                 info["content"].append(c["text"])
 
-    # Limpiar números decorativos del contenido
-    info["content"] = [
-        t for t in info["content"]
-        if not _es_numero_decorativo(t)
-    ]
+    # Eliminamos la limpieza final redundante que causaba el error 
+    # porque _procesar_shape ya hizo el filtrado elemento por elemento.
 
     sin_texto = len(info["content"]) == 0 and info["title"] == ""
     info["tiene_solo_imagen"] = sin_texto and len(info["images"]) > 0
@@ -98,48 +93,69 @@ def _procesar_diapositiva(slide, numero, alto_slide):
 
 
 def _procesar_shape(shape, info, candidatos_titulo, alto_slide):
-    # Grupos: recursivo
+    """
+    Procesa de forma recursiva e inteligente cada elemento de la diapositiva.
+    Extrae texto, tablas, imágenes y clasifica según posición.
+    """
+    
+    # 1. Grupos: Llamada recursiva para procesar elementos internos
     if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
         for child in shape.shapes:
             _procesar_shape(child, info, candidatos_titulo, alto_slide)
         return
 
-    # Imágenes
+    # 2. Imágenes: Registro de presencia para métrica WPS
     if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
         info["images"].append(shape.name)
         return
 
+    # 3. Tablas: Extracción de contenido estructurado
+    if shape.shape_type == MSO_SHAPE_TYPE.TABLE:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                texto_celda = _limpiar_texto(cell.text)
+                if texto_celda and not _es_numero_decorativo(cell, texto_celda, alto_slide):
+                    info["content"].append(texto_celda)
+        return
+
+    # 4. Validación de texto: Si el objeto no tiene texto, terminamos
     if not hasattr(shape, "text") or not shape.text.strip():
         return
 
     texto = _limpiar_texto(shape.text)
+    
+    # Evitar duplicar el título oficial de PowerPoint
     if not texto or texto == info["title"]:
         return
 
-    # Descartar números decorativos antes de cualquier otra lógica
-    if _es_numero_decorativo(texto):
+    # 5. Filtro de Números Decorativos: Solo descarta si es un número de página
+    # (Usa la versión mejorada que revisamos que valida la posición)
+    if _es_numero_decorativo(shape, texto, alto_slide):
         return
 
+    # 6. Análisis de Posición y Contenido
     top_ratio = shape.top / alto_slide
     palabras  = len(texto.split())
 
-    # Pie de página: lógica mejorada en dos niveles
+    # Lógica de Pie de página: Solo si está en el extremo inferior y parece metadata
     if top_ratio >= _UMBRAL_PIE_TOP:
         if _es_pie_de_pagina(texto, palabras):
             info["footer"].append(texto)
             return
 
-    # Candidato a título (fallback, tercio superior)
+    # Candidato a título (Fallback): Si no hay título oficial y está en la parte superior
     if not info["title"] and top_ratio < _UMBRAL_TITULO_TOP:
         size = _tamanio_fuente(shape)
         candidatos_titulo.append({
-            "text": texto, "size": size,
-            "top": shape.top, "words": palabras
+            "text": texto, 
+            "size": size,
+            "top": shape.top, 
+            "words": palabras
         })
         return
 
+    # 7. Contenido General: Todo lo que no fue título, imagen o pie
     info["content"].append(texto)
-
 
 def _es_pie_de_pagina(texto, palabras):
     """
@@ -160,14 +176,24 @@ def _es_pie_de_pagina(texto, palabras):
     return False
 
 
-def _es_numero_decorativo(texto):
+def _es_numero_decorativo(shape, texto, alto_slide):
     """
-    Devuelve True si el texto es solo un número de 1 a 3 dígitos.
-    Estos son típicamente numeración de página o marcadores decorativos de paso.
+    Versión robusta: Solo descarta si es un número solitario 
+    en las zonas de numeración (extremos superior/inferior).
     """
     limpio = texto.strip()
-    return bool(_RE_SOLO_NUMERO.match(limpio))
+    if not bool(_RE_SOLO_NUMERO.match(limpio)):
+        return False
+    
+    # Validar posición relativa
+    top_ratio = shape.top / alto_slide
+    es_zona_numeracion = top_ratio < 0.05 or top_ratio > 0.90
+    
+    # Validar si el nombre del objeto indica que es un número de página
+    nombre_obj = shape.name.lower()
+    is_page_num_type = "slide number" in nombre_obj or "page" in nombre_obj
 
+    return es_zona_numeracion or is_page_num_type
 
 def _tamanio_fuente(shape):
     try:
@@ -181,3 +207,10 @@ def _limpiar_texto(texto):
     texto  = texto.replace("\r\n", "\n").replace("\r", "\n")
     lineas = [l.strip() for l in texto.split("\n") if l.strip()]
     return " \n ".join(lineas)
+
+def limpiar_para_metricas(texto):
+    """Limpia saltos de línea y espacios extra para que ICD y WPS no den errores."""
+    if not texto: return ""
+    # Eliminar múltiples espacios y normalizar saltos
+    temp = re.sub(r'\s+', ' ', texto)
+    return temp.strip()
