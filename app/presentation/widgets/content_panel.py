@@ -12,6 +12,7 @@ from app.presentation.views.ui_state import estado, ui
 from app.core.controller.presentation_controller import (
     orquestar_proceso_completo,
     orquestar_eliminacion_presentacion,
+    orquestar_actualizacion_analisis
 )
 from app.core.controller.subject_controller import (
     obtener_id_materia, 
@@ -26,6 +27,8 @@ from app.presentation.widgets.dialogs import (
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 from app.presentation.views import navigator
+
+
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
@@ -224,7 +227,7 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     items_frame.pack(fill="both", expand=True, padx=6, pady=(8, 4))
 
     texto_analisis = "📊   Ver análisis" if ya_analizada else "🔍   Analizar presentación"
-    cmd_analisis   = _placeholder if ya_analizada else lambda: _iniciar_analisis(subject, name, ruta_pdf, toggle_menu)
+    cmd_analisis   = (lambda: _ver_analisis(subject, name, ruta_pdf, toggle_menu)) if ya_analizada else (lambda: _iniciar_analisis(subject, name, ruta_pdf, toggle_menu, comando_actualizar_boton))
 
     opciones = [
         ("🖥   Presentar clase",  "#1E293B", _placeholder),
@@ -267,26 +270,31 @@ def _placeholder():
     pass
 
 
-def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_menu):
-    """
-    Flujo completo al pulsar 'Analizar presentación':
-      1. Cierra el menú de la tarjeta
-      2. Muestra el modal de carga
-      3. Ejecuta el análisis simulado en worker thread
-      4. Cierra el modal y navega a la vista de análisis
-    """
-    import time
+def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_menu, comando_actualizar_boton):
+    # 1. VERIFICAR Y ACTIVAR CANDADO
+    if estado.get("bloqueo_ui"): return
+    estado["bloqueo_ui"] = True
 
+    import time
     toggle_menu(False)
     loading_modal = mostrar_modal_cargando(ui["root"], "Analizando presentación...")
 
     def tarea_analisis():
-        """Worker thread: análisis simulado — aquí irá la lógica real."""
-        time.sleep(2)
+        time.sleep(2) 
+        id_materia = obtener_id_materia(subject)
+        orquestar_actualizacion_analisis(nombre_presentacion, id_materia)
 
     def finalizar(resultado):
         if loading_modal.winfo_exists():
             loading_modal.destroy()
+            
+        id_materia = obtener_id_materia(subject)
+        estado["subject_files"][subject] = obtener_archivos_materia(id_materia)
+        rebuild_cards(subject, comando_actualizar_boton)
+        comando_actualizar_boton()
+
+        # 2. LIBERAR CANDADO ANTES DE NAVEGAR
+        estado["bloqueo_ui"] = False 
         navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
 
     ejecutar_tarea_asincrona(
@@ -294,6 +302,13 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, tog
         on_finished_callback=finalizar,
     )
 
+def _ver_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_menu):
+    """
+    Navega directamente a la vista de análisis sin simular carga ni actualizar BD.
+    """
+    toggle_menu(False) # Cierra el menú de la tarjeta
+    navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
+    
 def _make_upload_card(parent, subject, comando_actualizar_boton):
     """Crea y retorna la tarjeta de carga (sin posicionarla)."""
     card = ctk.CTkFrame(parent, width=CARD_W, height=CARD_H, fg_color="#FAFBFD", 
@@ -312,39 +327,29 @@ def _make_upload_card(parent, subject, comando_actualizar_boton):
     return card # Retornamos el widget
 
 def _pick_files(subject: str, comando_actualizar_boton: Callable):
-    """
-    Orquesta la selección y el procesamiento de presentaciones mediante delegación 
-    de hilos, asegurando que la interfaz permanezca reactiva.
-    """
+    # 1. VERIFICAR Y ACTIVAR CANDADO
+    if estado.get("bloqueo_ui"): return
+    estado["bloqueo_ui"] = True
+
     file_paths = filedialog.askopenfilenames(filetypes=[("PPTX", "*.pptx")])
     if not file_paths:
+        # Si el usuario cancela la ventana de Windows, liberamos el candado
+        estado["bloqueo_ui"] = False
         return
     
-    # Bloqueo preventivo de la interfaz mediante modal (Grab Set)
     loading_modal = mostrar_modal_cargando(ui["root"], "Cargando...")
     subject_id = obtener_id_materia(subject)
 
     def processing_task() -> list:
-        """
-        Lógica ejecutada en Worker Thread. 
-        Se comunica con el controlador para procesar los archivos físicamente.
-        """
         skipped_files = []
         for path in file_paths:
-            # ✅ Corregido: Usamos 'message' consistentemente
             success, message = orquestar_proceso_completo(path, subject_id)
             if not success:
-                # El controlador reporta si el archivo es un duplicado por Hash
                 if "ya ha sido procesada" in message or "hash" in message:
                     skipped_files.append(os.path.basename(path))
         return skipped_files
 
     def finalize_ui_update(skipped_presentations: list):
-        """
-        Callback de retorno al hilo principal (Main Thread).
-        Actualiza los widgets y notifica resultados al usuario.
-        """
-        # Verificamos que el modal exista antes de intentar destruirlo
         if loading_modal.winfo_exists():
             loading_modal.destroy()
         
@@ -353,17 +358,18 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
             alert_msg = f"Las siguientes presentaciones ya se encuentran registradas:{file_names}"
             advertir_presentacion_existente(ui["root"], alert_msg)
         
-        # Sincronización del estado global y refresco de tarjetas
         estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
         rebuild_cards(subject, comando_actualizar_boton)
         comando_actualizar_boton()
+        
+        # 2. LIBERAR CANDADO AL TERMINAR
+        estado["bloqueo_ui"] = False
 
-    # Delegación asíncrona para evitar el congelamiento de la ventana
     ejecutar_tarea_asincrona(
         target_task=processing_task, 
         on_finished_callback=finalize_ui_update
     )
-
+    
 def _remove_file(subject, name, comando_actualizar_boton):
     """
     Nota: Esta función sigue usando la lógica anterior. 

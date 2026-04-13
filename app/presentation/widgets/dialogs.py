@@ -101,7 +101,8 @@ def mostrar_modal_cargando(parent, mensaje="Procesando presentación(es)..."):
     win = ctk.CTkToplevel(parent)
     win.title("Cargando")
     win.geometry("360x180")
-    win.grab_set()  # Bloquea interacción con la ventana principal
+    win.grab_set()
+    win.after(10, lambda: win.focus_force())
     win.configure(fg_color="white")
     win.resizable(False, False)
     

@@ -31,6 +31,8 @@ def build_presentation_panel(subject: str, nombre_presentacion: str, ruta_pdf: s
     """
     Construye el panel izquierdo con el visor de diapositivas.
     """
+    _visor["on_pagina_cambiada"] = None
+
     panel = ctk.CTkFrame(
         ui["analysis_body"],
         fg_color="white",
@@ -230,3 +232,12 @@ def _pagina_siguiente():
     if _visor["pagina_actual"] < _visor["total_paginas"] - 1:
         _visor["pagina_actual"] += 1
         _mostrar_pagina(_visor["pagina_actual"])
+
+def cerrar_pdf():
+    """
+    Cierra el documento PDF activo para liberar el archivo de la memoria 
+    y permitir que Windows lo pueda eliminar o modificar después.
+    """
+    if _visor["doc"] is not None:
+        _visor["doc"].close()
+        _visor["doc"] = None

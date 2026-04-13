@@ -5,7 +5,8 @@ estado = {
     "subjects": [],
     "subject_files": {},
     "active": "",
-    "right_panel_visible": True
+    "right_panel_visible": True,
+    "bloqueo_ui": False
 }
 
 # Diccionario para guardar las referencias a los widgets de la interfaz

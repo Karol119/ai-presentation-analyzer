@@ -4,7 +4,8 @@ from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
 from app.core.logic.text_extractor import contar_diapositivas
 from app.data.queries import existe_hash_en_db
-from app.data.persistence import registrar_presentacion, eliminar_presentacion_completa # <-- Añadir importación
+from app.data.persistence import registrar_presentacion, eliminar_presentacion_completa
+from app.data.queries import existe_hash_en_db, actualizar_estado_analisis
 
 def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
@@ -50,3 +51,9 @@ def orquestar_eliminacion_presentacion(nombre_presentacion, id_materia):
     física y lógicamente una presentación.
     """
     return eliminar_presentacion_completa(nombre_presentacion, id_materia)
+
+def orquestar_actualizacion_analisis(nombre_presentacion, id_materia):
+    """
+    Marca una presentación como analizada en la base de datos tras finalizar el proceso.
+    """
+    return actualizar_estado_analisis(nombre_presentacion, id_materia, 1)

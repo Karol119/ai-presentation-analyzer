@@ -158,3 +158,28 @@ def obtener_presentaciones_por_materia(id_materia):
     resultados = cursor.fetchall()
     conn.close()
     return resultados
+
+def actualizar_estado_analisis(nombre_presentacion, id_materia, estado_analisis=1):
+    """
+    Actualiza el estado de análisis (1 o 0) de una presentación específica.
+    """
+    conn = conectar_db()
+    if not conn: return False
+    try:
+        cursor = conn.cursor()
+        query = """
+            UPDATE Historial_de_Versiones 
+            SET analisis = ? 
+            WHERE id_presentacion = (
+                SELECT id_presentacion FROM Presentacion 
+                WHERE presentacion = ? AND id_unidad_aprendizaje = ?
+            ) AND numero_version = 1
+        """
+        cursor.execute(query, (estado_analisis, nombre_presentacion, id_materia))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error actualizando estado de análisis: {e}")
+        return False
+    finally:
+        conn.close()

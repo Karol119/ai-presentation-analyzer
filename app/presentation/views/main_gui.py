@@ -68,12 +68,29 @@ def _seleccionar_materia(name: str):
 def _eliminar_materia(nombre_materia: str):
     """
     Muestra una alerta visual antes de proceder con el borrado 
-    de la materia y sus archivos. Permite borrar hasta la última materia.
+    de la materia y sus archivos. Implementa un bloqueo de UI para evitar
+    múltiples clics y peticiones.
     """
+    # 1. VERIFICAR Y ACTIVAR CANDADO (Prevención de doble clic)
+    if estado.get("bloqueo_ui"): 
+        return
+    estado["bloqueo_ui"] = True
+
     # Ventana modal de advertencia
     win = ctk.CTkToplevel(ui["root"])
     win.title("Confirmar eliminación")
     win.geometry("400x220")
+    
+    # --- FUNCIÓN DE LIMPIEZA / SALIDA ---
+    def cerrar_modal():
+        """Libera el candado y destruye la ventana modal."""
+        estado["bloqueo_ui"] = False
+        win.destroy()
+
+    # 2. CAPTURAR CIERRE POR LA "X"
+    # Esto asegura que si el usuario cierra la ventana sin pulsar botones, el candado se libere.
+    win.protocol("WM_DELETE_WINDOW", cerrar_modal)
+
     win.grab_set() 
     win.after(10, lambda: win.focus_force())
 
@@ -98,63 +115,71 @@ def _eliminar_materia(nombre_materia: str):
     btn_row.pack(side="bottom", fill="x", pady=15)
 
     def confirmar():
+        # Destruimos la ventana primero. El candado NO se libera aquí,
+        # se liberará hasta que '_ejecutar_borrado_real_materia' termine su trabajo.
         win.destroy()
         _ejecutar_borrado_real_materia(nombre_materia)
 
+    # BOTÓN ELIMINAR
     ctk.CTkButton(
         btn_row, text="Eliminar todo", command=confirmar,
         fg_color="#EF4444", hover_color="#DC2626", text_color="white",
         width=120, height=34, corner_radius=8
     ).pack(side="left", padx=15)
 
+    # BOTÓN CANCELAR
     ctk.CTkButton(
-        btn_row, text="Cancelar", command=win.destroy,
+        btn_row, text="Cancelar", command=cerrar_modal,
         fg_color="transparent", text_color="#64748B", border_width=1,
         border_color="#CBD5E1", width=120, height=34, corner_radius=8
     ).pack(side="right", padx=15)
 
+
 def _ejecutar_borrado_real_materia(nombre_materia):
-    # 1. Llamar al controlador para borrar archivos y registros en BD
-    exito, mensaje = orquestar_desactivacion_materia(nombre_materia)
-    
-    if exito:
-        # 2. Remover del estado global
-        if nombre_materia in estado["subjects"]:
-            estado["subjects"].remove(nombre_materia)
+    """
+    Realiza la eliminación física y lógica. El candado se libera
+    estrictamente al finalizar todo el proceso.
+    """
+    try:
+        # 1. Llamar al controlador para borrar archivos y registros en BD
+        exito, mensaje = orquestar_desactivacion_materia(nombre_materia)
         
-        if nombre_materia in estado["subject_files"]:
-            del estado["subject_files"][nombre_materia]
-
-        # 3. Limpiar diccionarios de UI y destruir widgets de la sidebar
-        ui["sidebar_btns"] = {} 
-        for widget in ui["sidebar_list"].winfo_children():
-            widget.destroy()
-
-        # 4. Manejo de la lógica según si quedan materias o no
-        if not estado["subjects"]:
-            # CASO: No quedan materias
-            estado["active"] = ""
-            # Ocultamos paneles y mostramos vista de bienvenida
-            from app.presentation.widgets.content_panel import show_empty_state
-            show_empty_state()
-            # Limpiamos el panel derecho (temario)
-            refresh_right_panel("")
-            # Actualizamos botón de analizar (se deshabilitará)
-            _actualizar_boton_analizar()
-        else:
-            # CASO: Aún quedan materias
-            if estado["active"] == nombre_materia:
-                estado["active"] = estado["subjects"][0]
+        if exito:
+            # 2. Remover del estado global
+            if nombre_materia in estado["subjects"]:
+                estado["subjects"].remove(nombre_materia)
             
-            # Volver a llenar la sidebar con las materias restantes
-            from app.presentation.widgets.sidebar import create_sidebar_item
-            for s in estado["subjects"]:
-                create_sidebar_item(s, _seleccionar_materia, _eliminar_materia)
+            if nombre_materia in estado["subject_files"]:
+                del estado["subject_files"][nombre_materia]
+
+            # 3. Limpiar diccionarios de UI y destruir widgets de la sidebar
+            ui["sidebar_btns"] = {} 
+            for widget in ui["sidebar_list"].winfo_children():
+                widget.destroy()
+
+            # 4. Manejo de la lógica según si quedan materias o no
+            if not estado["subjects"]:
+                estado["active"] = ""
+                from app.presentation.widgets.content_panel import show_empty_state
+                show_empty_state()
+                refresh_right_panel("")
+                _actualizar_boton_analizar()
+            else:
+                if estado["active"] == nombre_materia:
+                    estado["active"] = estado["subjects"][0]
                 
-            # Refrescar visualmente la selección actual
-            refresh_sidebar_styles()
-            show_panel(estado["active"])
-            refresh_right_panel(estado["active"])
+                from app.presentation.widgets.sidebar import create_sidebar_item
+                for s in estado["subjects"]:
+                    create_sidebar_item(s, _seleccionar_materia, _eliminar_materia)
+                    
+                refresh_sidebar_styles()
+                show_panel(estado["active"])
+                refresh_right_panel(estado["active"])
+
+    finally:
+        # 5. LIBERACIÓN FINAL DEL CANDADO
+        # Garantiza que el sistema vuelva a estar disponible incluso si hubo un error en el borrado.
+        estado["bloqueo_ui"] = False
 
 def _abrir_modal_agregar_materia():
     win = ctk.CTkToplevel(ui["root"])
