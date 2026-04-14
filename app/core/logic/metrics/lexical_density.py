@@ -1,3 +1,4 @@
+# app/core/logic/metrics/lexical_density.py
 """
 densidad_lexica.py
 Calcula la densidad léxica (DL) y su forma normalizada (DLN).

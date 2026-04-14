@@ -1,3 +1,4 @@
+# app/core/logic/metrics/narrative_thread.py
 import re
 import math
 from app.infrastructure.ollama.narrativa_service import verificar_hilo_narrativo

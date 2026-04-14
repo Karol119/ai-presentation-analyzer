@@ -1,9 +1,11 @@
+# app/infrastructure/ollama/coherencia_service.py
 import requests
 import re
 
 OLLAMA_URL  = "http://localhost:11434/api/generate"
 MODELO      = "mistral"
-TIMEOUT_SEG = 15
+TIMEOUT_NORMAL = 15
+TIMEOUT_CARGA  = 60 # Tiempo extra para la primera vez que se carga el modelo
 
 # Nuevo prompt optimizado para Mistral con tags [INST]
 _PROMPT_EVALUACION_HSS = """[INST] Eres un experto en pedagogía universitaria y diseño instruccional. 
@@ -20,12 +22,33 @@ CONTENIDO: {contenido}
 
 Responde ÚNICAMENTE con un número del 1 al 10. No escribas texto, ni explicaciones, ni puntos. [/INST]"""
 
+def precargar_modelo():
+    """
+    Hace una petición mínima en frío para que Ollama cargue el modelo en RAM/VRAM.
+    Puedes llamar esta función cuando arranque tu aplicación (ej. en el main.py).
+    """
+    try:
+        print(f"[ollama] Iniciando/Cargando el modelo '{MODELO}' en memoria...")
+        requests.post(
+            OLLAMA_URL,
+            json={
+                "model": MODELO,
+                "prompt": "", 
+                "options": {"num_predict": 1} # Petición mínima para no gastar recursos
+            },
+            timeout=TIMEOUT_CARGA
+        )
+        print("[ollama] Modelo cargado y listo para usarse.")
+    except requests.exceptions.ConnectionError:
+        print("[ollama] ERROR: El servicio de Ollama no está corriendo. Asegúrate de iniciar la app de Ollama o ejecutar 'ollama serve'.")
+    except Exception as e:
+        print(f"[ollama] Advertencia al precargar: {e}")
+
 def verificar_coherencia_titulo(titulo, contenido):
     """
     Pide a Mistral una calificación numérica de coherencia/claridad.
     Returns: int (1-10) o None si hay error.
     """
-    # Si no hay contenido, evaluamos la claridad intrínseca del título
     cuerpo_para_llm = contenido[:1500] if contenido.strip() else "(Sin contenido adicional en la diapositiva)"
     
     prompt = _PROMPT_EVALUACION_HSS.format(
@@ -42,17 +65,17 @@ def verificar_coherencia_titulo(titulo, contenido):
                 "stream": False,
                 "options": {"temperature": 0.0, "num_predict": 5}
             },
-            timeout=TIMEOUT_SEG
+            # Usamos el timeout largo por si no se hizo la precarga
+            timeout=TIMEOUT_CARGA 
         )
         response.raise_for_status()
         respuesta = response.json().get("response", "").strip()
         
-        # Extraemos el número de la respuesta (por si Mistral añade texto extra)
         numeros = re.findall(r'\d+', respuesta)
         if numeros:
             score = int(numeros[0])
-            return min(10, max(1, score)) # Aseguramos que esté entre 1 y 10
-        return 5 # Fallback si no detecta número
+            return min(10, max(1, score))
+        return 5 
         
     except Exception as e:
         print(f"[ollama] Error en evaluación HSS: {e}")

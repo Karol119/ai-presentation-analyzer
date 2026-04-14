@@ -1,3 +1,4 @@
+# app/infrastructure/ollama/diagnostic_service.py
 import requests
 import json
 

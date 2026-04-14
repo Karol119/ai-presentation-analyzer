@@ -1,3 +1,5 @@
+# app/core/logic/metrics/readability.py
+
 """
 calculo_legibilidad.py
 Calcula el índice Flesch-Szigriszt (FSZ) adaptado al español

@@ -1,3 +1,4 @@
+# app/core/logic/metrics/header_structure.py
 """
 header_structure.py
 Métrica de estructura del encabezado (Header Structure Score — HSS).

@@ -1,3 +1,5 @@
+# app/core/logic/metrics/word_count.py
+
 import re
 
 MAX_OPTIMO          = 75

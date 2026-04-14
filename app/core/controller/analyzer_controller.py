@@ -1,3 +1,4 @@
+# app/core/controller/analyzer_controller.py
 """
 Orquestador principal del análisis de presentaciones.
 Solo delega: no imprime, no selecciona archivos, no hace I/O de ningún tipo.
@@ -13,15 +14,13 @@ from app.core.logic.metrics.header_structure import calcular_hss_presentacion
 from app.core.logic.metrics.narrative_thread import calcular_nts
 from app.core.logic.presentation_score   import calcular_score_global, calcular_score_slide
 from app.infrastructure.ollama.diagnostic_service import generar_diagnostico_metrico
-from app.infrastructure.ollama.ollama_service     import verificar_conexion, clasificar_tipo_diapositiva
+from app.infrastructure.ollama.ollama_service import verificar_conexion, clasificar_tipo_diapositiva, iniciar_ollama_background
 from app.infrastructure.ollama.coherencia_service import verificar_coherencia_titulo
 from app.infrastructure.ollama.narrativa_service  import verificar_hilo_narrativo
 from app.infrastructure.ollama.restructure_service import reestructurar_slide
 
 # Tipos de slide que no se analizan (portada, índice, etc.)
 _TIPOS_OMITIDOS = {"portada", "indice", "referencias", "cierre", "sin_contenido"}
-
-
 def analizar_presentacion(ruta: str) -> dict:
     """
     Ejecuta el pipeline completo de análisis sobre un archivo .pptx.
@@ -62,7 +61,12 @@ def analizar_presentacion(ruta: str) -> dict:
         ]
     }
     """
-    llm_ok = verificar_conexion()
+    # ── 0. ENCENDIDO AUTOMÁTICO DE OLLAMA ─────────────────────────────────────
+    # Esto encenderá el motor si estaba apagado, o pasará de largo si ya estaba activo.
+    llm_ok = iniciar_ollama_background()
+    
+    if not llm_ok:
+        print("Advertencia: No se pudo iniciar el LLM. El análisis se hará sin IA.")
     datos  = extraer_datos_pptx(ruta)
 
     # ── 1. Clasificación ──────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+# app/infrastructure/ollama/restructure_service.py
 """
 Servicio de reestructuración de diapositivas.
 Recibe el contenido original y los resultados de las métricas,
