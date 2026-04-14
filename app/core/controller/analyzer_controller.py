@@ -16,6 +16,7 @@ from app.infrastructure.ollama.diagnostic_service import generar_diagnostico_met
 from app.infrastructure.ollama.ollama_service     import verificar_conexion, clasificar_tipo_diapositiva
 from app.infrastructure.ollama.coherencia_service import verificar_coherencia_titulo
 from app.infrastructure.ollama.narrativa_service  import verificar_hilo_narrativo
+from app.infrastructure.ollama.restructure_service import reestructurar_slide
 
 # Tipos de slide que no se analizan (portada, índice, etc.)
 _TIPOS_OMITIDOS = {"portada", "indice", "referencias", "cierre", "sin_contenido"}
@@ -106,10 +107,10 @@ def analizar_presentacion(ruta: str) -> dict:
                 "score":        None,
                 "metricas_raw": None,
                 "feedback":     None,
+                "restructura":  None,   # ← consistencia con el resto
             })
             continue
 
-        # Resultados individuales de cada motor
         mi = next((r for r in res_icd["resultados"] if r["slide_number"] == n), {})
         mw = next((r for r in res_wps["resultados"] if r["slide_number"] == n), {})
         mh = next((r for r in res_hss["resultados"] if r["slide_number"] == n), {})
@@ -117,18 +118,28 @@ def analizar_presentacion(ruta: str) -> dict:
 
         ss = calcular_score_slide(mi, mw, mh, mn)
 
-        # Feedback LLM solo cuando la slide necesita recomendación
-        feedback = None
+        # ── Contexto NTS: se calcula UNA sola vez y lo usan ambos servicios ──────
+        # ANTES estaba duplicado dentro de cada if, aquí se define siempre
+        slide_prev_texto = (
+            " ".join(slides_contenido[idx - 1].get("content", []))
+            if idx > 0 else None
+        )
+        slide_next_texto = (
+            " ".join(slides_contenido[idx + 1].get("content", []))
+            if idx < len(slides_contenido) - 1 else None
+        )
+
+        feedback    = None
+        restructura = None   # ← valor por defecto explícito
+
         if ss["necesita_recomendacion"] and llm_ok:
-            slide_prev_texto = (
-                " ".join(slides_contenido[idx - 1].get("content", []))
-                if idx > 0 else None
-            )
-            slide_next_texto = (
-                " ".join(slides_contenido[idx + 1].get("content", []))
-                if idx < len(slides_contenido) - 1 else None
-            )
             feedback = generar_diagnostico_metrico(
+                slide_data = s,
+                metricas   = ss["metricas"],
+                slide_prev = slide_prev_texto,
+                slide_next = slide_next_texto,
+            )
+            restructura = reestructurar_slide(
                 slide_data = s,
                 metricas   = ss["metricas"],
                 slide_prev = slide_prev_texto,
@@ -142,6 +153,7 @@ def analizar_presentacion(ruta: str) -> dict:
             "score":        ss,
             "metricas_raw": {"icd": mi, "wps": mw, "hss": mh, "nts": mn},
             "feedback":     feedback,
+            "restructura":  restructura,   # ← aquí estaba el bug principal
         })
 
     return {
@@ -149,3 +161,162 @@ def analizar_presentacion(ruta: str) -> dict:
         "score_global": score_global,
         "slides":       slides_resultado,
     }
+    
+    
+def exportar_resultado_json(resultado: dict) -> dict:
+    """
+    Transforma el resultado de analizar_presentacion() a un dict
+    limpio y serializable, listo para JSON o para la GUI.
+
+    Estructura de salida:
+    {
+        "presentacion": {
+            "nombre":       str,
+            "score_global": float,
+            "zona_global":  str,
+            "desglose": {
+                "icd": float,
+                "wps": float,
+                "hss": float,
+                "nts": float
+            }
+        },
+        "diapositivas": [
+            {
+                "numero":   int,
+                "tipo":     str,
+                "omitida":  bool,
+
+                // Solo si omitida=False:
+                "score":    float,
+                "zona":     str,
+                "metricas": {
+                    "icd": { "valor": float, "zona": str,  "aprobada": bool },
+                    "wps": { "palabras": int,               "aprobada": bool },
+                    "hss": { "coherencia": str,             "aprobada": bool },
+                    "nts": { "estado": str,                 "aprobada": bool }
+                },
+                "aspectos_a_mejorar": ["icd", "wps", ...],
+
+                "feedback": {
+                    "icd":           str | null,
+                    "wps":           str | null,
+                    "hss":           str | null,
+                    "nts":           str | null,
+                    "preguntas":     [str, ...],
+                    "datos_curiosos": [str, ...]
+                } | null,
+
+                "reestructura": {
+                    "exito":    bool,
+                    "intentos": int,
+                    "diapositivas": [
+                        {
+                            "titulo":    str,
+                            "contenido": [str, ...]
+                        },
+                        ...
+                    ],
+                    "metricas_pendientes": [str, ...]
+                } | null
+            },
+            ...
+        ]
+    }
+    """
+    sg = resultado["score_global"]
+
+    salida = {
+        "presentacion": {
+            "nombre":       resultado["nombre"],
+            "score_global": sg["score_global"],
+            "zona_global":  sg["zona_global"],
+            "desglose": {
+                "icd": sg["scores_metrica"]["icd"],
+                "wps": sg["scores_metrica"]["wps"],
+                "hss": sg["scores_metrica"]["hss"],
+                "nts": sg["scores_metrica"]["nts"],
+            },
+        },
+        "diapositivas": [],
+    }
+
+    for slide in resultado["slides"]:
+        n = slide["slide_number"]
+
+        # ── Slide omitida (portada, índice, etc.) ─────────────────────────
+        if slide["omitida"]:
+            salida["diapositivas"].append({
+                "numero":  n,
+                "tipo":    slide["tipo"],
+                "omitida": True,
+            })
+            continue
+
+        ss  = slide["score"]
+        raw = slide["metricas_raw"]
+
+        # ── Métricas individuales normalizadas ────────────────────────────
+        metricas_limpias = {
+            "icd": {
+                "valor":    raw["icd"].get("icd"),
+                "zona":     raw["icd"].get("zona"),
+                "aprobada": "icd" not in ss["aspectos_mejorar"],
+            },
+            "wps": {
+                "palabras": raw["wps"].get("palabras"),
+                "aprobada": "wps" not in ss["aspectos_mejorar"],
+            },
+            "hss": {
+                "coherencia": raw["hss"].get("coherencia"),
+                "aprobada":   "hss" not in ss["aspectos_mejorar"],
+            },
+            "nts": {
+                "estado":   raw["nts"].get("estado"),
+                "aprobada": "nts" not in ss["aspectos_mejorar"],
+            },
+        }
+
+        # ── Feedback ──────────────────────────────────────────────────────
+        fb = slide["feedback"]
+        feedback_limpio = None
+        if fb:
+            feedback_limpio = {
+                "icd":           fb.get("icd"),
+                "wps":           fb.get("wps"),
+                "hss":           fb.get("hss"),
+                "nts":           fb.get("nts"),
+                "preguntas":     fb.get("preguntas", []),
+                "datos_curiosos": fb.get("datos_curiosos", []),
+            }
+
+        # ── Reestructura ──────────────────────────────────────────────────
+        re = slide["restructura"]
+        restructura_limpia = None
+        if re:
+            restructura_limpia = {
+                "exito":    re["exito"],
+                "intentos": re["intentos"],
+                "diapositivas": [
+                    {
+                        "titulo":    d["titulo"],
+                        "contenido": d["contenido"],
+                    }
+                    for d in re["diapositivas"]
+                ],
+                "metricas_pendientes": re.get("metricas_fallidas_final", []),
+            }
+
+        salida["diapositivas"].append({
+            "numero":             n,
+            "tipo":               slide["tipo"],
+            "omitida":            False,
+            "score":              ss["score"],
+            "zona":               ss["zona"],
+            "metricas":           metricas_limpias,
+            "aspectos_a_mejorar": ss["aspectos_mejorar"],
+            "feedback":           feedback_limpio,
+            "reestructura":       restructura_limpia,
+        })
+
+    return salida

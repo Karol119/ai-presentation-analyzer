@@ -4,14 +4,16 @@ Responsabilidad única: seleccionar archivo e imprimir el resultado del análisi
 Toda la lógica vive en analyzer_controller.py.
 """
 import sys
+import json
 import time
 import tkinter as tk
-from tkinter import filedialog
 from pathlib import Path
+from tkinter import filedialog
+from app.core.controller.analyzer_controller import analizar_presentacion, exportar_resultado_json
+
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.core.controller.analyzer_controller import analizar_presentacion
 inicio = time.time()
 
 def seleccionar_archivo() -> str:
@@ -20,6 +22,12 @@ def seleccionar_archivo() -> str:
     root.attributes("-topmost", True)
     return filedialog.askopenfilename(filetypes=[("PowerPoint", "*.pptx")])
 
+def guardar_json(resultado_json: dict, ruta_pptx: str) -> str:
+    """Guarda el JSON junto al archivo original con el mismo nombre."""
+    ruta_salida = Path(ruta_pptx).with_suffix(".json")
+    with open(ruta_salida, "w", encoding="utf-8") as f:
+        json.dump(resultado_json, f, ensure_ascii=False, indent=2)
+    return str(ruta_salida)
 
 def imprimir_resultado(resultado: dict) -> None:
     sg = resultado["score_global"]
@@ -76,6 +84,26 @@ def imprimir_resultado(resultado: dict) -> None:
                 print(f"│ 💡 DATOS CURIOSOS:")
                 for dato in curiosos:
                     print(f"│    • {dato}")
+                    
+            # ── Reestructura ───────────────────────────────────────────────────────────
+            restructura = slide.get("restructura")
+            if restructura:
+                estado_icon = "✅" if restructura["exito"] else "⚠️"
+                print(f"│")
+                print(f"│ {estado_icon} CONTENIDO REESTRUCTURADO "
+                    f"(intento {restructura['intentos']}/{3})")
+
+                for i, nueva in enumerate(restructura["diapositivas"], 1):
+                    if len(restructura["diapositivas"]) > 1:
+                        print(f"│")
+                        print(f"│  ── Diapositiva nueva {i} ──")
+                    print(f"│    Título   : {nueva['titulo']}")
+                    for linea in nueva["contenido"]:
+                        print(f"│    • {linea}")
+
+                if not restructura["exito"]:
+                    print(f"│    ⚠ Métricas aún pendientes: "
+                        f"{', '.join(restructura['metricas_fallidas_final'])}")
         else:
             print(f"│ ✅ Diapositiva en rango óptimo. No se requieren ajustes.")
 
@@ -100,13 +128,17 @@ def main():
     ruta = seleccionar_archivo()
     if not ruta:
         return
-    resultado = analizar_presentacion(ruta)
+
+    resultado      = analizar_presentacion(ruta)
+    resultado_json = exportar_resultado_json(resultado)
+
+    # Imprime en consola (para tus pruebas)
     imprimir_resultado(resultado)
+
+    # Guarda JSON para tu compañero
+    ruta_json = guardar_json(resultado_json, ruta)
+    print(f"\n📄 JSON exportado → {ruta_json}")
 
 
 if __name__ == "__main__":
     main()
-    
-    fin = time.time()
-    duracion = fin - inicio
-    print(f"Duración del análisis: {duracion:.2f} segundos")
