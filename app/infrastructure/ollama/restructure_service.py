@@ -14,11 +14,9 @@ import requests
 from app.core.logic.metrics.icd            import calcular_icd_presentacion
 from app.core.logic.metrics.word_count     import calcular_wps_presentacion
 from app.core.logic.metrics.header_structure import calcular_hss_presentacion
-from app.core.logic.metrics.narrative_thread import calcular_nts
 from app.core.logic.presentation_score     import calcular_score_slide
+from app.infrastructure.ollama.ollama_client import generar_respuesta
 
-OLLAMA_URL   = "http://localhost:11434/api/generate"
-MODELO       = "mistral"
 MAX_INTENTOS = 3
 
 _OLLAMA_OPTIONS = {
@@ -154,40 +152,26 @@ def _slide_cumple_metricas(slide_dict: dict) -> tuple[bool, list[str]]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _llamar_modelo(prompt: str) -> list[dict] | None:
-    """
-    Llama a Ollama y retorna la lista de diapositivas generadas,
-    o None si algo falla.
-    """
     try:
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model":   MODELO,
-                "prompt":  prompt,
-                "stream":  False,
-                "format":  "json",
-                "options": _OLLAMA_OPTIONS,
-            },
-            timeout=45,
+        response = generar_respuesta(
+            prompt=prompt,
+            formato="json",
+            options=_OLLAMA_OPTIONS,
+            timeout=45
         )
         response.raise_for_status()
         data = json.loads(response.json().get("response", "{}"))
         slides = data.get("diapositivas", [])
 
-        # Validación estructural mínima
         if not isinstance(slides, list) or not slides:
             return None
         for s in slides:
-            if not isinstance(s.get("titulo"), str):
-                return None
-            if not isinstance(s.get("contenido"), list):
-                return None
+            if not isinstance(s.get("titulo"), str): return None
+            if not isinstance(s.get("contenido"), list): return None
 
         return slides
-
     except (requests.RequestException, json.JSONDecodeError, ValueError):
         return None
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Función principal
@@ -198,44 +182,16 @@ def reestructurar_slide(
     metricas:   dict,
     slide_prev: str = None,
     slide_next: str = None,
+    progress_callback = None # <--- AÑADIMOS EL CALLBACK AQUÍ
 ) -> dict:
-    """
-    Reestructura el contenido de una diapositiva para que cumpla las métricas.
-
-    Parámetros
-    ----------
-    slide_data  : dict con 'title', 'content' (list[str]) y 'slide_number'
-    metricas    : dict con resultados de ICD, WPS, HSS y NTS (de calcular_score_slide)
-    slide_prev  : texto plano de la diapositiva anterior (para NTS)
-    slide_next  : texto plano de la diapositiva siguiente (para NTS)
-
-    Retorna
-    -------
-    {
-        "exito":        bool,
-        "intentos":     int,
-        "diapositivas": [              # 1 o más slides reestructuradas
-            {
-                "titulo":    str,
-                "contenido": list[str],
-                "slide_number_origen": int,   # número de la slide original
-            },
-            ...
-        ],
-        "metricas_fallidas_final": list[str],  # vacío si exito=True
-    }
-    """
+    
     n              = slide_data.get("slide_number", 0)
     titulo_orig    = slide_data.get("title", "Sin título")
     contenido_orig = " ".join(slide_data.get("content", []))
 
     nts_contexto = (
-        _NTS_CON_CONTEXTO.format(
-            slide_prev=slide_prev or "No disponible",
-            slide_next=slide_next or "No disponible",
-        )
-        if (slide_prev or slide_next)
-        else _NTS_SIN_CONTEXTO
+        _NTS_CON_CONTEXTO.format(slide_prev=slide_prev, slide_next=slide_next)
+        if (slide_prev or slide_next) else _NTS_SIN_CONTEXTO
     )
 
     prompt = _PROMPT_REESTRUCTURAR.format(
@@ -252,6 +208,11 @@ def reestructurar_slide(
     ultimo_fallo: list[str] = []
 
     for intento in range(1, MAX_INTENTOS + 1):
+        
+        # Le avisamos al CLI en qué intento vamos
+        if progress_callback:
+            progress_callback(f"Reestructurando diapositiva {n} (intento {intento}/{MAX_INTENTOS})...")
+
         slides_generadas = _llamar_modelo(prompt)
 
         if slides_generadas is None:

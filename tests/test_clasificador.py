@@ -1,76 +1,53 @@
 import sys
-import json
 import os
 import tkinter as tk
 from tkinter import filedialog
-from pathlib import Path
+from colorama import init, Fore, Style
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+init(autoreset=True)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.core.controller.analyzer_controller import (
-    analizar_presentacion,
-    obtener_slides_contenido
-)
-
-PPTX_PRUEBA = "storage/presentaciones/prueba.pptx"
-
+from app.core.logic.text_extractor import extraer_datos_pptx
+from app.core.logic.slide_classifier import extraer_features, clasificar_diapositiva
 
 def seleccionar_archivo():
-    """Abre el explorador de archivos para seleccionar un PPTX."""
     root = tk.Tk()
-    root.withdraw()  # Oculta la ventana principal gris de tkinter
-    root.attributes('-topmost', True) # Asegura que la ventana salga por encima de las demás
-    
-    ruta_archivo = filedialog.askopenfilename(
-        title="Selecciona la presentación PPTX",
-        filetypes=[
-            ("Presentaciones de PowerPoint", "*.pptx"),
-            ("Todos los archivos", "*.*")
-        ]
+    root.withdraw()
+    root.attributes("-topmost", True)
+    ruta = filedialog.askopenfilename(
+        title="Fase 2: Seleccionar Presentación para Clasificación",
+        filetypes=[("PowerPoint Presentations", "*.pptx")],
+        initialdir=os.getcwd()
     )
-    return ruta_archivo
+    root.destroy()
+    return ruta
 
+def ejecutar_auditoria_clasificacion():
+    print(f"\n{Fore.CYAN}{'='*85}")
+    print(f"{Fore.WHITE}{Style.BRIGHT} FASE 2: AUDITORÍA DEL MOTOR DE CLASIFICACIÓN Y FILTRADO LÓGICO ")
+    print(f"{Fore.CYAN}{'='*85}\n")
 
-def main():
-    # Si se pasa un argumento por consola (ej. python test.py mi_archivo.pptx), lo usa.
-    if len(sys.argv) > 1:
-        ruta = sys.argv[1]
-    else:
-        # Si no hay argumentos, abre el explorador
-        print("[test] Abriendo explorador de archivos...")
-        ruta = seleccionar_archivo()
+    ruta = seleccionar_archivo()
+    if not ruta: return
+
+    datos = extraer_datos_pptx(ruta)
+    for s in datos["slides"]:
+        # Extracción de características vectoriales
+        ft = extraer_features(s) # 
+        # Inferencia por reglas y/o LLM
+        res = clasificar_diapositiva(s) # [cite: 108]
         
-        # Si el usuario cierra la ventana sin seleccionar nada, usamos el de prueba
-        if not ruta:
-            print(f"[test] No se seleccionó ningún archivo. Usando default: {PPTX_PRUEBA}")
-            ruta = PPTX_PRUEBA
-
-    if not os.path.exists(ruta):
-        print(f"[test] Error - No encontrado: {ruta}")
-        sys.exit(1)
-
-    print(f"[test] Analizando: {ruta}\n")
-    resultado = analizar_presentacion(ruta, usar_llm=True)
-
-    resumen = resultado["resumen_clasificacion"]
-    print(f"\nTotal       : {resultado['total_slides']}")
-    print(f"Contenido   : {resumen['contenido']}")
-    print(f"Excluidas   : {resumen['excluidas']}")
-    print(f"Via LLM     : {resumen['por_llm']}")
-    print(f"Inciertas   : {resumen['inciertas']}")
-
-    slides_contenido = obtener_slides_contenido(resultado)
-    print(f"\nSlides para ICD ({len(slides_contenido)}):")
-    for s in slides_contenido:
-        print(f"  [{s['slide_number']:02d}] {s['title'][:60]}")
-
-    os.makedirs("tests/resultados", exist_ok=True)
-    salida = f"tests/resultados/clasificacion_{Path(ruta).stem}.json"
-    with open(salida, "w", encoding="utf-8") as f:
-        json.dump(resultado, f, ensure_ascii=False, indent=2)
-
-    print(f"\nJSON: {salida}")
-
+        print(f"{Fore.YELLOW}Slide {s['slide_number']:02d}: {Fore.WHITE}'{s['title'][:35]}...'")
+        print(f"  {Fore.CYAN}•{Fore.WHITE} Features: W={ft['W']}, B={ft['B']}, T={ft['W_titulo']}, Cita={ft['es_cita']}")
+        print(f"  {Fore.CYAN}•{Fore.WHITE} Clasificación: {Fore.GREEN}{res['tipo'].upper()}")
+        print(f"  {Fore.CYAN}•{Fore.WHITE} Método: {res['metodo']} | Confianza: {res['confianza']}")
+        
+        if res['reglas_disparadas']:
+            print(f"  {Fore.CYAN}•{Fore.WHITE} Reglas: {Fore.BLACK}{Style.BRIGHT}{res['reglas_disparadas']}")
+        
+        status = f"{Fore.RED}OMITIDA" if res['excluir'] else f"{Fore.GREEN}EVALUABLE"
+        print(f"  {Fore.CYAN}•{Fore.WHITE} Estado: {status}")
+        print(f"{Fore.CYAN}{'-'*85}")
 
 if __name__ == "__main__":
-    main()
+    ejecutar_auditoria_clasificacion()

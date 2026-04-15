@@ -2,8 +2,7 @@
 import requests
 import json
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODELO     = "mistral"
+from app.infrastructure.ollama.ollama_client import generar_respuesta
 
 # Opciones fijas para respuestas deterministas
 _OLLAMA_OPTIONS = {
@@ -94,19 +93,13 @@ _NTS_SIN_CONTEXTO = """
 CONTEXTO NARRATIVO: No disponible (diapositiva analizada de forma aislada).
 """
 
-
 def _calcular_num_preguntas(palabras: int) -> int:
-    """Escala la cantidad de preguntas según el volumen de contenido."""
-    if palabras <= 30:
-        return 1
-    elif palabras <= 60:
-        return 2
+    if palabras <= 30: return 1
+    elif palabras <= 60: return 2
     return 3
-
 
 def _calcular_num_curiosidades(palabras: int) -> int:
     return 2 if palabras > 40 else 1
-
 
 def generar_diagnostico_metrico(
     slide_data: dict,
@@ -114,14 +107,6 @@ def generar_diagnostico_metrico(
     slide_prev: str = None,
     slide_next: str = None,
 ) -> dict:
-    """
-    Genera feedback por métrica, preguntas y datos curiosos para una diapositiva.
-
-    Devuelve un dict con claves:
-      icd, wps, hss, nts  → str | None
-      preguntas            → list[str]
-      datos_curiosos       → list[str]
-    """
     palabras = metricas.get("wps", {}).get("palabras", 0)
 
     nts_contexto = (
@@ -147,21 +132,16 @@ def generar_diagnostico_metrico(
     )
 
     try:
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model":   MODELO,
-                "prompt":  prompt,
-                "stream":  False,
-                "format":  "json",
-                "options": _OLLAMA_OPTIONS,   # ← determinismo
-            },
-            timeout=35,
+        # Llamada centralizada
+        response = generar_respuesta(
+            prompt=prompt,
+            formato="json",
+            options=_OLLAMA_OPTIONS,
+            timeout=35
         )
         response.raise_for_status()
         resultado = json.loads(response.json().get("response", "{}"))
 
-        # Garantizamos que siempre existan las claves de listas aunque el modelo falle
         resultado.setdefault("preguntas",     [])
         resultado.setdefault("datos_curiosos", [])
         return resultado

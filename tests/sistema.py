@@ -6,15 +6,47 @@ Toda la lógica vive en analyzer_controller.py.
 import sys
 import json
 import time
+import threading
+import itertools
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog
 from app.core.controller.analyzer_controller import analizar_presentacion, exportar_resultado_json
 
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-inicio = time.time()
+# ─── CLASE PARA LA ANIMACIÓN DE CARGA ──────────────────────────────────────────
+class ConsoleSpinner:
+    def __init__(self):
+        self.spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
+        self.busy = False
+        self.delay = 0.1
+        self.text = "Iniciando..."
+        self._thread = None
+
+    def write(self):
+        while self.busy:
+            # \r regresa el cursor al inicio de la línea sin saltar (efecto animación)
+            sys.stdout.write(f"\r\033[96m{next(self.spinner)}\033[0m {self.text}")
+            sys.stdout.flush()
+            time.sleep(self.delay)
+            # Limpiamos la línea por si el siguiente texto es más corto
+            sys.stdout.write('\r' + ' ' * (len(self.text) + 5) + '\r') 
+
+    def start(self):
+        self.busy = True
+        self._thread = threading.Thread(target=self.write, daemon=True)
+        self._thread.start()
+
+    def update(self, new_text):
+        self.text = new_text
+
+    def stop(self):
+        self.busy = False
+        if self._thread:
+            self._thread.join()
+        sys.stdout.write('\r' + ' ' * (len(self.text) + 5) + '\r') # Limpia la linea al acabar
+
 
 def seleccionar_archivo() -> str:
     root = tk.Tk()
@@ -23,7 +55,6 @@ def seleccionar_archivo() -> str:
     return filedialog.askopenfilename(filetypes=[("PowerPoint", "*.pptx")])
 
 def guardar_json(resultado_json: dict, ruta_pptx: str) -> str:
-    """Guarda el JSON junto al archivo original con el mismo nombre."""
     ruta_salida = Path(ruta_pptx).with_suffix(".json")
     with open(ruta_salida, "w", encoding="utf-8") as f:
         json.dump(resultado_json, f, ensure_ascii=False, indent=2)
@@ -129,7 +160,23 @@ def main():
     if not ruta:
         return
 
-    resultado      = analizar_presentacion(ruta)
+    inicio = time.time()
+    print("\nIniciando sistema AI Presentation Analyzer...")
+    
+    # 1. Instanciamos e iniciamos el spinner visual
+    spinner = ConsoleSpinner()
+    spinner.start()
+
+    try:
+        # 2. Pasamos el método `update` del spinner como nuestro progress_callback
+        resultado = analizar_presentacion(
+            ruta=ruta,
+            progress_callback=spinner.update
+        )
+    finally:
+        # 3. Aseguramos que el spinner se detenga sin importar qué pase
+        spinner.stop()
+
     resultado_json = exportar_resultado_json(resultado)
 
     # Imprime en consola (para tus pruebas)
@@ -139,6 +186,7 @@ def main():
     ruta_json = guardar_json(resultado_json, ruta)
     print(f"\n📄 JSON exportado → {ruta_json}")
 
+    print(f"⏱️  Tiempo total: {time.time() - inicio:.2f} segundos")
 
 if __name__ == "__main__":
     main()

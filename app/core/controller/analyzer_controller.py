@@ -14,14 +14,16 @@ from app.core.logic.metrics.header_structure import calcular_hss_presentacion
 from app.core.logic.metrics.narrative_thread import calcular_nts
 from app.core.logic.presentation_score   import calcular_score_global, calcular_score_slide
 from app.infrastructure.ollama.diagnostic_service import generar_diagnostico_metrico
-from app.infrastructure.ollama.ollama_service import verificar_conexion, clasificar_tipo_diapositiva, iniciar_ollama_background
+from app.infrastructure.ollama.ollama_client import inicializar_motor_llm
+from app.infrastructure.ollama.ollama_service import clasificar_tipo_diapositiva
 from app.infrastructure.ollama.coherencia_service import verificar_coherencia_titulo
 from app.infrastructure.ollama.narrativa_service  import verificar_hilo_narrativo
 from app.infrastructure.ollama.restructure_service import reestructurar_slide
+from app.infrastructure.ollama.ollama_client import inicializar_motor_llm
 
 # Tipos de slide que no se analizan (portada, índice, etc.)
 _TIPOS_OMITIDOS = {"portada", "indice", "referencias", "cierre", "sin_contenido"}
-def analizar_presentacion(ruta: str) -> dict:
+def analizar_presentacion(ruta: str, ask_install_callback=None, progress_callback=None) -> dict:
     """
     Ejecuta el pipeline completo de análisis sobre un archivo .pptx.
 
@@ -61,15 +63,22 @@ def analizar_presentacion(ruta: str) -> dict:
         ]
     }
     """
+    def notificar_progreso(mensaje: str):
+        if progress_callback:
+            progress_callback(mensaje)
+
     # ── 0. ENCENDIDO AUTOMÁTICO DE OLLAMA ─────────────────────────────────────
-    # Esto encenderá el motor si estaba apagado, o pasará de largo si ya estaba activo.
-    llm_ok = iniciar_ollama_background()
+    notificar_progreso("Iniciando y verificando motor de Inteligencia Artificial...")
+    llm_ok = inicializar_motor_llm(ask_install_callback)
     
     if not llm_ok:
-        print("Advertencia: No se pudo iniciar el LLM. El análisis se hará sin IA.")
+        notificar_progreso("⚠️ Advertencia: No se pudo iniciar IA. Análisis básico en curso...")
+        
+    notificar_progreso(f"Extrayendo datos de la presentación...")
     datos  = extraer_datos_pptx(ruta)
 
     # ── 1. Clasificación ──────────────────────────────────────────────────────
+    notificar_progreso("Clasificando tipo de diapositivas...")
     for s in datos["slides"]:
         s["clasificacion"] = clasificar_diapositiva(
             s,
@@ -82,6 +91,7 @@ def analizar_presentacion(ruta: str) -> dict:
     ]
 
     # ── 2. Métricas ───────────────────────────────────────────────────────────
+    notificar_progreso("Calculando métricas globales (ICD, WPS, HSS, NTS)...")
     res_icd = calcular_icd_presentacion(slides_contenido)
     res_wps = calcular_wps_presentacion(slides_contenido)
     res_hss = calcular_hss_presentacion(
@@ -97,6 +107,7 @@ def analizar_presentacion(ruta: str) -> dict:
 
     # ── 3. Construcción de resultados por slide ───────────────────────────────
     slides_resultado = []
+    total_slides = len(slides_contenido)
 
     for idx, s in enumerate(slides_contenido):
         n    = s["slide_number"]
@@ -105,13 +116,8 @@ def analizar_presentacion(ruta: str) -> dict:
 
         if tipo in _TIPOS_OMITIDOS:
             slides_resultado.append({
-                "slide_number": n,
-                "tipo":         tipo,
-                "omitida":      True,
-                "score":        None,
-                "metricas_raw": None,
-                "feedback":     None,
-                "restructura":  None,   # ← consistencia con el resto
+                "slide_number": n, "tipo": tipo, "omitida": True,
+                "score": None, "metricas_raw": None, "feedback": None, "restructura": None,
             })
             continue
 
@@ -122,44 +128,33 @@ def analizar_presentacion(ruta: str) -> dict:
 
         ss = calcular_score_slide(mi, mw, mh, mn)
 
-        # ── Contexto NTS: se calcula UNA sola vez y lo usan ambos servicios ──────
-        # ANTES estaba duplicado dentro de cada if, aquí se define siempre
-        slide_prev_texto = (
-            " ".join(slides_contenido[idx - 1].get("content", []))
-            if idx > 0 else None
-        )
-        slide_next_texto = (
-            " ".join(slides_contenido[idx + 1].get("content", []))
-            if idx < len(slides_contenido) - 1 else None
-        )
+        slide_prev_texto = " ".join(slides_contenido[idx - 1].get("content", [])) if idx > 0 else None
+        slide_next_texto = " ".join(slides_contenido[idx + 1].get("content", [])) if idx < len(slides_contenido) - 1 else None
 
         feedback    = None
-        restructura = None   # ← valor por defecto explícito
+        restructura = None
 
         if ss["necesita_recomendacion"] and llm_ok:
+            notificar_progreso(f"Generando feedback IA para diapositiva {idx + 1} de {total_slides}...")
             feedback = generar_diagnostico_metrico(
-                slide_data = s,
-                metricas   = ss["metricas"],
-                slide_prev = slide_prev_texto,
-                slide_next = slide_next_texto,
+                slide_data = s, metricas = ss["metricas"],
+                slide_prev = slide_prev_texto, slide_next = slide_next_texto,
             )
+            
+            notificar_progreso(f"Reestructurando contenido de diapositiva {idx + 1} de {total_slides}...")
             restructura = reestructurar_slide(
-                slide_data = s,
-                metricas   = ss["metricas"],
-                slide_prev = slide_prev_texto,
-                slide_next = slide_next_texto,
+                slide_data = s, metricas = ss["metricas"],
+                slide_prev = slide_prev_texto, slide_next = slide_next_texto,
+                progress_callback = notificar_progreso
             )
 
         slides_resultado.append({
-            "slide_number": n,
-            "tipo":         tipo,
-            "omitida":      False,
-            "score":        ss,
-            "metricas_raw": {"icd": mi, "wps": mw, "hss": mh, "nts": mn},
-            "feedback":     feedback,
-            "restructura":  restructura,   # ← aquí estaba el bug principal
+            "slide_number": n, "tipo": tipo, "omitida": False,
+            "score": ss, "metricas_raw": {"icd": mi, "wps": mw, "hss": mh, "nts": mn},
+            "feedback": feedback, "restructura": restructura,
         })
 
+    notificar_progreso("Consolidando resultados finales...")
     return {
         "nombre":       Path(ruta).name,
         "score_global": score_global,
@@ -250,10 +245,29 @@ def exportar_resultado_json(resultado: dict) -> dict:
 
         # ── Slide omitida (portada, índice, etc.) ─────────────────────────
         if slide["omitida"]:
+            # Diccionario amigable para la GUI
+            nombres_tipos = {
+                "portada": "Portada",
+                "indice": "Índice / Temario",
+                "referencias": "Referencias / Bibliografía",
+                "cierre": "Cierre / Conclusión",
+                "sin_contenido": "Diapositiva sin texto"
+            }
+            nombre_legible = nombres_tipos.get(slide["tipo"], slide["tipo"])
+
             salida["diapositivas"].append({
                 "numero":  n,
                 "tipo":    slide["tipo"],
                 "omitida": True,
+                "mensaje_omision": f"Clasificada como '{nombre_legible}'. Esta diapositiva no requiere evaluación métrica.",
+                
+                # Rellenamos con nulos para mantener la misma estructura del JSON
+                "score": None,
+                "zona": "N/A",
+                "metricas": None,
+                "aspectos_a_mejorar": [],
+                "feedback": None,
+                "reestructura": None
             })
             continue
 
