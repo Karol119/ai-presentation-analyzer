@@ -1,25 +1,8 @@
-# app/core/logic/metrics/header_structure.py
-"""
-header_structure.py
-Métrica de estructura del encabezado (Header Structure Score — HSS).
-
-Evalúa:
-    1. PRESENCIA  — si la diapositiva tiene título.
-    2. COHERENCIA — si el título es claro y se relaciona con el contenido.
-
-Score HSS (0–10):
-    - 10.0: Título presente y con solapamiento léxico directo.
-    - 1.0 - 10.0: Evaluado por Mistral (LLM) en caso de sinónimos o falta de texto.
-    - 0.0: Sin título.
-
-Fuente: Reynolds (2011) Beyond Bullet Points; Atkinson (2008) Presentation Zen.
-"""
-
 import re
+from typing import Dict, Any, List, Callable, Optional, Set
 
-# ── Configuración y Filtros ──────────────────────────────────────────────────
-
-_STOPWORDS = {
+_STOPWORDS: Set[str] = {
+    # (Stopwords en español)
     "el","la","los","las","un","una","unos","unas","a","ante","bajo","con","contra",
     "de","desde","en","entre","hacia","hasta","para","por","según","sin","sobre",
     "tras","y","e","ni","o","u","pero","sino","aunque","porque","que","si","como",
@@ -28,113 +11,86 @@ _STOPWORDS = {
     "yo","tú","él","ella","nosotros","ellos","me","te","se","nos","es","son"
 }
 
-# Palabras que no aportan valor temático real
-_EXCLUIDAS_ACADEMICAS = {
+_ACADEMIC_EXCLUSIONS: Set[str] = {
     "ejemplo", "caso", "importante", "definicion", "concepto", "introduccion", 
     "conclusion", "tema", "unidad", "capitulo", "objetivo", "descripcion", 
     "analisis", "nota", "resumen", "fundamentos", "presentacion"
 }
 
-# Detecta "Nombre Apellido Apellido" (limpieza de footers)
-_RE_NOMBRE_PERSONA = re.compile(
+_RE_PERSON_NAME = re.compile(
     r'[A-ZÁÉÍÓÚ][a-záéíóú]{2,}\s+[A-ZÁÉÍÓÚ][a-záéíóú]{2,}\s+[A-ZÁÉÍÓÚ][a-záéíóú]{2,}'
 )
+_RE_KEY_TOKENS = re.compile(r'[a-záéíóúüñ]{4,}', re.IGNORECASE)
 
-# ── Funciones Principales ────────────────────────────────────────────────────
-
-def calcular_hss(slide_data, llm_fn=None):
-    """
-    Evalúa la calidad del encabezado. 
-    Usa reglas léxicas para velocidad y Mistral para comprensión semántica.
-    """
-    titulo = slide_data.get("title", "").strip()
-    # Limpiamos el cuerpo de posibles nombres de personas (footers)
-    contenido_raw = " ".join(slide_data.get("content", []))
-    contenido = _filtrar_nombres_persona(contenido_raw)
+def calculate_hss(slide_data: Dict[str, Any], llm_fn: Optional[Callable] = None) -> Dict[str, Any]:
+    title = slide_data.get("title", "").strip()
+    raw_content = " ".join(slide_data.get("content", []))
+    clean_content = _filter_person_names(raw_content)
     
-    base = {
+    base_result = {
         "slide_number": slide_data.get("slide_number"),
-        "tiene_titulo": bool(titulo),
-        "titulo": titulo,
+        "tiene_titulo": bool(title),
+        "titulo": title,
         "hss_score": 0.0,
         "coherencia": "sin_titulo",
         "metodo_coherencia": "reglas"
     }
 
-    if not titulo:
-        return base
+    if not title:
+        return base_result
 
-    # 1. Análisis léxico (Búsqueda de conceptos clave exactos)
-    kw_titulo = _obtener_palabras_clave(titulo)
-    kw_cuerpo = _obtener_palabras_clave(contenido)
-    solapamiento = [w for w in kw_titulo if w in kw_cuerpo]
+    title_keywords = _get_keywords(title)
+    content_keywords = _get_keywords(clean_content)
     
-    # 2. Lógica de Scoring
-    if solapamiento:
-        # Coincidencia exacta = Coherencia máxima inmediata
-        base["hss_score"] = 10.0
-        base["coherencia"] = "coherente"
-        base["metodo_coherencia"] = "lexico"
+    keyword_overlap = title_keywords.intersection(content_keywords)
+    
+    if keyword_overlap:
+        base_result["hss_score"] = 10.0
+        base_result["coherencia"] = "coherente"
+        base_result["metodo_coherencia"] = "lexico"
         
     elif llm_fn:
-        # Si no hay solapamiento léxico, Mistral evalúa semántica y claridad
-        # Incluso si el contenido es escaso, el modelo juzga la calidad del título
-        score_llm = llm_fn(titulo, contenido)
+        llm_score = llm_fn(title, clean_content)
+        base_result["hss_score"] = float(llm_score) if llm_score is not None else 5.0
+        base_result["metodo_coherencia"] = "llm_mistral_eval"
         
-        base["hss_score"] = float(score_llm) if score_llm is not None else 5.0
-        base["metodo_coherencia"] = "llm_mistral_eval"
-        
-        # Clasificación según nota de Mistral
-        if base["hss_score"] >= 8.0:
-            base["coherencia"] = "coherente"
-        elif base["hss_score"] >= 5.0:
-            base["coherencia"] = "debil"
+        if base_result["hss_score"] >= 8.0:
+            base_result["coherencia"] = "coherente"
+        elif base_result["hss_score"] >= 5.0:
+            base_result["coherencia"] = "debil"
         else:
-            base["coherencia"] = "no_coherente"
+            base_result["coherencia"] = "no_coherente"
             
     else:
-        # Fallback sin conexión a Ollama
-        base["hss_score"] = 5.0 if contenido.strip() else 3.0
-        base["coherencia"] = "revisar_manualmente"
+        base_result["hss_score"] = 5.0 if clean_content.strip() else 3.0
+        base_result["coherencia"] = "revisar_manualmente"
 
-    return base
+    return base_result
 
 
-def calcular_hss_presentacion(slides_contenido, llm_fn=None):
-    """
-    Calcula el HSS global de la presentación.
-    """
-    resultados = [calcular_hss(s, llm_fn=llm_fn) for s in slides_contenido]
-    scores = [r["hss_score"] for r in resultados]
-    n = len(resultados)
+def calculate_presentation_hss(content_slides: List[Dict[str, Any]], llm_fn: Optional[Callable] = None) -> Dict[str, Any]:
+    results = [calculate_hss(s, llm_fn=llm_fn) for s in content_slides]
+    scores = [r["hss_score"] for r in results]
+    total_slides = len(results)
 
     return {
-        "resultados": resultados,
-        "hss_promedio": round(sum(scores) / n, 2) if n else 0.0,
-        "slides_con_titulo": sum(1 for r in resultados if r["tiene_titulo"]),
-        "slides_coherentes": sum(1 for r in resultados if r["coherencia"] == "coherente"),
-        "slides_debiles": sum(1 for r in resultados if r["coherencia"] == "debil"),
-        "slides_no_coherentes": sum(1 for r in resultados if r["coherencia"] == "no_coherente"),
-        "cobertura_titulo": round((sum(1 for r in resultados if r["tiene_titulo"]) / n * 100), 1) if n else 0.0,
+        "resultados": results,
+        "hss_promedio": round(sum(scores) / total_slides, 2) if total_slides else 0.0,
+        "slides_con_titulo": sum(1 for r in results if r["tiene_titulo"]),
+        "slides_coherentes": sum(1 for r in results if r["coherencia"] == "coherente"),
+        "slides_debiles": sum(1 for r in results if r["coherencia"] == "debil"),
+        "slides_no_coherentes": sum(1 for r in results if r["coherencia"] == "no_coherente"),
+        "cobertura_titulo": round((sum(1 for r in results if r["tiene_titulo"]) / total_slides * 100), 1) if total_slides else 0.0,
     }
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
-def _obtener_palabras_clave(texto):
-    """
-    Extrae palabras significativas eliminando ruido académico y stopwords.
-    """
-    if not texto:
+def _get_keywords(text: str) -> Set[str]:
+    if not text:
         return set()
-    # Buscamos palabras de 4 o más letras para evitar conectores
-    tokens = re.findall(r'[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]{4,}', texto.lower())
+    tokens = _RE_KEY_TOKENS.findall(text.lower())
     return {
         t for t in tokens 
-        if t not in _STOPWORDS and t not in _EXCLUIDAS_ACADEMICAS
+        if t not in _STOPWORDS and t not in _ACADEMIC_EXCLUSIONS
     }
 
-def _filtrar_nombres_persona(texto):
-    """
-    Elimina secuencias que parecen nombres para evitar falsas coherencias.
-    """
-    return _RE_NOMBRE_PERSONA.sub("", texto).strip()
+def _filter_person_names(text: str) -> str:
+    return _RE_PERSON_NAME.sub("", text).strip()

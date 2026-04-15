@@ -1,295 +1,135 @@
-# app/core/controller/analyzer_controller.py
 """
-Orquestador principal del análisis de presentaciones.
-Solo delega: no imprime, no selecciona archivos, no hace I/O de ningún tipo.
-Devuelve un dict estructurado que la GUI, la CLI o los tests pueden consumir.
+analyzer_controller.py
+Orchestrator for presentation analysis. 
+Implements concurrent execution (multithreading) to separate fast local metrics (CPU-bound)
+from slow AI-driven metrics (I/O-bound).
 """
+
+import concurrent.futures
 from pathlib import Path
+from typing import Dict, Any, List, Callable, Optional
 
-# Logica de Negocio
-from app.core.logic.text_extractor import extraer_datos_pptx
-from app.core.logic.slide_classifier import clasificar_diapositiva
-from app.core.logic.metrics.icd import calcular_icd  # Cambiado a individual
-from app.core.logic.metrics.word_count import calcular_wps # Cambiado a individual
-from app.core.logic.metrics.header_structure import calcular_hss # Cambiado a individual
-from app.core.logic.metrics.narrative_thread import calcular_nts_individual # Nueva función
-from app.core.logic.presentation_score import calcular_score_global, calcular_score_slide
+# --- 1. Importaciones de Extracción y Clasificación ---
+from app.core.logic.text_extractor import extract_pptx_data
+from app.core.logic.slide_classifier import clasificar_diapositiva # (Asumo que esta la traduciremos luego o ya la tienes)
 
-# Infraestructura (Ollama)
-from app.infrastructure.ollama.ollama_client import inicializar_motor_llm
-from app.infrastructure.ollama.ollama_service import clasificar_tipo_diapositiva
-from app.infrastructure.ollama.coherencia_service import verificar_coherencia_titulo
-from app.infrastructure.ollama.narrativa_service import verificar_hilo_narrativo
-from app.infrastructure.ollama.diagnostic_service import generar_diagnostico_metrico
-from app.infrastructure.ollama.restructure_service import reestructurar_slide
+# --- 2. Importaciones de Métricas Locales (Rápidas) ---
+from app.core.logic.metrics.icd import calculate_presentation_icd
+from app.core.logic.metrics.word_count import calculate_presentation_wps
 
-_TIPOS_OMITIDOS = {"portada", "indice", "referencias", "cierre", "sin_contenido"}
+# --- 3. Importaciones de Score ---
+from app.core.logic.presentation_score import calculate_global_score, calculate_slide_score
 
-def analizar_presentacion(ruta: str, ask_install_callback=None, progress_callback=None) -> dict:
-    def notificar(m): 
-        if progress_callback: progress_callback(m)
+_SKIPPED_TYPES = {"portada", "indice", "referencias", "cierre", "sin_contenido"}
 
-    # 0. Inicialización de IA
-    notificar("Iniciando motor de Inteligencia Artificial...")
-    llm_ok = inicializar_motor_llm(ask_install_callback)
+def _run_local_metrics(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    WORKER 1 (CPU-Bound): Ejecuta las métricas matemáticas y de conteo.
+    Esto ocurre en un hilo separado y termina casi instantáneamente.
+    """
+    icd_result = calculate_presentation_icd(content_slides)
+    wps_result = calculate_presentation_wps(content_slides)
     
-    if not llm_ok:
-        notificar("⚠️ Advertencia: Análisis básico sin IA activado.")
+    return {
+        "icd": icd_result,
+        "wps": wps_result
+    }
+
+def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -> Dict[str, Any]:
+    """
+    Ejecuta el pipeline completo de análisis sobre un archivo .pptx usando hilos.
+    """
+    
+    if status_cb:
+        status_cb("[PROGRESO] Extrayendo texto y elementos de la presentación...")
         
-    notificar("Extrayendo datos de la presentación...")
-    datos = extraer_datos_pptx(ruta)
+    extracted_data = extract_pptx_data(file_path)
     
-    slides_finales = [] # Usaremos este nombre consistentemente
-    lista_original = datos["slides"]
-    total = len(lista_original)
+    if status_cb:
+        status_cb("[PROGRESO] Clasificando diapositivas...")
+        
+    # --- 1. Clasificación ---
+    for slide in extracted_data["slides"]:
+        # Aquí eventualmente pondremos el llamado a Ollama si aplica, 
+        # por ahora lo dejamos con la lógica base.
+        slide["clasificacion"] = clasificar_diapositiva(slide, llm_fn=None)
 
-    # 1. Procesamiento en un solo bucle
-    for idx, s in enumerate(lista_original):
-        n = s["slide_number"]
-        notificar(f"Analizando diapositiva {n} de {total}...")
+    content_slides = [
+        s for s in extracted_data["slides"] 
+        if not s.get("clasificacion", {}).get("excluir", False)
+    ]
 
-        # Clasificación
-        s["clasificacion"] = clasificar_diapositiva(
-            s, llm_fn=clasificar_tipo_diapositiva if llm_ok else None
-        )
-        tipo = s["clasificacion"]["tipo"]
+    if status_cb:
+        status_cb("[PROGRESO] Calculando métricas locales (ICD y WPS)...")
 
-        # Si es omitida, cerramos el ciclo de la slide aquí
-        if s["clasificacion"]["excluir"] or tipo in _TIPOS_OMITIDOS:
-            slides_finales.append({
-                "slide_number": n, "tipo": tipo, "omitida": True,
-                "score": None, "metricas_raw": None, "feedback": None, "restructura": None,
+    # --- 2. Ejecución Concurrente (Multithreading) ---
+    # Usamos ThreadPoolExecutor para manejar los hilos. Preparamos el espacio para 2 trabajadores.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        
+        # DISPARAMOS EL HILO 1: Métricas Locales
+        local_metrics_future = executor.submit(_run_local_metrics, content_slides)
+        
+        # (AQUÍ DISPARAREMOS EL HILO 2: Métricas de IA en el próximo paso)
+        # ai_metrics_future = executor.submit(_run_ai_metrics, content_slides)
+        
+        # ESPERAMOS A QUE TERMINE EL HILO (Sincronización)
+        local_results = local_metrics_future.result()
+        
+    # Desempaquetamos los resultados del hilo
+    res_icd = local_results["icd"]
+    res_wps = local_results["wps"]
+    
+    # (Por ahora creamos diccionarios vacíos para las métricas de IA que aún no conectamos)
+    res_hss = {"resultados": [], "hss_promedio": 0.0}
+    res_nts = {"resultados": [], "nts_promedio": 0.0}
+
+    # --- 3. Construcción del Score Global ---
+    if status_cb:
+        status_cb("[PROGRESO] Integrando resultados y calculando Score Global...")
+        
+    global_score = calculate_global_score(res_icd, res_wps, res_hss, res_nts)
+
+    # --- 4. Construcción de resultados por slide ---
+    final_slides = []
+
+    for idx, slide in enumerate(content_slides):
+        slide_num = slide["slide_number"]
+        slide_type = slide.get("clasificacion", {}).get("tipo", "contenido")
+        
+        if slide_type in _SKIPPED_TYPES:
+            final_slides.append({
+                "slide_number": slide_num,
+                "tipo":         slide_type,
+                "omitida":      True,
+                "score":        None,
+                "metricas_raw": None,
+                "feedback":     None,
+                "restructura":  None,
             })
             continue
 
-        # 2. Métricas Individuales
-        m_icd = calcular_icd(s)
-        m_wps = calcular_wps(s)
-        m_hss = calcular_hss(s, llm_fn=verificar_coherencia_titulo if llm_ok else None)
+        # Extraemos los resultados locales calculados por el hilo
+        mi = next((r for r in res_icd.get("resultados", []) if r["slide_number"] == slide_num), {})
+        mw = next((r for r in res_wps.get("resultados", []) if r["slide_number"] == slide_num), {})
         
-        # NTS necesita la slide anterior para el hilo narrativo
-        s_previa = lista_original[idx-1] if idx > 0 else None
-        m_nts = calcular_nts_individual(s, s_previa, llm_fn=verificar_hilo_narrativo if llm_ok else None)
-
-        # 3. Score de la slide
-        ss = calcular_score_slide(m_icd, m_wps, m_hss, m_nts)
-
-        # 4. Feedback y Reestructura IA (Solo si necesita mejorar)
-        feedback = None
-        restructura = None
+        # Calculamos el score individual de esta diapositiva
+        slide_score = calculate_slide_score(mi, mw, {}, {}) # Se pasan diccionarios vacíos para HSS y NTS por ahora
         
-        if ss["necesita_recomendacion"] and llm_ok:
-            # Obtener texto de contexto para la IA
-            txt_prev = " ".join(lista_original[idx-1].get("content", [])) if idx > 0 else None
-            txt_next = " ".join(lista_original[idx+1].get("content", [])) if idx < total-1 else None
-            
-            notificar(f"Generando recomendaciones para slide {n}...")
-            feedback = generar_diagnostico_metrico(s, ss["metricas"], txt_prev, txt_next)
-            
-            notificar(f"Reestructurando contenido para slide {n}...")
-            restructura = reestructurar_slide(s, ss["metricas"], txt_prev, txt_next, notificar)
-
-        # Guardar resultado de la slide
-        slides_finales.append({
-            "slide_number": n, "tipo": tipo, "omitida": False,
-            "score": ss, 
-            "metricas_raw": {"icd": m_icd, "wps": m_wps, "hss": m_hss, "nts": m_nts},
-            "feedback": feedback, "restructura": restructura
+        final_slides.append({
+            "slide_number": slide_num,
+            "tipo":         slide_type,
+            "omitida":      False,
+            "score":        slide_score,
+            "metricas_raw": {"icd": mi, "wps": mw, "hss": {}, "nts": {}},
+            "feedback":     None,
+            "restructura":  None,
         })
 
-    # 5. Score Global (Consolidado)
-    # Debes ajustar calcular_score_global para que reciba la lista de slides_finales
-    notificar("Consolidando resultados finales...")
-    
-    # Simulación de la estructura esperada por tu actual calcular_score_global
-    # para evitar romper el código mientras ajustas los otros módulos:
-    res_icd_list = {"resultados": [s["metricas_raw"]["icd"] for s in slides_finales if not s["omitida"]]}
-    res_wps_list = {"wps_promedio": sum(s["metricas_raw"]["wps"]["wps_score"] for s in slides_finales if not s["omitida"]) / total if total > 0 else 0}
-    res_hss_list = {"hss_promedio": sum(s["metricas_raw"]["hss"]["hss_score"] for s in slides_finales if not s["omitida"]) / total if total > 0 else 0}
-    res_nts_list = {"nts_promedio": sum(s["metricas_raw"]["nts"]["nts_score"] for s in slides_finales if not s["omitida"]) / total if total > 0 else 0}
-
-    score_global = calcular_score_global(res_icd_list, res_wps_list, res_hss_list, res_nts_list)
+    if status_cb:
+        status_cb("[PROGRESO] ¡Análisis de métricas locales completado!")
 
     return {
-        "nombre": Path(ruta).name,
-        "score_global": score_global,
-        "slides": slides_finales,
+        "nombre":       Path(file_path).name,
+        "score_global": global_score,
+        "slides":       final_slides,
     }
-
-    
-def exportar_resultado_json(resultado: dict) -> dict:
-    """
-    Transforma el resultado de analizar_presentacion() a un dict
-    limpio y serializable, listo para JSON o para la GUI.
-
-    Estructura de salida:
-    {
-        "presentacion": {
-            "nombre":       str,
-            "score_global": float,
-            "zona_global":  str,
-            "desglose": {
-                "icd": float,
-                "wps": float,
-                "hss": float,
-                "nts": float
-            }
-        },
-        "diapositivas": [
-            {
-                "numero":   int,
-                "tipo":     str,
-                "omitida":  bool,
-
-                // Solo si omitida=False:
-                "score":    float,
-                "zona":     str,
-                "metricas": {
-                    "icd": { "valor": float, "zona": str,  "aprobada": bool },
-                    "wps": { "palabras": int,               "aprobada": bool },
-                    "hss": { "coherencia": str,             "aprobada": bool },
-                    "nts": { "estado": str,                 "aprobada": bool }
-                },
-                "aspectos_a_mejorar": ["icd", "wps", ...],
-
-                "feedback": {
-                    "icd":           str | null,
-                    "wps":           str | null,
-                    "hss":           str | null,
-                    "nts":           str | null,
-                    "preguntas":     [str, ...],
-                    "datos_curiosos": [str, ...]
-                } | null,
-
-                "reestructura": {
-                    "exito":    bool,
-                    "intentos": int,
-                    "diapositivas": [
-                        {
-                            "titulo":    str,
-                            "contenido": [str, ...]
-                        },
-                        ...
-                    ],
-                    "metricas_pendientes": [str, ...]
-                } | null
-            },
-            ...
-        ]
-    }
-    """
-    sg = resultado["score_global"]
-
-    salida = {
-        "presentacion": {
-            "nombre":       resultado["nombre"],
-            "score_global": sg["score_global"],
-            "zona_global":  sg["zona_global"],
-            "desglose": {
-                "icd": sg["scores_metrica"]["icd"],
-                "wps": sg["scores_metrica"]["wps"],
-                "hss": sg["scores_metrica"]["hss"],
-                "nts": sg["scores_metrica"]["nts"],
-            },
-        },
-        "diapositivas": [],
-    }
-
-    for slide in resultado["slides"]:
-        n = slide["slide_number"]
-
-        # ── Slide omitida (portada, índice, etc.) ─────────────────────────
-        if slide["omitida"]:
-            # Diccionario amigable para la GUI
-            nombres_tipos = {
-                "portada": "Portada",
-                "indice": "Índice / Temario",
-                "referencias": "Referencias / Bibliografía",
-                "cierre": "Cierre / Conclusión",
-                "sin_contenido": "Diapositiva sin texto"
-            }
-            nombre_legible = nombres_tipos.get(slide["tipo"], slide["tipo"])
-
-            salida["diapositivas"].append({
-                "numero":  n,
-                "tipo":    slide["tipo"],
-                "omitida": True,
-                "mensaje_omision": f"Clasificada como '{nombre_legible}'. Esta diapositiva no requiere evaluación métrica.",
-                
-                # Rellenamos con nulos para mantener la misma estructura del JSON
-                "score": None,
-                "zona": "N/A",
-                "metricas": None,
-                "aspectos_a_mejorar": [],
-                "feedback": None,
-                "reestructura": None
-            })
-            continue
-
-        ss  = slide["score"]
-        raw = slide["metricas_raw"]
-
-        # ── Métricas individuales normalizadas ────────────────────────────
-        metricas_limpias = {
-            "icd": {
-                "valor":    raw["icd"].get("icd"),
-                "zona":     raw["icd"].get("zona"),
-                "aprobada": "icd" not in ss["aspectos_mejorar"],
-            },
-            "wps": {
-                "palabras": raw["wps"].get("palabras"),
-                "aprobada": "wps" not in ss["aspectos_mejorar"],
-            },
-            "hss": {
-                "coherencia": raw["hss"].get("coherencia"),
-                "aprobada":   "hss" not in ss["aspectos_mejorar"],
-            },
-            "nts": {
-                "estado":   raw["nts"].get("estado"),
-                "aprobada": "nts" not in ss["aspectos_mejorar"],
-            },
-        }
-
-        # ── Feedback ──────────────────────────────────────────────────────
-        fb = slide["feedback"]
-        feedback_limpio = None
-        if fb:
-            feedback_limpio = {
-                "icd":           fb.get("icd"),
-                "wps":           fb.get("wps"),
-                "hss":           fb.get("hss"),
-                "nts":           fb.get("nts"),
-                "preguntas":     fb.get("preguntas", []),
-                "datos_curiosos": fb.get("datos_curiosos", []),
-            }
-
-        # ── Reestructura ──────────────────────────────────────────────────
-        re = slide["restructura"]
-        restructura_limpia = None
-        if re:
-            restructura_limpia = {
-                "exito":    re["exito"],
-                "intentos": re["intentos"],
-                "diapositivas": [
-                    {
-                        "titulo":    d["titulo"],
-                        "contenido": d["contenido"],
-                    }
-                    for d in re["diapositivas"]
-                ],
-                "metricas_pendientes": re.get("metricas_fallidas_final", []),
-            }
-
-        salida["diapositivas"].append({
-            "numero":             n,
-            "tipo":               slide["tipo"],
-            "omitida":            False,
-            "score":              ss["score"],
-            "zona":               ss["zona"],
-            "metricas":           metricas_limpias,
-            "aspectos_a_mejorar": ss["aspectos_mejorar"],
-            "feedback":           feedback_limpio,
-            "reestructura":       restructura_limpia,
-        })
-
-    return salida

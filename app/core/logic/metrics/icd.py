@@ -1,27 +1,12 @@
-# app/core/logic/metrics/icd.py
-"""
-icd.py
-Calcula el Índice de Complejidad de Diapositiva (ICD).
+from typing import Dict, Any, List
+from app.core.logic.metrics.readability import calculate_readability
+from app.core.logic.metrics.lexical_density import calculate_lexical_density
 
-Fórmula:
-    ICD = (0.6 × CF + 0.4 × DLN) × 10   → rango [0, 10]
+WEIGHT_CF = 0.6
+WEIGHT_DLN = 0.4
+MIN_WORDS_ICD = 15
 
-Escala para nivel superior:
-    0.0 – 2.0  → muy simple
-    2.0 – 4.0  → simple
-    4.0 – 6.5  → apropiado  ← rango objetivo
-    6.0 – 8.0  → complejo
-    8.0 – 10.0 → muy complejo
-"""
-
-from app.core.logic.metrics.readability    import calcular_legibilidad
-from app.core.logic.metrics.lexical_density import calcular_densidad_lexica
-
-PESO_CF  = 0.6
-MIN_PALABRAS_ICD = 15   # umbral mínimo para ICD confiable
-PESO_DLN = 0.4
-
-_ESCALA = [
+_SCALE = [
     (2.0,  "muy simple"),
     (4.0,  "simple"),
     (6.5,  "apropiado"),
@@ -29,120 +14,75 @@ _ESCALA = [
     (10.0, "muy complejo"),
 ]
 
+def calculate_icd(slide_data: Dict[str, Any]) -> Dict[str, Any]:
+    readability_metrics = calculate_readability(slide_data)
+    density_metrics = calculate_lexical_density(slide_data)
 
-def calcular_icd(slide_data):
-    """
-    Calcula el ICD de una diapositiva de contenido.
-
-    Args:
-        slide_data: dict del extractor (con title, content, sin footer)
-                    Solo debe llamarse para slides con excluir=False.
-
-    Returns:
-        {
-            "slide_number": int,
-            "icd":          float,     # 0–10
-            "zona":         str,       # etiqueta de la escala
-            "cf":           float,
-            "dln":          float,
-            "fsz":          float,
-            "fsz_zona":     str,
-            "dl":           float,
-            "palabras":     int,
-            "silabas":      int,
-            "frases":       int,
-            "palabras_contenido": int,
-            "calculable":   bool       # False si no hay suficiente texto
-        }
-    """
-    legibilidad   = calcular_legibilidad(slide_data)
-    densidad      = calcular_densidad_lexica(slide_data)
-
-    base = {
+    base_result = {
         "slide_number": slide_data.get("slide_number"),
         "calculable":   False,
         "icd":          None,
         "zona":         None,
     }
 
-    if legibilidad is None or densidad is None or legibilidad["palabras"] < MIN_PALABRAS_ICD:
-        return base
+    if readability_metrics is None or density_metrics is None or readability_metrics["palabras"] < MIN_WORDS_ICD:
+        return base_result
 
-    cf  = legibilidad["cf"]
-    dln = densidad["dln"]
-    icd = (PESO_CF * cf + PESO_DLN * dln) * 10
-    icd = round(max(0.0, min(10.0, icd)), 2)
+    cf  = readability_metrics["cf"]
+    ldn = density_metrics["dln"]
+    icd_score = (WEIGHT_CF * cf + WEIGHT_DLN * ldn) * 10
+    icd_score = round(max(0.0, min(10.0, icd_score)), 2)
 
-    base.update({
+    base_result.update({
         "calculable":         True,
-        "icd":                icd,
-        "zona":               _zona_icd(icd),
+        "icd":                icd_score,
+        "zona":               _get_icd_zone(icd_score),
         "cf":                 cf,
-        "dln":                dln,
-        "fsz":                legibilidad["fsz"],
-        "fsz_zona":           legibilidad["fsz_zona"],
-        "dl":                 densidad["dl"],
-        "palabras":           legibilidad["palabras"],
-        "silabas":            legibilidad["silabas"],
-        "frases":             legibilidad["frases"],
-        "prom_sil_pal":       legibilidad["prom_sil_pal"],
-        "prom_pal_fra":       legibilidad["prom_pal_fra"],
-        "palabras_contenido": densidad["palabras_contenido"],
+        "dln":                ldn,
+        "fsz":                readability_metrics["fsz"],
+        "fsz_zona":           readability_metrics["fsz_zona"],
+        "dl":                 density_metrics["dl"],
+        "palabras":           readability_metrics["palabras"],
+        "silabas":            readability_metrics["silabas"],
+        "frases":             readability_metrics["frases"],
+        "prom_sil_pal":       readability_metrics["prom_sil_pal"],
+        "prom_pal_fra":       readability_metrics["prom_pal_fra"],
+        "palabras_contenido": density_metrics["palabras_contenido"],
     })
 
-    return base
+    return base_result
 
+def calculate_presentation_icd(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
+    results = [calculate_icd(s) for s in content_slides]
 
-def calcular_icd_presentacion(slides_contenido):
-    """
-    Calcula el ICD para todas las diapositivas de contenido
-    y agrega un resumen de la presentación.
+    icd_values = [r["icd"] for r in results if r["calculable"]]
+    textless_slides = sum(1 for r in results if not r["calculable"])
 
-    Args:
-        slides_contenido: lista de slide_data (ya filtradas por excluir=False)
-
-    Returns:
-        {
-            "resultados":    [dict por diapositiva],
-            "icd_promedio":  float | None,
-            "icd_minimo":    float | None,
-            "icd_maximo":    float | None,
-            "zona_promedio": str | None,
-            "slides_calculadas":   int,
-            "slides_sin_texto":    int
-        }
-    """
-    resultados = [calcular_icd(s) for s in slides_contenido]
-
-    valores = [r["icd"] for r in resultados if r["calculable"]]
-    sin_texto = sum(1 for r in resultados if not r["calculable"])
-
-    if not valores:
+    if not icd_values:
         return {
-            "resultados":         resultados,
-            "icd_promedio":       None,
-            "icd_minimo":         None,
-            "icd_maximo":         None,
-            "zona_promedio":      None,
-            "slides_calculadas":  0,
-            "slides_sin_texto":   sin_texto,
+            "resultados":        results,
+            "icd_promedio":      None,
+            "icd_minimo":        None,
+            "icd_maximo":        None,
+            "zona_promedio":     None,
+            "slides_calculadas": 0,
+            "slides_sin_texto":  textless_slides,
         }
 
-    promedio = round(sum(valores) / len(valores), 2)
+    average_icd = round(sum(icd_values) / len(icd_values), 2)
 
     return {
-        "resultados":        resultados,
-        "icd_promedio":      promedio,
-        "icd_minimo":        round(min(valores), 2),
-        "icd_maximo":        round(max(valores), 2),
-        "zona_promedio":     _zona_icd(promedio),
-        "slides_calculadas": len(valores),
-        "slides_sin_texto":  sin_texto,
+        "resultados":        results,
+        "icd_promedio":      average_icd,
+        "icd_minimo":        round(min(icd_values), 2),
+        "icd_maximo":        round(max(icd_values), 2),
+        "zona_promedio":     _get_icd_zone(average_icd),
+        "slides_calculadas": len(icd_values),
+        "slides_sin_texto":  textless_slides,
     }
 
-
-def _zona_icd(valor):
-    for limite, etiqueta in _ESCALA:
-        if valor <= limite:
-            return etiqueta
+def _get_icd_zone(value: float) -> str:
+    for limit, label in _SCALE:
+        if value <= limit:
+            return label
     return "muy complejo"

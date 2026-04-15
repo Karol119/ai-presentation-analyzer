@@ -1,76 +1,40 @@
-# app/core/logic/metrics/readability.py
-
-"""
-calculo_legibilidad.py
-Calcula el índice Flesch-Szigriszt (FSZ) adaptado al español
-y su transformación a CF (complejidad Flesch normalizada).
-
-Fórmulas:
-    FSZ = 206.835 - 62.3 × (sílabas / palabras) - (palabras / frases)
-    CF  = (100 - FSZ) / 100   → rango [0, 1], mayor = más complejo
-"""
-
+from typing import Dict, Any, Optional
 from app.core.logic.metrics.text_counter import (
-    contar_palabras,
-    contar_silabas,
-    segmentar_frases,
-    preparar_texto_slide
+    contar_palabras, contar_silabas, segmentar_frases, preparar_texto_slide
 )
 
+def calculate_readability(slide_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    text = preparar_texto_slide(slide_data)
 
-def calcular_legibilidad(slide_data):
-    """
-    Calcula FSZ y CF para una diapositiva.
-
-    Args:
-        slide_data: dict del extractor (con title, content, footer ya excluido)
-
-    Returns:
-        {
-            "palabras":  int,
-            "silabas":   int,
-            "frases":    int,
-            "prom_sil_pal": float,   # sílabas / palabras
-            "prom_pal_fra": float,   # palabras / frases
-            "fsz":       float,      # Flesch-Szigriszt (0–100)
-            "cf":        float,      # Complejidad Flesch normalizada (0–1)
-            "fsz_zona":  str         # etiqueta de dificultad
-        }
-        None si no hay suficiente texto para calcular.
-    """
-    texto = preparar_texto_slide(slide_data)
-
-    palabras = contar_palabras(texto)
-    if palabras < 5:
+    word_count = contar_palabras(text)
+    if word_count < 5:
         return None
 
-    silabas = contar_silabas(texto)
-    frases  = segmentar_frases(texto)
-    n_frases = len(frases) if frases else 1
+    syllable_count = contar_silabas(text)
+    sentences = segmentar_frases(text)
+    num_sentences = len(sentences) if sentences else 1
 
-    prom_sil_pal = silabas / palabras
-    prom_pal_fra = palabras / n_frases
+    avg_syllables_per_word = syllable_count / word_count
+    avg_words_per_sentence = word_count / num_sentences
 
-    fsz = 206.835 - (62.3 * prom_sil_pal) - prom_pal_fra
-    # Clamp a rango realista (el índice puede salir de 0-100 en textos extremos)
+    fsz = 206.835 - (62.3 * avg_syllables_per_word) - avg_words_per_sentence
     fsz = max(0.0, min(100.0, fsz))
 
     cf = (100.0 - fsz) / 100.0
     cf = round(max(0.0, min(1.0, cf)), 4)
 
     return {
-        "palabras":     palabras,
-        "silabas":      silabas,
-        "frases":       n_frases,
-        "prom_sil_pal": round(prom_sil_pal, 3),
-        "prom_pal_fra": round(prom_pal_fra, 3),
+        "palabras":     word_count,
+        "silabas":      syllable_count,
+        "frases":       num_sentences,
+        "prom_sil_pal": round(avg_syllables_per_word, 3),
+        "prom_pal_fra": round(avg_words_per_sentence, 3),
         "fsz":          round(fsz, 2),
         "cf":           cf,
-        "fsz_zona":     _zona_fsz(fsz)
+        "fsz_zona":     _get_fsz_zone(fsz)
     }
 
-
-def _zona_fsz(fsz):
+def _get_fsz_zone(fsz: float) -> str:
     if fsz >= 80: return "muy facil"
     if fsz >= 65: return "facil"
     if fsz >= 50: return "normal"

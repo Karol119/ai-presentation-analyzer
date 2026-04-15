@@ -1,14 +1,17 @@
-# app/core/logic/metrics/narrative_thread.py
 import re
 import math
+from collections import Counter
+from typing import Dict, Any, List, Callable, Optional, Set
+
 from app.infrastructure.ollama.narrativa_service import verificar_hilo_narrativo
 
 # Umbrales definidos por literatura de lingüística de corpus
-UMBRAL_RELACIONADA = 0.15
-UMBRAL_DEBIL       = 0.05
-UMBRAL_FUERTE      = 0.30
+RELATED_THRESHOLD = 0.15
+WEAK_THRESHOLD    = 0.05
+STRONG_THRESHOLD  = 0.30
 
-_STOPWORDS = {
+# ── OPTIMIZACIÓN: Sets y Regex precompilados ─────────────────────────────────
+_STOPWORDS: Set[str] = {
     "el","la","los","las","un","una","unos","unas","a","ante","bajo","con","contra",
     "de","desde","en","entre","hacia","hasta","para","por","según","sin","sobre",
     "tras","y","e","ni","o","u","pero","sino","aunque","porque","que","si","como",
@@ -16,13 +19,16 @@ _STOPWORDS = {
     "nosotros","ellos","me","te","se","nos","es","son","era","fue","ser","estar"
 }
 
-def calcular_nts(slides_contenido, llm_fn=verificar_hilo_narrativo):
-    
-    if not slides_contenido:
-        return _resumen_vacio()
+# Regex precompilada: 3 o más letras, ignorando mayúsculas/minúsculas
+_RE_TOKENS_NTS = re.compile(r'[a-záéíóúüñ]{3,}', re.IGNORECASE)
 
-    if len(slides_contenido) == 1:
-        n = slides_contenido[0].get("slide_number")
+def calculate_nts(content_slides: List[Dict[str, Any]], llm_fn: Optional[Callable] = verificar_hilo_narrativo) -> Dict[str, Any]:
+    
+    if not content_slides:
+        return _empty_summary()
+
+    if len(content_slides) == 1:
+        n = content_slides[0].get("slide_number")
         return {
             "resultados": [{
                 "slide_number":  n,
@@ -38,142 +44,142 @@ def calcular_nts(slides_contenido, llm_fn=verificar_hilo_narrativo):
             "slides_desconectadas":0,
         }
     
-    if not slides_contenido or len(slides_contenido) < 2:
-        return _resumen_vacio()
+    vectors = [_vectorize(_full_text(s)) for s in content_slides]
+    num_slides = len(vectors)
+    results = []
 
-    vectores = [_vectorizar(_texto_completo(s)) for s in slides_contenido]
-    n = len(vectores)
-    resultados = []
-
-    for i in range(n):
+    for i in range(num_slides):
         # Calculamos similitudes individuales
-        sim_ant = _evaluar_conexion(i-1, i, slides_contenido, vectores, llm_fn) if i > 0 else None
-        sim_sig = _evaluar_conexion(i, i+1, slides_contenido, vectores, llm_fn) if i < n-1 else None
+        prev_sim = _evaluate_connection(i-1, i, content_slides, vectors, llm_fn) if i > 0 else None
+        next_sim = _evaluate_connection(i, i+1, content_slides, vectors, llm_fn) if i < num_slides-1 else None
 
-        sims_validas = [s for s in [sim_ant, sim_sig] if s is not None]
-        sim_prom = sum(sims_validas) / len(sims_validas) if sims_validas else 0.0
+        valid_sims = [s for s in [prev_sim, next_sim] if s is not None]
+        avg_sim = sum(valid_sims) / len(valid_sims) if valid_sims else 0.0
 
-        nts_score = _score_tramos(sim_prom)
+        nts_score = _score_segments(avg_sim)
         
-        # AGREGAR: sim_anterior y sim_siguiente para el reporte detallado
-        resultados.append({
-            "slide_number":  slides_contenido[i].get("slide_number"),
-            "sim_anterior":  round(sim_ant, 4) if sim_ant is not None else None,
-            "sim_siguiente": round(sim_sig, 4) if sim_sig is not None else None,
-            "sim_promedio":  round(sim_prom, 4),
+        results.append({
+            "slide_number":  content_slides[i].get("slide_number"),
+            "sim_anterior":  round(prev_sim, 4) if prev_sim is not None else None,
+            "sim_siguiente": round(next_sim, 4) if next_sim is not None else None,
+            "sim_promedio":  round(avg_sim, 4),
             "nts_score":     nts_score,
-            "estado":        _determinar_estado(sim_prom)
+            "estado":        _determine_status(avg_sim)
         })
 
-    scores = [r["nts_score"] for r in resultados]
+    scores = [r["nts_score"] for r in results]
 
     return {
-        "resultados": resultados,
+        "resultados": results,
         "nts_promedio": round(sum(scores) / len(scores), 2) if scores else 0.0,
-        "slides_relacionadas": sum(1 for r in resultados if r["estado"] == "relacionada"),
-        "slides_debiles": sum(1 for r in resultados if r["estado"] == "debil"),
-        "slides_desconectadas": sum(1 for r in resultados if r["estado"] == "desconectada"),
+        "slides_relacionadas": sum(1 for r in results if r["estado"] == "relacionada"),
+        "slides_debiles": sum(1 for r in results if r["estado"] == "debil"),
+        "slides_desconectadas": sum(1 for r in results if r["estado"] == "desconectada"),
     }
 
 # ── Helpers de Cálculo ───────────────────────────────────────────────────────
 
-def _evaluar_conexion(idx1, idx2, slides, vectores, llm_fn):
+def _evaluate_connection(idx1: int, idx2: int, slides: List[Dict[str, Any]], vectors: List[Dict[str, float]], llm_fn: Optional[Callable]) -> float:
     """
     Lógica híbrida: Coseno (rápido) -> Mistral (semántico).
     """
-    coseno = _coseno(vectores[idx1], vectores[idx2])
+    cosine_sim = _cosine_similarity(vectors[idx1], vectors[idx2])
     
     # Si la relación léxica es baja, pedimos juicio semántico al modelo
-    if coseno < UMBRAL_RELACIONADA and llm_fn:
-        t1 = _texto_completo(slides[idx1])
-        t2 = _texto_completo(slides[idx2])
-        nota_llm = llm_fn(t1, t2)
+    if cosine_sim < RELATED_THRESHOLD and llm_fn:
+        text1 = _full_text(slides[idx1])
+        text2 = _full_text(slides[idx2])
+        llm_score = llm_fn(text1, text2)
         
-        if nota_llm:
+        if llm_score:
             # Mapeamos la nota 1-10 del LLM al espacio de similitud (0.0 a 0.4)
-            sim_llm = (nota_llm / 10.0) * 0.4
-            return max(coseno, sim_llm)
+            sim_llm = (llm_score / 10.0) * 0.4
+            return max(cosine_sim, sim_llm)
             
-    return coseno
+    return cosine_sim
 
-def _score_tramos(sim):
+def _score_segments(sim: float) -> float:
     """Cálculo de score basado en los tramos definidos en el archivo de tesis."""
-    if sim >= UMBRAL_FUERTE: return 10.0
-    if sim >= UMBRAL_RELACIONADA:
-        t = (sim - UMBRAL_RELACIONADA) / (UMBRAL_FUERTE - UMBRAL_RELACIONADA)
+    if sim >= STRONG_THRESHOLD: return 10.0
+    if sim >= RELATED_THRESHOLD:
+        t = (sim - RELATED_THRESHOLD) / (STRONG_THRESHOLD - RELATED_THRESHOLD)
         return round(7.0 + t * 3.0, 2)
-    if sim >= UMBRAL_DEBIL:
-        t = (sim - UMBRAL_DEBIL) / (UMBRAL_RELACIONADA - UMBRAL_DEBIL)
+    if sim >= WEAK_THRESHOLD:
+        t = (sim - WEAK_THRESHOLD) / (RELATED_THRESHOLD - WEAK_THRESHOLD)
         return round(3.0 + t * 4.0, 2)
-    return round((sim / UMBRAL_DEBIL) * 3.0, 2)
+    return round((sim / WEAK_THRESHOLD) * 3.0, 2)
 
-def _vectorizar(texto):
-    tokens = re.findall(r'[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]{3,}', texto.lower())
-    tokens = [t for t in tokens if t not in _STOPWORDS]
-    if not tokens: return {}
-    tf = {}
-    for t in tokens: tf[t] = tf.get(t, 0) + 1
-    total = len(tokens)
+def _vectorize(text: str) -> Dict[str, float]:
+    # OPTIMIZACIÓN: Uso de regex precompilada
+    tokens = _RE_TOKENS_NTS.findall(text.lower())
+    useful_tokens = [t for t in tokens if t not in _STOPWORDS]
+    
+    if not useful_tokens: 
+        return {}
+        
+    total = len(useful_tokens)
+    # OPTIMIZACIÓN: Counter es nativo de Python en C, muchísimo más rápido que iterar diccionarios
+    tf = Counter(useful_tokens)
+    
     return {t: c / total for t, c in tf.items()}
 
-def _coseno(v1, v2):
+def _cosine_similarity(v1: Dict[str, float], v2: Dict[str, float]) -> float:
     if not v1 or not v2: return 0.0
-    comunes = set(v1.keys()) & set(v2.keys())
-    if not comunes: return 0.0
-    dot = sum(v1[t] * v2[t] for t in comunes)
+    common = set(v1.keys()) & set(v2.keys())
+    if not common: return 0.0
+    
+    dot = sum(v1[t] * v2[t] for t in common)
     mag1 = math.sqrt(sum(x**2 for x in v1.values()))
     mag2 = math.sqrt(sum(x**2 for x in v2.values()))
+    
     return dot / (mag1 * mag2)
 
-def _texto_completo(slide_data):
-    partes = [slide_data.get("title", "")] + slide_data.get("content", [])
-    return " ".join([p.strip() for p in partes if p.strip()])
+def _full_text(slide_data: Dict[str, Any]) -> str:
+    parts = [slide_data.get("title", "")] + slide_data.get("content", [])
+    return " ".join([p.strip() for p in parts if p.strip()])
 
-def _determinar_estado(sim):
-    if sim >= UMBRAL_RELACIONADA: return "relacionada"
-    if sim >= UMBRAL_DEBIL: return "debil"
+def _determine_status(sim: float) -> str:
+    if sim >= RELATED_THRESHOLD: return "relacionada"
+    if sim >= WEAK_THRESHOLD: return "debil"
     return "desconectada"
 
-def _resumen_vacio():
+def _empty_summary() -> Dict[str, Any]:
     return {
         "resultados": [], "nts_promedio": 0.0,
         "slides_relacionadas": 0, "slides_debiles": 0,
         "slides_desconectadas": 0
     }
     
-    
-def calcular_nts_individual(slide_actual, slide_previa=None, llm_fn=verificar_hilo_narrativo):
+def calculate_individual_nts(current_slide: Dict[str, Any], previous_slide: Optional[Dict[str, Any]] = None, llm_fn: Optional[Callable] = verificar_hilo_narrativo) -> Dict[str, Any]:
     """
     Calcula el NTS comparando la slide actual con la anterior.
     """
-    if slide_previa is None:
+    if previous_slide is None:
         return {
-            "slide_number": slide_actual.get("slide_number"),
+            "slide_number": current_slide.get("slide_number"),
             "sim_anterior": None,
             "sim_promedio": 1.0,
             "nts_score": 10.0,
             "estado": "relacionada",
         }
 
-    # Vectorizamos
-    v_actual = _vectorizar(_texto_completo(slide_actual))
-    v_previa = _vectorizar(_texto_completo(slide_previa))
+    v_current = _vectorize(_full_text(current_slide))
+    v_previous = _vectorize(_full_text(previous_slide))
     
-    # Similitud
-    sim = _evaluar_conexion_directa(v_previa, v_actual, slide_previa, slide_actual, llm_fn)
+    sim = _evaluate_direct_connection(v_previous, v_current, previous_slide, current_slide, llm_fn)
     
     return {
-        "slide_number": slide_actual.get("slide_number"),
+        "slide_number": current_slide.get("slide_number"),
         "sim_anterior": round(sim, 4),
         "sim_promedio": round(sim, 4),
-        "nts_score": _score_tramos(sim),
-        "estado": _determinar_estado(sim)
+        "nts_score": _score_segments(sim),
+        "estado": _determine_status(sim)
     }
 
-def _evaluar_conexion_directa(v1, v2, s1, s2, llm_fn):
-    coseno = _coseno(v1, v2)
-    if coseno < UMBRAL_RELACIONADA and llm_fn:
-        nota_llm = llm_fn(_texto_completo(s1), _texto_completo(s2))
-        if nota_llm:
-            return max(coseno, (nota_llm / 10.0) * 0.4)
-    return coseno
+def _evaluate_direct_connection(v1: Dict[str, float], v2: Dict[str, float], s1: Dict[str, Any], s2: Dict[str, Any], llm_fn: Optional[Callable]) -> float:
+    cosine_sim = _cosine_similarity(v1, v2)
+    if cosine_sim < RELATED_THRESHOLD and llm_fn:
+        llm_score = llm_fn(_full_text(s1), _full_text(s2))
+        if llm_score:
+            return max(cosine_sim, (llm_score / 10.0) * 0.4)
+    return cosine_sim

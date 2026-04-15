@@ -12,13 +12,14 @@ Aproximación: total_palabras - stopwords (palabras funcionales).
 """
 
 import re
+from typing import Dict, Any, Optional
 from app.core.logic.metrics.text_counter import preparar_texto_slide
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Stopwords del español (palabras funcionales que NO son contenido)
 # Artículos, preposiciones, conjunciones, pronombres, auxiliares comunes
 # ──────────────────────────────────────────────────────────────────────────────
-
+_RE_TOKENS = re.compile(r'[a-záéíóúüñ]+', re.IGNORECASE)
 _STOPWORDS = {
     # Artículos
     "el","la","los","las","un","una","unos","unas",
@@ -55,47 +56,29 @@ _STOPWORDS = {
     "también","además","sin","embargo","aunque","entonces","luego",
     "después","antes","finalmente","primero","segundo","tercero",
 }
+_RE_TOKENS = re.compile(r'[a-záéíóúüñ]+', re.IGNORECASE)
 
-
-def calcular_densidad_lexica(slide_data):
-    """
-    Calcula DL y DLN para una diapositiva.
-
-    Returns:
-        {
-            "total_palabras":     int,
-            "palabras_contenido": int,
-            "palabras_funcional": int,
-            "dl":  float,    # densidad léxica en porcentaje (0–100)
-            "dln": float     # densidad léxica normalizada (0–1)
-        }
-        None si no hay suficiente texto.
-    """
-    texto = preparar_texto_slide(slide_data)
-    tokens = _tokenizar(texto)
+def calculate_lexical_density(slide_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    text = preparar_texto_slide(slide_data)
+    tokens = _tokenize(text)
 
     if len(tokens) < 5:
         return None
 
-    total    = len(tokens)
-    funcional = sum(1 for t in tokens if t in _STOPWORDS)
-    contenido = total - funcional
+    total_words = len(tokens)
+    functional_words = sum(1 for t in tokens if t in _STOPWORDS)
+    content_words = total_words - functional_words
 
-    dl  = (contenido / total) * 100
-    dln = dl / 100.0
+    ld = (content_words / total_words) * 100
+    ldn = ld / 100.0
 
     return {
-        "total_palabras":     total,
-        "palabras_contenido": contenido,
-        "palabras_funcional": funcional,
-        "dl":  round(dl, 2),
-        "dln": round(dln, 4)
+        "total_palabras":     total_words,
+        "palabras_contenido": content_words,
+        "palabras_funcional": functional_words,
+        "dl":  round(ld, 2),
+        "dln": round(ldn, 4)
     }
 
-
-def _tokenizar(texto):
-    """Convierte el texto en lista de tokens en minúsculas, solo palabras."""
-    return [
-        t.lower()
-        for t in re.findall(r'[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]+', texto)
-    ]
+def _tokenize(text: str) -> list[str]:
+    return [t.lower() for t in _RE_TOKENS.findall(text)]

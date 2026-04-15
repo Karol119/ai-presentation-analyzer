@@ -1,39 +1,28 @@
-# app/core/logic/metrics/word_count.py
+from typing import Dict, Any, List
+from app.core.logic.metrics.text_counter import contar_palabras, preparar_texto_slide
 
-import re
+OPTIMAL_MAX_WORDS = 75
+EXCESS_PENALTY    = 15
 
-MAX_OPTIMO          = 75
-PENALIZACION_EXCESO = 15  # Cada 15 palabras de exceso restan aproximadamente 1 punto
+def calculate_wps(slide_data: Dict[str, Any]) -> Dict[str, Any]:
+    text = preparar_texto_slide(slide_data)
+    word_count = contar_palabras(text)
 
-def calcular_wps(slide_data):
-    """
-    Calcula el WPS (Words Per Slide) para una sola diapositiva.
-    Siguiendo la definición de tesis: No se penaliza el contenido breve[cite: 12],
-    solo se evalúa el riesgo de saturación por encima de 75 palabras[cite: 8].
-    """
-    texto    = _preparar_texto(slide_data)
-    palabras = _contar_palabras(texto)
-
-    # El score es 10 perfecto si no excede el máximo
-    score = _calcular_score_exclusivo_exceso(palabras)
-    zona  = _zona_solo_exceso(palabras)
+    score = _calculate_excess_score(word_count)
+    zone  = _get_excess_zone(word_count)
 
     return {
         "slide_number": slide_data.get("slide_number"),
-        "palabras":     palabras,
+        "palabras":     word_count,
         "wps_score":    round(score, 2),
-        "zona":         zona,
-        "en_rango":     palabras <= MAX_OPTIMO,
-        "exceso":       max(0, palabras - MAX_OPTIMO),
+        "zona":         zone,
+        "en_rango":     word_count <= OPTIMAL_MAX_WORDS,
+        "exceso":       max(0, word_count - OPTIMAL_MAX_WORDS),
         "deficit":      0  
     }
 
-def calcular_wps_presentacion(slides_contenido):
-    """
-    Función INTEGRADORA: Calcula el WPS para todas las diapositivas de contenido 
-    y genera las estadísticas globales de la presentación.
-    """
-    if not slides_contenido:
+def calculate_presentation_wps(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
+    if not content_slides:
         return {
             "resultados": [],
             "wps_promedio": 0.0,
@@ -43,46 +32,28 @@ def calcular_wps_presentacion(slides_contenido):
             "slides_saturadas": 0
         }
 
-    resultados = [calcular_wps(s) for s in slides_contenido]
-    scores = [r["wps_score"] for r in resultados]
-    palabras = [r["palabras"] for r in resultados]
+    results = [calculate_wps(s) for s in content_slides]
+    scores = [r["wps_score"] for r in results]
+    word_counts = [r["palabras"] for r in results]
 
     return {
-        "resultados":        resultados,
+        "resultados":        results,
         "wps_promedio":      round(sum(scores) / len(scores), 2) if scores else 0.0,
-        "palabras_promedio": round(sum(palabras) / len(palabras), 1) if palabras else 0.0,
-        "slides_optimas":    sum(1 for r in resultados if r["zona"] == "optima"),
-        "slides_densas":     sum(1 for r in resultados if r["zona"] == "densa"),
-        "slides_saturadas":  sum(1 for r in resultados if r["zona"] == "saturada"),
+        "palabras_promedio": round(sum(word_counts) / len(word_counts), 1) if word_counts else 0.0,
+        "slides_optimas":    sum(1 for r in results if r["zona"] == "optima"),
+        "slides_densas":     sum(1 for r in results if r["zona"] == "densa"),
+        "slides_saturadas":  sum(1 for r in results if r["zona"] == "saturada"),
     }
 
-# --- Funciones Auxiliares ---
-
-def _calcular_score_exclusivo_exceso(palabras):
-    if palabras <= MAX_OPTIMO:
+def _calculate_excess_score(words: int) -> float:
+    if words <= OPTIMAL_MAX_WORDS:
         return 10.0
-    penalizacion = (palabras - MAX_OPTIMO) / PENALIZACION_EXCESO
-    return max(0.0, 10.0 - penalizacion)
+    penalty = (words - OPTIMAL_MAX_WORDS) / EXCESS_PENALTY
+    return max(0.0, 10.0 - penalty)
 
-def _zona_solo_exceso(palabras):
-    if palabras <= MAX_OPTIMO:
+def _get_excess_zone(words: int) -> str:
+    if words <= OPTIMAL_MAX_WORDS:
         return "optima"
-    if palabras <= 120:
+    if words <= 120:
         return "densa"
     return "saturada"
-
-def _preparar_texto(slide_data):
-    partes = []
-    titulo = slide_data.get("title", "").strip()
-    if titulo:
-        partes.append(titulo)
-    for bloque in slide_data.get("content", []):
-        bloque = bloque.strip()
-        if bloque:
-            partes.append(bloque)
-    return " ".join(partes)
-
-def _contar_palabras(texto):
-    tokens = texto.split()
-    from app.core.logic.metrics.text_counter import _RE_TOKEN_NO_PALABRA
-    return sum(1 for t in tokens if not _RE_TOKEN_NO_PALABRA.match(t))
