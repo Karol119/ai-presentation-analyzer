@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from app.core.logic.metrics.text_counter import contar_palabras, preparar_texto_slide
 
 OPTIMAL_MAX_WORDS = 75
@@ -10,6 +10,9 @@ def calculate_wps(slide_data: Dict[str, Any]) -> Dict[str, Any]:
 
     score = _calculate_excess_score(word_count)
     zone  = _get_excess_zone(word_count)
+    
+    # Generamos la retroalimentación instantánea
+    local_feedback = _generate_wps_feedback(word_count)
 
     return {
         "slide_number": slide_data.get("slide_number"),
@@ -18,7 +21,8 @@ def calculate_wps(slide_data: Dict[str, Any]) -> Dict[str, Any]:
         "zona":         zone,
         "en_rango":     word_count <= OPTIMAL_MAX_WORDS,
         "exceso":       max(0, word_count - OPTIMAL_MAX_WORDS),
-        "deficit":      0  
+        "deficit":      0,
+        "feedback_local": local_feedback
     }
 
 def calculate_presentation_wps(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -44,6 +48,21 @@ def calculate_presentation_wps(content_slides: List[Dict[str, Any]]) -> Dict[str
         "slides_densas":     sum(1 for r in results if r["zona"] == "densa"),
         "slides_saturadas":  sum(1 for r in results if r["zona"] == "saturada"),
     }
+
+# --- Funciones Auxiliares ---
+
+def _generate_wps_feedback(word_count: int) -> Optional[str]:
+    """Genera la retroalimentación local para la cantidad de palabras."""
+    if word_count <= OPTIMAL_MAX_WORDS:
+        return None
+        
+    excess = word_count - OPTIMAL_MAX_WORDS
+    return (
+        f"Se ha detectado un exceso de contenido ({excess} palabras de más). "
+        f"Se sugiere reestructurar el texto o dividir las ideas principales en múltiples "
+        f"diapositivas para mantener un máximo de {OPTIMAL_MAX_WORDS} palabras, "
+        f"optimizando así la retención del estudiante."
+    )
 
 def _calculate_excess_score(words: int) -> float:
     if words <= OPTIMAL_MAX_WORDS:
