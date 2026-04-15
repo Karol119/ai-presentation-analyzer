@@ -140,3 +140,40 @@ def _resumen_vacio():
         "slides_relacionadas": 0, "slides_debiles": 0,
         "slides_desconectadas": 0
     }
+    
+    
+def calcular_nts_individual(slide_actual, slide_previa=None, llm_fn=verificar_hilo_narrativo):
+    """
+    Calcula el NTS comparando la slide actual con la anterior.
+    """
+    if slide_previa is None:
+        return {
+            "slide_number": slide_actual.get("slide_number"),
+            "sim_anterior": None,
+            "sim_promedio": 1.0,
+            "nts_score": 10.0,
+            "estado": "relacionada",
+        }
+
+    # Vectorizamos
+    v_actual = _vectorizar(_texto_completo(slide_actual))
+    v_previa = _vectorizar(_texto_completo(slide_previa))
+    
+    # Similitud
+    sim = _evaluar_conexion_directa(v_previa, v_actual, slide_previa, slide_actual, llm_fn)
+    
+    return {
+        "slide_number": slide_actual.get("slide_number"),
+        "sim_anterior": round(sim, 4),
+        "sim_promedio": round(sim, 4),
+        "nts_score": _score_tramos(sim),
+        "estado": _determinar_estado(sim)
+    }
+
+def _evaluar_conexion_directa(v1, v2, s1, s2, llm_fn):
+    coseno = _coseno(v1, v2)
+    if coseno < UMBRAL_RELACIONADA and llm_fn:
+        nota_llm = llm_fn(_texto_completo(s1), _texto_completo(s2))
+        if nota_llm:
+            return max(coseno, (nota_llm / 10.0) * 0.4)
+    return coseno
