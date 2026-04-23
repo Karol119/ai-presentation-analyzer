@@ -64,6 +64,7 @@ def _process_slide(slide: Any, slide_number: int, slide_height: float) -> Dict[s
     for shape in slide.shapes:
         _process_shape(shape, slide_info, title_candidates, slide_height)
 
+    # Lógica para elegir el mejor candidato a título
     if not slide_info["title"] and title_candidates:
         title_candidates.sort(key=lambda x: (x["size"] or 0, -x["top"]), reverse=True)
         best_candidate = title_candidates[0]
@@ -74,17 +75,24 @@ def _process_slide(slide: Any, slide_number: int, slide_height: float) -> Dict[s
         else:
             slide_info["content"].extend([c["text"] for c in title_candidates])
 
+    # Variables booleanas de control
     is_textless = len(slide_info["content"]) == 0 and slide_info["title"] == ""
     slide_info["tiene_solo_imagen"] = is_textless and len(slide_info["images"]) > 0
+    
+    # --- LA CONEXIÓN CON EL CORTAFUEGOS ---
+    # Exportamos explícitamente el conteo de imágenes para que la IA sepa evadirlas
+    slide_info["image_count"] = len(slide_info["images"])
 
     return slide_info
 
 def _process_shape(shape: Any, slide_info: Dict[str, Any], title_candidates: List[Dict[str, Any]], slide_height: float) -> None:
+    # Manejo de agrupaciones (Busca imágenes dentro de grupos)
     if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
         for child in shape.shapes:
             _process_shape(child, slide_info, title_candidates, slide_height)
         return
 
+    # Detección de Imágenes
     is_image = False
     if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
         is_image = True
@@ -95,6 +103,7 @@ def _process_shape(shape: Any, slide_info: Dict[str, Any], title_candidates: Lis
         slide_info["images"].append(shape.name)
         return
 
+    # Detección de Tablas
     if shape.shape_type == MSO_SHAPE_TYPE.TABLE:
         for row in shape.table.rows:
             for cell in row.cells:
@@ -103,6 +112,7 @@ def _process_shape(shape: Any, slide_info: Dict[str, Any], title_candidates: Lis
                     slide_info["content"].append(cell_text)
         return
 
+    # Extracción de Texto Normal
     if not getattr(shape, "has_text_frame", False) or not shape.has_text_frame or not shape.text.strip():
         return
 
@@ -116,11 +126,13 @@ def _process_shape(shape: Any, slide_info: Dict[str, Any], title_candidates: Lis
     top_ratio = shape.top / slide_height
     word_count = len(text.split())
 
+    # Detección de Pie de Página
     if top_ratio >= FOOTER_TOP_THRESHOLD:
         if _is_footer(text, word_count, top_ratio):
             slide_info["footer"].append(text)
             return
 
+    # Detección de Títulos huérfanos
     if not slide_info["title"] and top_ratio < TITLE_TOP_THRESHOLD:
         font_size = _get_font_size(shape)
         title_candidates.append({
