@@ -108,7 +108,8 @@ def _process_shape(shape: Any, slide_info: Dict[str, Any], title_candidates: Lis
         for row in shape.table.rows:
             for cell in row.cells:
                 cell_text = _clean_text(cell.text)
-                if cell_text and not _is_decorative_number(cell, cell_text, slide_height):
+                # CORRECCIÓN AQUÍ: Se pasa 'shape' (la tabla) en lugar de 'cell'
+                if cell_text and not _is_decorative_number(shape, cell_text, slide_height):
                     slide_info["content"].append(cell_text)
         return
 
@@ -144,7 +145,7 @@ def _process_shape(shape: Any, slide_info: Dict[str, Any], title_candidates: Lis
         return
 
     slide_info["content"].append(text)
-
+    
 def _is_footer(text: str, word_count: int, top_ratio: float) -> bool:
     if top_ratio >= 0.85 and word_count <= 25:
         return True
