@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 import tkinter as tk
 from tkinter import filedialog
 from colorama import init, Fore, Style
@@ -29,22 +30,49 @@ def ejecutar_test():
     try:
         resultado = analyze_presentation(ruta, status_cb=print_progreso)
         
-        # Extracción del nuevo objeto global
         score_data = resultado.get('score_global_presentacion', {})
+        tiempo_total = resultado.get('tiempo_total_formateado', 'N/A')
+        total_slides = resultado.get('total_diapositivas', 0)
+
         print(f"\n{Fore.GREEN}{Style.BRIGHT}==================================================")
-        print(f"{Fore.GREEN}{Style.BRIGHT}  SCORE GLOBAL: {score_data.get('score_global', 0)} / 10.0  ({score_data.get('zona_global', '').upper()})")
+        print(f"{Fore.GREEN}{Style.BRIGHT}  REPORTE FINAL DE LA PRESENTACIÓN")
+        print(f"{Fore.GREEN}{Style.BRIGHT}==================================================")
+        print(f"  {Fore.WHITE}• Total de diapositivas: {total_slides}")
+        print(f"  {Fore.WHITE}• Score Global: {score_data.get('score_global', 0)} / 10.0 ({score_data.get('zona_global', '').upper()})")
+        print(f"  {Fore.WHITE}• Tiempo Total Estimado: {tiempo_total}")
         print(f"{Fore.GREEN}{Style.BRIGHT}==================================================\n")
+
+        # --- IMPRIMIR EL DESGLOSE DE MÉTRICAS GLOBALES ---
+        scores_m = score_data.get('scores_metrica', {})
+        if scores_m:
+            print(f"{Fore.CYAN}  DESGLOSE GLOBAL POR MÉTRICAS:")
+            print(f"  {Fore.WHITE}• ICD Global (Complejidad): {scores_m.get('icd')} / 10.0")
+            print(f"  {Fore.WHITE}• WPS Global (Cant. Pal)  : {scores_m.get('wps')} / 10.0")
+            print(f"  {Fore.WHITE}• HSS Global (Títulos)    : {scores_m.get('hss')} / 10.0")
+            print(f"  {Fore.WHITE}• NTS Global (Hilo)       : {scores_m.get('nts')} / 10.0\n")
+
+        # --- IMPRIMIR EL DESGLOSE DE PESOS ---
+        desglose = score_data.get('desglose', {})
+        pesos = score_data.get('pesos', {})
+        if desglose:
+            print(f"{Fore.MAGENTA}  INFLUENCIA DE LOS PESOS (APORTACIÓN AL SCORE):")
+            for k, p in pesos.items():
+                p_real = desglose.get(f"{k}_pond", 0)
+                print(f"  {Fore.WHITE}• {k.upper()}: Aporta {p_real} puntos (Peso: {int(p*100)}%)")
+            print()
 
         for s in resultado["slides"]:
             print(f"{Fore.BLUE}{'-'*60}")
             
+            tiempo_slide = s.get('tiempo_exposicion', 'N/A')
+            
             if s.get("omitida"):
-                print(f"{Fore.WHITE}{Style.BRIGHT}DIAPOSITIVA {s['slide_number']:02d} | CLASIFICACIÓN IA: {s.get('tipo', 'desconocido').upper()}")
+                print(f"{Fore.WHITE}{Style.BRIGHT}DIAPOSITIVA {s['slide_number']:02d} | CLASIFICACIÓN IA: {s.get('tipo', 'desconocido').upper()} | Tiempo: {tiempo_slide} seg")
                 print(f"  {Fore.BLACK}{Style.BRIGHT}[!] Omitida de la evaluación (No es contenido evaluable)")
                 continue
                 
-            # Título de diapositiva con su score individual
-            print(f"{Fore.WHITE}{Style.BRIGHT}DIAPOSITIVA {s['slide_number']:02d} | Score: {s['score_slide']} ({s['zona_slide'].upper()})")
+            # Título de diapositiva con su score individual y tiempo
+            print(f"{Fore.WHITE}{Style.BRIGHT}DIAPOSITIVA {s['slide_number']:02d} | Score: {s['score_slide']} ({s['zona_slide'].upper()}) | Tiempo: {tiempo_slide} seg")
             
             metricas = s.get("metricas", {})
             if metricas:
@@ -79,6 +107,17 @@ def ejecutar_test():
             else:
                 print(f"\n  {Fore.GREEN}{Style.BRIGHT}✓ Sin reestructuración (Cumple con los parámetros de calidad).")
             print()
+
+        # --- EL BLOQUE FINAL: VOLCADO DE JSON PARA BASE DE DATOS ---
+        print(f"\n\n{Fore.MAGENTA}{Style.BRIGHT}{'='*30} JSON FINAL (OBJETO DE BASE DE DATOS) {'='*30}")
+        
+        # Convertimos el diccionario a un string JSON con formato
+        json_final = json.dumps(resultado, indent=2, ensure_ascii=False)
+        
+        print(Fore.WHITE + json_final)
+        
+        print(f"\n{Fore.MAGENTA}{Style.BRIGHT}{'='*80}\n")
+        print(f"{Fore.CYAN}[INFO] El objeto anterior es exactamente lo que se enviará a la tabla de Persistencia.")
             
     except Exception as e:
         print(f"\n{Fore.RED}[ERROR]: {str(e)}")

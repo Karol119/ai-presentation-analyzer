@@ -85,25 +85,38 @@ def calculate_ai_metrics_batch(slides: List[Dict[str, Any]]) -> Dict[str, Any]:
     for i, slide in enumerate(slides):
         slide_num = slide.get("slide_number")
         
+        # 1. Obtenemos los datos originales de la IA
+        ia_original_data = ai_results_map.get(slide_num, {})
+        
+        # --- NUEVO: Extraemos el tiempo ANTES del cortafuegos ---
+        # Si la IA no mandó el dato por alguna razón, asignamos 10 segundos por defecto
+        tiempo_slide = ia_original_data.get("tiempo_estimado_segundos", 10)
+        
+        # Hacemos una copia para que el cortafuegos pueda vaciar ai_data sin borrar el tiempo original
+        ai_data = ia_original_data.copy() 
+        
         # --- CORTAFUEGOS LOCAL (LA REGLA DE ORO) ---
         texto_completo = slide.get("title", "") + " " + " ".join(slide.get("content", []))
         palabras_totales = len(texto_completo.split())
         imagenes = slide.get("image_count", 0)
         
         if imagenes > 0 and palabras_totales < 15:
-            # Evadimos a la IA: Es una diapositiva visual (ej. Solo imagen + Título)
+            # Evadimos a la IA: Es una diapositiva visual
             tipo_diapositiva = "visual"
-            ai_data = {} # Vaciamos los datos de IA para que no afecten
+            ai_data = {} # Vaciamos los datos de IA para que no afecten métricas
         elif palabras_totales < 5:
-            # Evadimos a la IA: Es un salto de sección o diapositiva vacía
+            # Evadimos a la IA: Es un salto de sección
             tipo_diapositiva = "sin_contenido"
             ai_data = {}
         else:
             # Es contenido válido, confiamos en la clasificación de la IA
-            ai_data = ai_results_map.get(slide_num, {})
             tipo_diapositiva = ai_data.get("tipo", "contenido").lower()
             
-        clasificaciones[slide_num] = tipo_diapositiva
+        # --- MODIFICADO: Ahora guardamos un diccionario con el tipo y el tiempo ---
+        clasificaciones[slide_num] = {
+            "tipo": tipo_diapositiva,
+            "tiempo": tiempo_slide
+        }
         is_content = (tipo_diapositiva == "contenido")
 
         # --- Ensamblar HSS Individual ---

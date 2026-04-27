@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import time
 import requests
@@ -84,22 +85,49 @@ def _query_ollama(prompt: str, model_name: str, temperature: float) -> str:
         response = requests.post(OLLAMA_URL, json=payload, timeout=60)
         response.raise_for_status()
         return response.json().get("response", "").strip()
+    except requests.exceptions.ConnectionError as e:
+        # ERROR CRÍTICO: Ollama apagado
+        raise RuntimeError("OLLAMA ESTÁ APAGADO. Por favor abre la aplicación de Ollama en tu PC y vuelve a intentar.") from e
     except requests.exceptions.HTTPError as e:
-        print(f"[AI Provider] Error 404: ¿Estás seguro de que el modelo '{model_name}' está descargado en Ollama?")
-        return ""
+        # ERROR CRÍTICO: Modelo no encontrado
+        raise RuntimeError(f"ERROR: ¿Estás seguro de que el modelo '{model_name}' está instalado en Ollama?") from e
     except Exception as e:
-        print(f"[AI Provider] Error general con Ollama ({model_name}): {e}")
-        return ""
+        raise RuntimeError(f"Error inesperado con Ollama: {e}") from e
 
 def _query_gemini(prompt: str, temperature: float) -> str:
     try:
-        # Usamos gemini-pro para evitar el error 404 de versiones de librería antiguas
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash') 
         response = model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(temperature=temperature)
         )
         return response.text.strip()
     except Exception as e:
-        print(f"[AI Provider] Error con Gemini: {e}")
-        return ""
+        error_str = str(e)
+        
+        if "Quota" in error_str or "429" in error_str or "exhausted" in error_str.lower():
+            # 1. Extraemos los segundos exactos de espera que pide Google
+            wait_match = re.search(r"retry in (\d+(?:\.\d+)?)s", error_str)
+            tiempo_espera = f"{round(float(wait_match.group(1)))} segundos" if wait_match else "1 minuto"
+            
+            # 2. Identificamos qué cuota específica se agotó
+            tipo_cuota = "Límite general de uso"
+            if "TokensPerMinute" in error_str or "TPM" in error_str:
+                tipo_cuota = "Tokens por Minuto (Se renueva en un minuto)"
+            elif "PerDay" in error_str:
+                tipo_cuota = "Peticiones Diarias (Se renueva a la medianoche)"
+            elif "PerMinute" in error_str:
+                tipo_cuota = "Peticiones por Minuto (Se renueva en un minuto)"
+
+            # Lanzamos el error con la información exacta
+            raise RuntimeError(
+                f"LÍMITE DE CUOTA GEMINI: Se agotó tu cuota de '{tipo_cuota}'. "
+                f"Google solicita esperar exactamente {tiempo_espera} antes de reintentar."
+            ) from e
+            
+        elif "503" in error_str or "unavailable" in error_str.lower():
+            raise RuntimeError("ERROR DE SERVIDOR: Gemini no está disponible temporalmente.") from e
+        elif "API_KEY_INVALID" in error_str or "API key not valid" in error_str:
+            raise RuntimeError("CLAVE INVÁLIDA: La API Key de Gemini es incorrecta. Revisa tu archivo .env.") from e
+        else:
+            raise RuntimeError(f"Error crítico con la IA de Google: {error_str}") from e

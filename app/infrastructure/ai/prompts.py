@@ -1,48 +1,44 @@
 """
-prompts.py
 Instruction templates for AI models using the Batch Processing pattern.
 """
 
 BATCH_EVALUATION_PROMPT = """[INST] Eres un experto en pedagogía universitaria y diseño instruccional.
 Tu tarea es evaluar en LOTE un conjunto de diapositivas de una presentación académica. 
-Para cada diapositiva realizarás TRES tareas:
+Para cada diapositiva realizarás CUATRO tareas:
 1. CLASIFICACIÓN: Identificar el tipo de diapositiva.
 2. HSS (Estructura de Encabezado): Coherencia del título con el contenido.
-3. NTS (Hilo Narrativo): Conexión lógica con la diapositiva anterior.
+3. NTS (Hilo Narrativo): Progresión semántica y conceptual.
+4. TIEMPO ESTIMADO: Calcular el tiempo ideal de exposición en segundos.
 
 DATOS DEL LOTE DE DIAPOSITIVAS:
 {batch_data}
 
 INSTRUCCIONES DE EVALUACIÓN PARA CADA DIAPOSITIVA:
-Paso 1 - Clasificación: Asigna a la diapositiva UNO de los siguientes tipos: "portada", "indice", "contenido", "visual", "cierre", "referencias".
-Paso 2 - Omisión Inteligente: Si el tipo NO es "contenido", asigna null al hss_score y nts_score, y deja los feedbacks vacíos. No pierdas tiempo evaluando métricas en portadas, índices o referencias.
+Paso 1 - Clasificación: Asigna uno de estos tipos: "portada", "indice", "contenido", "visual", "cierre", "referencias".
+Paso 2 - Tiempos de Exposición:
+- Si el tipo NO es "contenido", asigna entre 5 a 15 segundos (según lo que tarde un humano en leer el título o saludar).
+- Si el tipo ES "contenido", estima el tiempo considerando una velocidad de habla académica de 130 palabras por minuto, más un margen del 20% para explicación del orador.
 Paso 3 - Métricas (SOLO para tipo "contenido"):
-- HSS: Evalúa si el título describe el tema (1-10). Considera el 'solapamiento_lexico'. Si la nota es menor a 8, genera un 'hss_feedback' sugiriendo un título alternativo.
-- NTS: Evalúa la conexión lógica con la diapositiva anterior (1-10). Considera la 'similitud_coseno'. Si la nota es menor a 7, genera un 'nts_feedback' sugiriendo un concepto puente o frase de transición. (Para la diapositiva 1 de contenido, el NTS es 10).
+- HSS: Evalúa coherencia título-contenido (1-10).
+- NTS: Evalúa progresión lógica desde la anterior (1-10). (Diapositiva 1 de contenido = 10).
 
-RESPONDE ESTRICTAMENTE CON UN ARREGLO JSON válido y bien formateado, sin texto adicional, sin markdown extra (```json), ni explicaciones fuera del JSON.
+RESPONDE ESTRICTAMENTE CON UN ARREGLO JSON válido.
 Estructura esperada:
 [
   {{
     "slide_number": 1,
-    "tipo": "portada",
-    "hss_score": null,
-    "hss_feedback": "",
-    "nts_score": null,
-    "nts_feedback": ""
-  }},
-  {{
-    "slide_number": 2,
     "tipo": "contenido",
     "hss_score": 9,
     "hss_feedback": "",
-    "nts_score": 5,
-    "nts_feedback": "Falta transición. Sugerencia: 'Partiendo del concepto anterior, ahora veremos...'"
+    "nts_score": 8,
+    "nts_feedback": "",
+    "tiempo_estimado_segundos": 45
   }}
 ]
 [/INST]"""
 
-## Prompt para Reestructuración en Lote
+
+# Prompt para Reestructuración en Lote
 RESTRUCTURE_BATCH_PROMPT = """[INST] Eres un experto en diseño instruccional y síntesis de información.
 Tu tarea es ENRIQUECER y, si es necesario, REESTRUCTURAR el contenido de diapositivas académicas.
 
@@ -52,11 +48,11 @@ DATOS DE ENTRADA (JSON):
 REGLAS ESTRICTAS PARA CADA DIAPOSITIVA:
 1. MATERIAL EXTRA (SIEMPRE): Basándote EXCLUSIVAMENTE en el 'contenido_original', genera de 1 a 3 'preguntas' de repaso y de 1 a 3 'datos_curiosos'.
 2. REESTRUCTURACIÓN (CONDICIONAL): SOLO si el campo 'requiere_reestructuracion' es true, genera el arreglo 'diapositivas_generadas'. 
-   - FEEDBACK A CORREGIR: Lee el campo 'feedback_a_corregir' y soluciona EXACTAMENTE los problemas mencionados.
-   - LÍMITE DE PALABRAS (WPS): El 'contenido_optimizado' de cada sub-diapositiva NUNCA debe superar las 45 palabras (¡SIN CONTAR EL TÍTULO!). Si el tema es muy extenso, DIVÍDELO en múltiples sub-diapositivas.
-   - COMPLEJIDAD LÉXICA (ICD): Ajusta el lenguaje según el feedback. Si es muy básico, eleva el nivel usando términos académicos. Si es muy complejo, simplifícalo.
-   - HILO NARRATIVO (NTS): Si divides en varias sub-diapositivas, DEBES incluir obligatoriamente frases de transición explícitas al inicio del contenido de cada una (ej. 'Continuando con...').
-   - TÍTULOS (HSS): Asigna un 'titulo_sugerido' coherente.
+   - FEEDBACK A CORREGIR: Lee el campo 'feedback_a_corregir' y soluciona EXACTAMENTE los problemas pedagógicos mencionados.
+   - LÍMITE DE PALABRAS (WPS): El 'contenido_optimizado' NUNCA debe superar las 45 palabras (sin contar título).
+   - COMPLEJIDAD LÉXICA (ICD): ¡CRÍTICO! Si el feedback dice que la complejidad es alta, NO comprimas el texto usando palabras largas o rimbombantes para ahorrar espacio. Usa oraciones cortas (máximo 15 palabras por oración), voz activa y sinónimos sencillos. Si al explicarlo de forma simple superas las 45 palabras, es OBLIGATORIO DIVIDIR el tema en más sub-diapositivas.
+   - HILO NARRATIVO (NTS): Si divides en varias sub-diapositivas, mantén una PROGRESIÓN CONCEPTUAL lógica entre ellas. En lugar de usar conectores robóticos o repetitivos, asegúrate de que la idea final de una sub-diapositiva sirva de base natural para la siguiente.
+   - TÍTULOS (HSS): Asigna un 'titulo_sugerido' altamente coherente.
 3. SI NO REQUIERE REESTRUCTURACIÓN: Deja el arreglo 'diapositivas_generadas' vacío [].
 
 RESPONDE ESTRICTAMENTE CON UN ARREGLO JSON válido y bien formateado.
@@ -69,7 +65,7 @@ Estructura esperada:
     "diapositivas_generadas": [
       {{
         "titulo_sugerido": "Tema 1",
-        "contenido_optimizado": "Contenido claro y resumido del tema 1 (<45 palabras, excluyendo título)..."
+        "contenido_optimizado": "Texto claro, con progresión lógica, oraciones cortas y lenguaje muy accesible (<45 palabras)..."
       }}
     ]
   }}
