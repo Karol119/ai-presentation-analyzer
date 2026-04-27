@@ -42,7 +42,7 @@ Estructura esperada:
 ]
 [/INST]"""
 
-# Prompt para Reestructuración en Lote
+## Prompt para Reestructuración en Lote
 RESTRUCTURE_BATCH_PROMPT = """[INST] Eres un experto en diseño instruccional y síntesis de información.
 Tu tarea es ENRIQUECER y, si es necesario, REESTRUCTURAR el contenido de diapositivas académicas.
 
@@ -51,11 +51,12 @@ DATOS DE ENTRADA (JSON):
 
 REGLAS ESTRICTAS PARA CADA DIAPOSITIVA:
 1. MATERIAL EXTRA (SIEMPRE): Basándote EXCLUSIVAMENTE en el 'contenido_original', genera de 1 a 3 'preguntas' de repaso y de 1 a 3 'datos_curiosos'.
-2. REESTRUCTURACIÓN (CONDICIONAL): SOLO si el campo 'requiere_reestructuracion' es true, genera el arreglo 'diapositivas_generadas' cumpliendo estas 4 métricas matemáticas:
-   - LÍMITE DE PALABRAS (WPS): Cada sub-diapositiva NUNCA debe superar las 75 palabras. Si es muy largo, DIVÍDELO.
-   - COMPLEJIDAD LÉXICA (ICD): Usa lenguaje directo, oraciones cortas y conectores lógicos. Sustituye términos innecesariamente complejos para que el texto sea muy digerible.
-   - HILO NARRATIVO (NTS): Si divides en varias sub-diapositivas, DEBES incluir obligatoriamente frases de transición explícitas al inicio del contenido de cada una (ej. 'Continuando con...', 'En contraste con lo anterior...', 'Para entender el siguiente paso...') para que el algoritmo detecte la conexión.
-   - TÍTULOS (HSS): Asigna un 'titulo_sugerido' altamente coherente con el texto de cada sub-diapositiva.
+2. REESTRUCTURACIÓN (CONDICIONAL): SOLO si el campo 'requiere_reestructuracion' es true, genera el arreglo 'diapositivas_generadas'. 
+   - FEEDBACK A CORREGIR: Lee el campo 'feedback_a_corregir' y soluciona EXACTAMENTE los problemas mencionados.
+   - LÍMITE DE PALABRAS (WPS): El 'contenido_optimizado' de cada sub-diapositiva NUNCA debe superar las 45 palabras (¡SIN CONTAR EL TÍTULO!). Si el tema es muy extenso, DIVÍDELO en múltiples sub-diapositivas.
+   - COMPLEJIDAD LÉXICA (ICD): Ajusta el lenguaje según el feedback. Si es muy básico, eleva el nivel usando términos académicos. Si es muy complejo, simplifícalo.
+   - HILO NARRATIVO (NTS): Si divides en varias sub-diapositivas, DEBES incluir obligatoriamente frases de transición explícitas al inicio del contenido de cada una (ej. 'Continuando con...').
+   - TÍTULOS (HSS): Asigna un 'titulo_sugerido' coherente.
 3. SI NO REQUIERE REESTRUCTURACIÓN: Deja el arreglo 'diapositivas_generadas' vacío [].
 
 RESPONDE ESTRICTAMENTE CON UN ARREGLO JSON válido y bien formateado.
@@ -68,7 +69,7 @@ Estructura esperada:
     "diapositivas_generadas": [
       {{
         "titulo_sugerido": "Tema 1",
-        "contenido_optimizado": "Contenido claro y resumido del tema 1 (<75 palabras)..."
+        "contenido_optimizado": "Contenido claro y resumido del tema 1 (<45 palabras, excluyendo título)..."
       }}
     ]
   }}

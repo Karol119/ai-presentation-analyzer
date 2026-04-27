@@ -12,59 +12,42 @@ from app.core.logic.metrics.word_count import calculate_presentation_wps
 from app.core.logic.metrics.ai_batch_metrics import calculate_ai_metrics_batch
 from app.core.logic.metrics.ai_restructure import restructure_slides_batch
 
-# (Fíjate que aquí ya borramos las importaciones viejas de HSS y NTS)
-
 def _run_local_metrics(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """WORKER 1 (CPU-Bound): Ejecuta métricas matemáticas (ICD, WPS)."""
     return {
         "icd": calculate_presentation_icd(content_slides),
         "wps": calculate_presentation_wps(content_slides)
     }
 
 def _run_ai_metrics(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """WORKER 2 (I/O-Bound): Llama al motor de IA en Lote para Clasificación, HSS y NTS simultáneamente."""
     return calculate_ai_metrics_batch(content_slides)
 
 def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -> Dict[str, Any]:
-    """
-    Orquestador principal: Ejecuta el pipeline completo usando multithreading.
-    """
     if status_cb: status_cb("[SISTEMA] Iniciando extracción de datos...")
     extracted_data = extract_pptx_data(file_path)
-    
-    # Tomamos todas las diapositivas extraídas. 
     content_slides = extracted_data["slides"]
 
     if status_cb: status_cb(f"[SISTEMA] Analizando {len(content_slides)} diapositivas en hilos paralelos...")
 
-    # --- 1. EJECUCIÓN CONCURRENTE ---
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        # Lanzamos ambos hilos al mismo tiempo
         local_future = executor.submit(_run_local_metrics, content_slides)
         ai_future    = executor.submit(_run_ai_metrics, content_slides)
         
-        # Esperamos resultados locales
         local_res = local_future.result()
         if status_cb: status_cb("[OK] Métricas locales completadas.")
         
-        # Esperamos resultados de la IA (que incluye la clasificación)
         ai_res = ai_future.result()
         if status_cb: status_cb("[OK] Evaluación de IA y clasificación completadas.")
 
-    # Desempaquetado de resultados
     res_icd, res_wps = local_res["icd"], local_res["wps"]
     res_hss, res_nts = ai_res["hss"], ai_res["nts"]
     clasificaciones_ia = ai_res.get("clasificaciones", {})
 
-    # --- 2. Integración y Scoring ---
-    from app.core.logic.metrics.ai_restructure import restructure_slides_batch
     if status_cb: status_cb("[SISTEMA] Calculando Score Global y consolidando feedback...")
     global_score = calculate_global_score(res_icd, res_wps, res_hss, res_nts)
 
     final_slides = []
     slides_para_enriquecer = []
     
-    # Primera pasada
     for slide in content_slides:
         num = slide["slide_number"]
         tipo_detectado = clasificaciones_ia.get(num, "contenido")
@@ -91,14 +74,19 @@ def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -
         
         slide_score_data = calculate_slide_score(mi, mw, mh, mn)
         estados = slide_score_data["estados"]
+        
+        # LA REGLA MAESTRA: Si el calculador dijo que cualquier métrica reprobó, se va a reestructurar
         necesita_reestructurar = slide_score_data["necesita_recomendacion"]
+        
+        # EL FEEDBACK COMBINADO: Lo que le enviamos a la IA para que aprenda sus errores
+        feedback_combinado = f"ICD: {mi.get('feedback_local','')} | WPS: {mw.get('feedback_local','')} | HSS: {mh.get('feedback_ai','')} | NTS: {mn.get('feedback_ai','')}"
 
         slide_db_format = {
             "slide_number": num,
             "tipo":         tipo_detectado,
             "omitida":      False,
             "requiere_reestructuracion": necesita_reestructurar,
-            "score_slide":  slide_score_data["score_total"],
+            "score_slide":  slide_score_data.get("score_total", slide_score_data.get("score")), # Soporte por si cambiaste el nombre en tu presentación score
             "zona_slide":   slide_score_data["zona"],
             "metricas": {
                 "icd": {"valor": estados["icd"]["valor"], "estado": estados["icd"]["estado"], "feedback": mi.get("feedback_local")},
@@ -109,21 +97,25 @@ def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -
             "preguntas": [],
             "datos_curiosos": [],
             "reestructuracion": None,
-            "content": slide.get("content", []) 
+            "content": slide.get("content", []),
+            "feedback_combinado": feedback_combinado # Se lo pasamos aquí
         }
         
         final_slides.append(slide_db_format)
         slides_para_enriquecer.append(slide_db_format)
 
-    # --- 4. Llamada al Motor de Enriquecimiento/Reestructuración ---
     if slides_para_enriquecer:
         if status_cb: status_cb("[SISTEMA] Generando Material Didáctico y Reestructurando...")
         mapa_reestructurado = restructure_slides_batch([
-            {"slide_number": s["slide_number"], "content": s.pop("content"), "requiere_reestructuracion": s["requiere_reestructuracion"]} 
+            {
+                "slide_number": s["slide_number"], 
+                "content": s.pop("content"), 
+                "requiere_reestructuracion": s["requiere_reestructuracion"],
+                "feedback_a_corregir": s.pop("feedback_combinado") # Se lo inyectamos al JSON de AI
+            } 
             for s in slides_para_enriquecer
         ])
         
-        # Inyectamos los datos en nuestro JSON final
         for s in final_slides:
             if not s["omitida"]:
                 datos_ai = mapa_reestructurado.get(s["slide_number"], {})
@@ -134,6 +126,6 @@ def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -
                 s["reestructuracion"] = {"diapositivas_generadas": arreglo_gen} if arreglo_gen else None
 
     return {
-        "score_global_presentacion": global_score, # Pasamos todo el objeto global con su desglose
+        "score_global_presentacion": global_score,
         "slides": final_slides,
     }

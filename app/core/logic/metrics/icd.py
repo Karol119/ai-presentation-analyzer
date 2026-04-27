@@ -11,7 +11,7 @@ MIN_WORDS_ICD = 15
 _SCALE = [
     (2.0,  "muy simple"),
     (4.0,  "simple"),
-    (6.5,  "apropiado"),
+    (6.0,  "apropiado"),
     (8.0,  "complejo"),
     (10.0, "muy complejo"),
 ]
@@ -102,10 +102,10 @@ def _extract_complex_words(text: str, max_words: int = 3) -> List[str]:
 
 def _generate_icd_feedback(icd_score: float, text: str) -> Optional[str]:
     """Genera la retroalimentación basada en la penalización de sílabas."""
-    if icd_score is None or 4.0 <= icd_score <= 6.5:
+    if icd_score is None or 4.0 <= icd_score <= 6.0:
         return None
     
-    if icd_score > 6.5:
+    if icd_score > 6.0:
         complex_words = _extract_complex_words(text)
         words_str = ", ".join(complex_words)
         example_text = f" (por ejemplo: '{words_str}')" if complex_words else ""

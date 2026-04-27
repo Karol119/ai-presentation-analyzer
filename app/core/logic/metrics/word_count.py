@@ -1,17 +1,18 @@
 from typing import Dict, Any, List, Optional
-from app.core.logic.metrics.text_counter import contar_palabras, preparar_texto_slide
+from app.core.logic.metrics.text_counter import contar_palabras
 
-OPTIMAL_MAX_WORDS = 75
+# --- NUEVOS LÍMITES ESTRICTOS ---
+OPTIMAL_MAX_WORDS = 45
 EXCESS_PENALTY    = 15
 
 def calculate_wps(slide_data: Dict[str, Any]) -> Dict[str, Any]:
-    text = preparar_texto_slide(slide_data)
+    # EXCLUSIÓN DEL TÍTULO: Solo extraemos y unimos el arreglo de 'content'
+    text = " ".join(slide_data.get("content", [])) if "content" in slide_data else ""
     word_count = contar_palabras(text)
 
     score = _calculate_excess_score(word_count)
     zone  = _get_excess_zone(word_count)
     
-    # Generamos la retroalimentación instantánea
     local_feedback = _generate_wps_feedback(word_count)
 
     return {
@@ -60,7 +61,7 @@ def _generate_wps_feedback(word_count: int) -> Optional[str]:
     return (
         f"Se ha detectado un exceso de contenido ({excess} palabras de más). "
         f"Se sugiere reestructurar el texto o dividir las ideas principales en múltiples "
-        f"diapositivas para mantener un máximo de {OPTIMAL_MAX_WORDS} palabras, "
+        f"diapositivas para mantener un máximo de {OPTIMAL_MAX_WORDS} palabras (sin contar el título), "
         f"optimizando así la retención del estudiante."
     )
 
@@ -73,6 +74,6 @@ def _calculate_excess_score(words: int) -> float:
 def _get_excess_zone(words: int) -> str:
     if words <= OPTIMAL_MAX_WORDS:
         return "optima"
-    if words <= 120:
+    if words <= 70: 
         return "densa"
     return "saturada"
