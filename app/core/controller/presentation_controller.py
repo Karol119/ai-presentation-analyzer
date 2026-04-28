@@ -2,7 +2,7 @@
 
 from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
-from app.core.logic.text_extractor import contar_diapositivas
+from app.core.logic.text_extractor import count_slides
 from app.data.queries import existe_hash_en_db
 from app.data.persistence import registrar_presentacion, eliminar_presentacion_completa
 from app.data.queries import existe_hash_en_db, actualizar_estado_analisis
@@ -25,7 +25,7 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
             return False, "Esta presentación ya ha sido procesada anteriormente."
         
         # 4. Conteo de diapositivas
-        num_diapositivas = contar_diapositivas(ruta_pptx)
+        num_diapositivas = count_slides(ruta_pptx)
         if num_diapositivas == 0:
             return False, "No se pudo leer el archivo o está vacío."
         

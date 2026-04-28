@@ -3,11 +3,12 @@ from pathlib import Path
 from typing import Dict, Any, List, Callable, Optional
 
 from app.core.logic.text_extractor import extract_pptx_data
-from app.core.logic.presentation_score import calculate_global_score, calculate_slide_score
 from app.core.logic.metrics.icd import calculate_presentation_icd
+from app.infrastructure.ai.llm_provider import verify_ai_connection  # <-- Importación del Fail Fast
 from app.core.logic.metrics.word_count import calculate_presentation_wps
-from app.core.logic.metrics.ai_batch_metrics import calculate_ai_metrics_batch
 from app.core.logic.metrics.ai_restructure import restructure_slides_batch
+from app.core.logic.metrics.ai_batch_metrics import calculate_ai_metrics_batch
+from app.core.logic.presentation_score import calculate_global_score, calculate_slide_score
 
 def _run_local_metrics(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {
@@ -19,6 +20,16 @@ def _run_ai_metrics(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
     return calculate_ai_metrics_batch(content_slides)
 
 def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -> Dict[str, Any]:
+    
+    # --- PRE-FLIGHT CHECK (FAIL FAST) ---
+    if status_cb: status_cb("[SISTEMA] Comprobando estado del motor de Inteligencia Artificial...")
+    try:
+        verify_ai_connection()
+    except Exception as e:
+        if status_cb: status_cb("[CANCELADO] El análisis no pudo iniciar.")
+        raise e # Detiene el programa instantáneamente antes de extraer datos
+
+    # --- INICIO DEL PROCESO ---
     if status_cb: status_cb("[SISTEMA] Iniciando extracción de datos...")
     extracted_data = extract_pptx_data(file_path)
     

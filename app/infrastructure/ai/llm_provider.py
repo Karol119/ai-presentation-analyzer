@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import time
+import socket
 import requests
 import subprocess
 from pathlib import Path
@@ -20,6 +21,24 @@ ACTIVE_MODEL = os.getenv("ACTIVE_AI_MODEL", "qwen3:1.7b").lower().strip()
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/api/generate")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
+
+def verify_ai_connection():
+    """Verifica la conectividad ANTES de empezar a procesar la presentación."""
+    if ACTIVE_MODEL == "gemini":
+        try:
+            # Intentamos conectar al DNS de Google (8.8.8.8) por el puerto 53. 
+            # Timeout de 3 segundos para no hacer esperar al usuario.
+            socket.create_connection(("8.8.8.8", 53), timeout=3)
+        except OSError as e:
+            raise RuntimeError("SIN CONEXIÓN A INTERNET: El modelo en la nube (Gemini) requiere conexión a la red. Verifica tu Wi-Fi e intenta de nuevo.") from e
+    else:
+        # Si es Ollama (Local), usamos tu función que ya existía para encenderlo
+        try:
+            _ensure_ollama_is_running()
+        except Exception as e:
+            raise RuntimeError(f"ERROR CON OLLAMA LOCAL: No se pudo encender el motor. {str(e)}") from e
+        
+        
 # --- 3. AUTO-ENCENDIDO DE OLLAMA ---
 def _ensure_ollama_is_running():
     """Verifica si Ollama está activo. Si no, lo enciende silenciosamente en segundo plano."""
