@@ -1,29 +1,22 @@
 # app/presentation/widgets/analysis/results_panel.py
-"""
-Panel derecho de la vista de análisis.
-Muestra los resultados de evaluación de la diapositiva activa.
-Se sincroniza con presentation_panel mediante callback.
-"""
-
 import customtkinter as ctk
+import json
+import os
 from app.presentation.views.ui_state import ui
 from app.presentation.widgets.analysis.presentation_panel import set_on_pagina_cambiada
+from app.presentation.views import navigator
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_SUAVE = "#FDF2F4"
 COLOR_ORO          = "#BC955C"
 
-# Referencias internas a widgets que se actualizan al cambiar de diapositiva
 _widgets = {
     "titulo_slide":    None,
     "contenido_frame": None,
+    "cached_data":     None,
 }
 
-
 def build_results_panel(subject: str, nombre_presentacion: str):
-    """
-    Construye el panel derecho de resultados.
-    """
     panel = ctk.CTkFrame(
         ui["analysis_body"],
         fg_color="white",
@@ -36,220 +29,149 @@ def build_results_panel(subject: str, nombre_presentacion: str):
     panel.pack_propagate(False)
     ui["results_panel"] = panel
 
+    _cargar_datos_json(nombre_presentacion)
     _build_header(panel)
-    _build_slide_info(panel)
-    _build_results_area(panel)
+    
+    _widgets["contenido_frame"] = ctk.CTkScrollableFrame(
+        panel, fg_color="transparent", scrollbar_button_color="#E8ECF2"
+    )
+    _widgets["contenido_frame"].pack(fill="both", expand=True, padx=10, pady=5)
 
-    # Registrar callback para sincronización con el visor
     set_on_pagina_cambiada(_on_pagina_cambiada)
-
-    # Mostrar resultados de la primera diapositiva
     _on_pagina_cambiada(0)
 
+def _cargar_datos_json(nombre_presentacion):
+    try:
+        contexto = navigator.get_contexto_analisis()
+        ruta_pdf = contexto.get("ruta_pdf")
+        directorio = os.path.dirname(ruta_pdf)
+        nombre_base = os.path.splitext(nombre_presentacion)[0]
+        ruta_json = os.path.join(directorio, f"{nombre_base}_analysis.json")
 
-# ---------------------------------------------------------------------------
-# Construcción del layout
-# ---------------------------------------------------------------------------
+        if os.path.exists(ruta_json):
+            with open(ruta_json, "r", encoding="utf-8") as f:
+                _widgets["cached_data"] = json.load(f)
+    except Exception as e:
+        print(f"Error cargando JSON: {e}")
+        _widgets["cached_data"] = None
+
+def _on_pagina_cambiada(indice: int):
+    if _widgets["titulo_slide"]:
+        _widgets["titulo_slide"].configure(text=f"Diapositiva {indice + 1}")
+
+    container = _widgets["contenido_frame"]
+    for child in container.winfo_children():
+        child.destroy()
+
+    data = _widgets["cached_data"]
+    if not data or "slides" not in data or indice >= len(data["slides"]):
+        return
+
+    slide_data = data["slides"][indice]
+
+    # REGLA: Si omitida es True, no mostrar nada
+    if slide_data.get("omitida", False):
+        ctk.CTkLabel(container, text="Diapositiva omitida del análisis", 
+                     font=("Inter", 12, "italic"), text_color="#64748B").pack(pady=40)
+        return
+
+    # 1. Etiqueta de Tipo
+    _renderizar_tipo(container, slide_data)
+
+    # 2. Apartado de Calificación (Score y Zona)
+    _renderizar_calificacion(container, slide_data)
+
+    # 3. Métricas (Diseño: métrica: valor | etiqueta: estado + feedback)
+    _renderizar_metricas(container, slide_data)
+
+    # 4. Botón de Reestructuración
+    _renderizar_boton_reestructuracion(container, slide_data)
+
+def _renderizar_tipo(parent, slide_data):
+    tipo_raw = slide_data.get("tipo", "N/A")
+    tipo_texto = tipo_raw.replace("_", " ").capitalize()
+    
+    # Solo mostrar una etiqueta
+    lbl_tipo = ctk.CTkLabel(
+        parent, text=tipo_texto, fg_color=COLOR_GUINDA, 
+        text_color="white", corner_radius=6, font=("Inter", 11, "bold"), padx=10
+    )
+    lbl_tipo.pack(pady=(10, 5))
+
+    if tipo_raw.lower() == "visual":
+        alerta = ctk.CTkLabel(
+            parent, text="⚠️ Actualmente la IA no es capaz de procesar imágenes.",
+            text_color="#92400E", wraplength=250, font=("Inter", 10, "bold"),
+            fg_color="#FEF3C7", corner_radius=4
+        )
+        alerta.pack(fill="x", pady=5)
+
+def _renderizar_calificacion(parent, slide_data):
+    score = slide_data.get("score_slide", "N/A")
+    zona = slide_data.get("zona_slide", "N/A")
+
+    frame = ctk.CTkFrame(parent, fg_color="#F1F5F9", corner_radius=8)
+    frame.pack(fill="x", pady=10)
+
+    ctk.CTkLabel(frame, text=f"Score Slide: {score}", font=("Inter", 13, "bold")).pack(side="left", padx=10, pady=8)
+    
+    color_zona = COLOR_ORO if str(zona).lower() != "pobre" else "#EF4444"
+    ctk.CTkLabel(frame, text=str(zona).upper(), font=("Inter", 11, "bold"), text_color=color_zona).pack(side="right", padx=10)
+
+def _renderizar_metricas(parent, slide_data):
+    metricas = slide_data.get("metricas")
+    if not metricas: return
+
+    for nombre, info in metricas.items():
+        if not info: continue
+        
+        m_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        m_frame.pack(fill="x", pady=8)
+
+        # Diseño: metrica: valor | etiqueta: indica el estado
+        header_txt = f"{nombre.upper()}: {info.get('valor', 0)}  |  {info.get('estado', 'N/A')}"
+        ctk.CTkLabel(m_frame, text=header_txt, font=("Inter", 11, "bold"), anchor="w", text_color="#1E293B").pack(fill="x")
+        
+        # Feedback
+        ctk.CTkLabel(
+            m_frame, text=info.get('feedback', ''), font=("Inter", 11),
+            text_color="#64748B", wraplength=260, justify="left"
+        ).pack(fill="x", pady=(2, 0))
+
+def _renderizar_boton_reestructuracion(parent, slide_data):
+    reest = slide_data.get("reestructuracion")
+    if reest and reest.get("diapositivas_generadas"):
+        btn = ctk.CTkButton(
+            parent, text="Ver sugerencias de reestructuración",
+            fg_color=COLOR_GUINDA, hover_color="#4D1324",
+            command=lambda: _abrir_modal_reestructuracion(reest["diapositivas_generadas"])
+        )
+        btn.pack(pady=20, fill="x", padx=10)
+
+def _abrir_modal_reestructuracion(sugerencias):
+    modal = ctk.CTkToplevel(ui["root"])
+    modal.title("Sugerencias de Reestructuración")
+    modal.geometry("500x600")
+    modal.attributes("-topmost", True)
+    modal.configure(fg_color="white")
+    
+    scroll = ctk.CTkScrollableFrame(modal, fg_color="transparent")
+    scroll.pack(fill="both", expand=True, padx=20, pady=20)
+    
+    for i, sug in enumerate(sugerencias, 1):
+        f = ctk.CTkFrame(scroll, fg_color="#F8FAFC", border_width=1, border_color="#E2E8F0")
+        f.pack(fill="x", pady=10)
+        
+        ctk.CTkLabel(f, text=f"Propuesta {i}: {sug.get('titulo_sugerido', '')}", 
+                     font=("Inter", 12, "bold"), text_color=COLOR_GUINDA, anchor="w").pack(fill="x", padx=15, pady=(10, 5))
+        
+        ctk.CTkLabel(f, text=sug.get('contenido_optimizado', ''), font=("Inter", 11),
+                     wraplength=400, justify="left").pack(fill="x", padx=15, pady=(0, 15))
 
 def _build_header(parent):
     header = ctk.CTkFrame(parent, fg_color="transparent")
-    header.pack(fill="x", padx=16, pady=(18, 10))
-
-    icon_bg = ctk.CTkFrame(
-        header, fg_color=COLOR_GUINDA_SUAVE,
-        corner_radius=8, width=30, height=30
-    )
-    icon_bg.pack(side="left", padx=(0, 10))
-    icon_bg.pack_propagate(False)
-    ctk.CTkLabel(
-        icon_bg, text="📊", font=ctk.CTkFont(size=14), text_color=COLOR_GUINDA
-    ).place(relx=0.5, rely=0.5, anchor="center")
-
-    ctk.CTkLabel(
-        header,
-        text="Resultados de evaluación",
-        font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
-        text_color=COLOR_GUINDA,
-    ).pack(side="left")
-
-    ctk.CTkFrame(parent, height=1, fg_color="#F1F5F9").pack(fill="x", padx=16, pady=(0, 10))
-
-
-def _build_slide_info(parent):
-    """Muestra el número de la diapositiva activa."""
-    _widgets["titulo_slide"] = ctk.CTkLabel(
-        parent,
-        text="",
-        font=ctk.CTkFont(family="Segoe UI", size=11),
-        text_color="#94A3B8",
-        anchor="w",
-    )
-    _widgets["titulo_slide"].pack(fill="x", padx=16, pady=(0, 12))
-
-
-def _build_results_area(parent):
-    """Área scrollable donde se muestran los resultados por diapositiva."""
-    scroll = ctk.CTkScrollableFrame(
-        parent,
-        fg_color="transparent",
-        corner_radius=0,
-        scrollbar_button_color="#E2E8F0",
-    )
-    scroll.pack(fill="both", expand=True, padx=12, pady=(0, 16))
-    _widgets["contenido_frame"] = scroll
-
-
-# ---------------------------------------------------------------------------
-# Actualización dinámica al cambiar de diapositiva
-# ---------------------------------------------------------------------------
-
-def _on_pagina_cambiada(indice: int):
-    """
-    Callback invocado por presentation_panel cada vez que el usuario navega.
-    Recarga los resultados correspondientes a la diapositiva activa.
-    """
-    from app.presentation.widgets.analysis.presentation_panel import get_total_paginas
-
-    total = get_total_paginas()
-
-    # Actualizar etiqueta de diapositiva
-    if _widgets["titulo_slide"]:
-        _widgets["titulo_slide"].configure(
-            text=f"Diapositiva {indice + 1} de {total}"
-        )
-
-    # Limpiar resultados anteriores
-    frame = _widgets["contenido_frame"]
-    if not frame:
-        return
-    for w in frame.winfo_children():
-        w.destroy()
-
-    # Cargar resultados simulados para esta diapositiva
-    resultados = _obtener_resultados_simulados(indice)
-    _renderizar_resultados(frame, resultados)
-
-
-def _renderizar_resultados(parent, resultados: list):
-    """Dibuja las tarjetas de resultados en el panel."""
-    for resultado in resultados:
-        _build_resultado_card(parent, resultado)
-
-
-def _build_resultado_card(parent, resultado: dict):
-    """
-    Tarjeta individual de resultado.
-    resultado = {
-        "titulo":     str,
-        "valor":      str,
-        "descripcion": str,
-        "color":      str,   # color del indicador lateral
-    }
-    """
-    card = ctk.CTkFrame(
-        parent,
-        fg_color="#F8FAFC",
-        corner_radius=10,
-        border_width=1,
-        border_color="#E8ECF2",
-    )
-    card.pack(fill="x", pady=(0, 8))
-
-    # Indicador de color lateral
-    ctk.CTkFrame(
-        card,
-        width=4,
-        fg_color=resultado["color"],
-        corner_radius=2,
-    ).pack(side="left", fill="y", padx=(0, 0), pady=8)
-
-    content = ctk.CTkFrame(card, fg_color="transparent")
-    content.pack(side="left", fill="both", expand=True, padx=10, pady=10)
-
-    # Título del resultado
-    ctk.CTkLabel(
-        content,
-        text=resultado["titulo"],
-        font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
-        text_color="#334155",
-        anchor="w",
-    ).pack(fill="x")
-
-    # Valor destacado
-    ctk.CTkLabel(
-        content,
-        text=resultado["valor"],
-        font=ctk.CTkFont(family="Segoe UI", size=18, weight="bold"),
-        text_color=resultado["color"],
-        anchor="w",
-    ).pack(fill="x")
-
-    # Descripción
-    if resultado.get("descripcion"):
-        ctk.CTkLabel(
-            content,
-            text=resultado["descripcion"],
-            font=ctk.CTkFont(family="Segoe UI", size=10),
-            text_color="#94A3B8",
-            anchor="w",
-            wraplength=240,
-            justify="left",
-        ).pack(fill="x", pady=(2, 0))
-
-
-# ---------------------------------------------------------------------------
-# Datos simulados — se reemplazarán con lógica real de análisis
-# ---------------------------------------------------------------------------
-
-def _obtener_resultados_simulados(indice: int) -> list:
-    """
-    Genera resultados de ejemplo para la diapositiva indicada.
-    Placeholder hasta que se implemente el análisis real.
-    """
-    import random
-    random.seed(indice)  # Seed fijo por diapositiva para que sean consistentes
-
-    densidad   = random.randint(10, 95)
-    complejidad = random.randint(5, 80)
-
-    color_densidad    = _color_por_valor(densidad)
-    color_complejidad = _color_por_valor(complejidad)
-
-    return [
-        {
-            "titulo":      "Densidad de texto",
-            "valor":       f"{densidad}%",
-            "descripcion": _descripcion_densidad(densidad),
-            "color":       color_densidad,
-        },
-        {
-            "titulo":      "Complejidad léxica",
-            "valor":       f"{complejidad}%",
-            "descripcion": _descripcion_complejidad(complejidad),
-            "color":       color_complejidad,
-        },
-        {
-            "titulo":      "Elementos visuales",
-            "valor":       f"{random.randint(0, 8)}",
-            "descripcion": "Imágenes, gráficas y formas detectadas.",
-            "color":       COLOR_ORO,
-        },
-    ]
-
-
-def _color_por_valor(valor: int) -> str:
-    if valor < 40:  return "#22C55E"   # Verde — bajo
-    if valor < 70:  return COLOR_ORO   # Oro  — medio
-    return "#EF4444"                    # Rojo — alto
-
-
-def _descripcion_densidad(valor: int) -> str:
-    if valor < 40:  return "Diapositiva con poco texto. Buena legibilidad."
-    if valor < 70:  return "Cantidad de texto moderada."
-    return "Demasiado texto. Se recomienda reducir el contenido."
-
-
-def _descripcion_complejidad(valor: int) -> str:
-    if valor < 40:  return "Vocabulario accesible para el público."
-    if valor < 70:  return "Complejidad léxica moderada."
-    return "Vocabulario muy técnico. Considera simplificar."
+    header.pack(fill="x", padx=15, pady=(15, 10))
+    
+    ctk.CTkLabel(header, text="ANÁLISIS DE IA", font=("Inter", 10, "bold"), text_color=COLOR_ORO).pack(anchor="w")
+    _widgets["titulo_slide"] = ctk.CTkLabel(header, text="Cargando...", font=("Inter", 18, "bold"), text_color="#1E293B")
+    _widgets["titulo_slide"].pack(anchor="w")

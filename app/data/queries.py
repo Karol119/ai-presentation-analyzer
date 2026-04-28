@@ -183,3 +183,27 @@ def actualizar_estado_analisis(nombre_presentacion, id_materia, estado_analisis=
         return False
     finally:
         conn.close()
+
+
+def obtener_id_version_actual(nombre_presentacion, id_materia):
+    """Busca el UUID de la versión activa de una presentación específica."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT hv.id_version 
+        FROM Historial_de_Versiones hv
+        JOIN Presentacion p ON hv.id_presentacion = p.id_presentacion
+        WHERE p.presentacion = ? AND p.id_unidad_aprendizaje = ? AND hv.numero_version = 1
+    """, (nombre_presentacion, id_materia))
+    res = cursor.fetchone()
+    conn.close()
+    return res[0] if res else None
+
+def obtener_analisis_desde_db(id_version):
+    """Recupera el JSON completo almacenado para una versión."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT resultado FROM Analisis WHERE id_version = ? AND numero_diapositiva = 0", (id_version,))
+    res = cursor.fetchone()
+    conn.close()
+    return res[0] if res else None

@@ -31,7 +31,9 @@ def build_presentation_panel(subject: str, nombre_presentacion: str, ruta_pdf: s
     """
     Construye el panel izquierdo con el visor de diapositivas.
     """
+    # Reiniciar estado interno para la nueva presentación
     _visor["on_pagina_cambiada"] = None
+    _visor["pagina_actual"]      = 0 
 
     panel = ctk.CTkFrame(
         ui["analysis_body"],
@@ -55,7 +57,7 @@ def build_presentation_panel(subject: str, nombre_presentacion: str, ruta_pdf: s
     _build_slide_area(panel)
     _build_navigation(panel)
 
-    # Mostrar primera diapositiva
+    # Mostrar primera diapositiva (Página 0)
     _mostrar_pagina(0)
 
 
@@ -67,7 +69,6 @@ def set_on_pagina_cambiada(callback):
     """
     Registra un callback que se llama cada vez que el usuario navega.
     results_panel lo usa para actualizar los resultados de la diapositiva activa.
-    callback(indice: int)
     """
     _visor["on_pagina_cambiada"] = callback
 
@@ -150,7 +151,10 @@ def _build_navigation(parent):
     )
     btn_next.pack(side="left", padx=(12, 0))
 
-    # Navegación por teclado mientras la vista de análisis esté activa
+    # Desenlazar teclas previas para evitar acumulación de binds
+    ui["root"].unbind("<Left>")
+    ui["root"].unbind("<Right>")
+    # Navegación por teclado
     ui["root"].bind("<Left>",  lambda e: _pagina_anterior())
     ui["root"].bind("<Right>", lambda e: _pagina_siguiente())
 
@@ -159,7 +163,7 @@ def _build_error_state(parent, ruta_pdf: str):
     """Muestra un mensaje de error si el PDF no pudo cargarse."""
     ctk.CTkLabel(
         parent,
-        text=f"⚠️  No se pudo abrir el archivo:\n{ruta_pdf}",
+        text=f"⚠️ No se pudo abrir el archivo:\n{ruta_pdf}",
         font=ctk.CTkFont(family="Segoe UI", size=13),
         text_color="#EF4444",
         justify="center",
@@ -175,7 +179,6 @@ def _abrir_pdf(ruta_pdf: str):
     try:
         _visor["doc"]          = fitz.open(ruta_pdf)
         _visor["total_paginas"] = len(_visor["doc"])
-        _visor["pagina_actual"] = 0
     except Exception as e:
         print(f"Error al abrir PDF: {e}")
         _visor["doc"] = None
@@ -188,6 +191,9 @@ def _mostrar_pagina(indice: int):
 
     if doc is None or label is None:
         return
+
+    # Actualizar estado interno
+    _visor["pagina_actual"] = indice
 
     # Obtener dimensiones del contenedor para escalar correctamente
     label.update_idletasks()
@@ -210,34 +216,29 @@ def _mostrar_pagina(indice: int):
     label.configure(image=img_ctk, text="")
     label._image = img_ctk  # Evitar garbage collection
 
-    # Actualizar contador
+    # Actualizar contador visual
     total = _visor["total_paginas"]
     if _visor["label_contador"]:
         _visor["label_contador"].configure(
             text=f"{indice + 1} / {total}"
         )
 
-    # Notificar a results_panel si hay callback registrado
+    # Notificar a results_panel para que actualice las métricas de la diapositiva
     if _visor["on_pagina_cambiada"]:
         _visor["on_pagina_cambiada"](indice)
 
 
 def _pagina_anterior():
     if _visor["pagina_actual"] > 0:
-        _visor["pagina_actual"] -= 1
-        _mostrar_pagina(_visor["pagina_actual"])
+        _mostrar_pagina(_visor["pagina_actual"] - 1)
 
 
 def _pagina_siguiente():
     if _visor["pagina_actual"] < _visor["total_paginas"] - 1:
-        _visor["pagina_actual"] += 1
-        _mostrar_pagina(_visor["pagina_actual"])
+        _mostrar_pagina(_visor["pagina_actual"] + 1)
 
 def cerrar_pdf():
-    """
-    Cierra el documento PDF activo para liberar el archivo de la memoria 
-    y permitir que Windows lo pueda eliminar o modificar después.
-    """
+    """Cierra el PDF activo para liberar el archivo del sistema."""
     if _visor["doc"] is not None:
         _visor["doc"].close()
         _visor["doc"] = None

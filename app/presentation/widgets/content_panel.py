@@ -12,7 +12,8 @@ from app.presentation.views.ui_state import estado, ui
 from app.core.controller.presentation_controller import (
     orquestar_proceso_completo,
     orquestar_eliminacion_presentacion,
-    orquestar_actualizacion_analisis
+    orquestar_actualizacion_analisis,
+    orquestar_analisis_ia
 )
 from app.core.controller.subject_controller import (
     obtener_id_materia, 
@@ -271,37 +272,71 @@ def _placeholder():
 
 
 def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_menu, comando_actualizar_boton):
-    # 1. VERIFICAR Y ACTIVAR CANDADO
+    """
+    Inicia el flujo real de análisis de IA.
+    1. Bloquea la UI y cierra el menú de la tarjeta.
+    2. Obtiene la ruta del PPTX (necesaria para el análisis).
+    3. Ejecuta el orquestador en un hilo secundario.
+    """
     if estado.get("bloqueo_ui"): return
     estado["bloqueo_ui"] = True
 
-    import time
     toggle_menu(False)
-    loading_modal = mostrar_modal_cargando(ui["root"], "Analizando presentación...")
+    
+    # Creamos el modal de carga. 
+    # TIP: Como tu modal es estático, el status_cb imprimirá en consola, 
+    # pero el usuario verá que el sistema está trabajando.
+    loading_modal = mostrar_modal_cargando(ui["root"], "Analizando con IA...")
+
+    def update_status_console(msg):
+        """Callback que recibe los mensajes del analyzer_controller"""
+        print(f"[UI-STATUS] {msg}")
 
     def tarea_analisis():
-        time.sleep(2) 
         id_materia = obtener_id_materia(subject)
-        orquestar_actualizacion_analisis(nombre_presentacion, id_materia)
+        
+        # IMPORTANTE: El análisis se hace sobre el PPTX. 
+        # Buscamos la ruta del PPTX en nuestro estado local
+        archivos = estado["subject_files"].get(subject, [])
+        ruta_pptx = next((f[1] for f in archivos if f[0] == nombre_presentacion), None)
+        
+        if not ruta_pptx:
+            return False, "No se encontró la ruta del archivo original."
 
-    def finalizar(resultado):
+        # Llamamos al orquestador real que definimos en el paso 1
+        return orquestar_analisis_ia(ruta_pptx, nombre_presentacion, id_materia, status_cb=update_status_console)
+
+    def finalizar(resultado_tupla):
+        # resultado_tupla es (exito, datos_o_error)
+        exito, contenido = resultado_tupla
+        
         if loading_modal.winfo_exists():
             loading_modal.destroy()
             
-        id_materia = obtener_id_materia(subject)
-        estado["subject_files"][subject] = obtener_archivos_materia(id_materia)
-        rebuild_cards(subject, comando_actualizar_boton)
-        comando_actualizar_boton()
+        if exito:
+            # Actualizamos la lista local de archivos para que la tarjeta cambie a "Ver análisis"
+            id_materia = obtener_id_materia(subject)
+            estado["subject_files"][subject] = obtener_archivos_materia(id_materia)
+            
+            # Refrescamos la UI
+            rebuild_cards(subject, comando_actualizar_boton)
+            comando_actualizar_boton()
 
-        # 2. LIBERAR CANDADO ANTES DE NAVEGAR
-        estado["bloqueo_ui"] = False 
-        navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
+            # Liberamos candado y navegamos
+            estado["bloqueo_ui"] = False 
+            navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
+        else:
+            # Si falló, liberamos el candado y podrías mostrar una alerta
+            estado["bloqueo_ui"] = False
+            print(f"Error en el análisis: {contenido}")
+            # Opcional: mostrar_modal_error(contenido)
 
     ejecutar_tarea_asincrona(
         target_task=tarea_analisis,
         on_finished_callback=finalizar,
     )
 
+    
 def _ver_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_menu):
     """
     Navega directamente a la vista de análisis sin simular carga ni actualizar BD.
