@@ -148,25 +148,66 @@ def _renderizar_boton_reestructuracion(parent, slide_data):
         )
         btn.pack(pady=20, fill="x", padx=10)
 
-def _abrir_modal_reestructuracion(sugerencias):
+def _abrir_modal_reestructuracion(sugerencias, boton_disparador):
+    """Abre una ventana modal bloqueando la interacción con el resto de la app."""
+    if _widgets["modal_abierto"]:
+        return
+
+    _widgets["modal_abierto"] = True
+    boton_disparador.configure(state="disabled")
+
+    # Crear la ventana
     modal = ctk.CTkToplevel(ui["root"])
-    modal.title("Sugerencias de Reestructuración")
+    modal.title("Sugerencias de Mejora")
     modal.geometry("500x600")
+    
+    # --- CONFIGURACIÓN MODAL (BLOQUEO) ---
+    modal.transient(ui["root"])    # Se mantiene siempre encima de la ventana principal
+    modal.grab_set()               # Bloquea interacción con otras ventanas
     modal.attributes("-topmost", True)
     modal.configure(fg_color="white")
     
+    def al_cerrar():
+        """Libera el bloqueo global y el del botón al cerrar."""
+        _widgets["modal_abierto"] = False
+        if boton_disparador.winfo_exists():
+            boton_disparador.configure(state="normal")
+        modal.grab_release()       # Libera los eventos para el resto de la app
+        modal.destroy()
+
+    # Capturar el cierre tanto por botón como por la "X" de la ventana
+    modal.protocol("WM_DELETE_WINDOW", al_cerrar)
+
+    # --- ENCABEZADO DINÁMICO ---
+    num_sugerencias = len(sugerencias)
+    texto_rec = (f"Se recomienda dividir la diapositiva en {num_sugerencias} diapositivas:" 
+                 if num_sugerencias > 1 else 
+                 "Se recomienda redactar el contenido de la siguiente manera:")
+
+    ctk.CTkLabel(
+        modal, text=texto_rec, 
+        font=("Inter", 13, "bold"), text_color=COLOR_GUINDA,
+        wraplength=450, justify="center"
+    ).pack(pady=(20, 10), padx=20)
+
+    # --- CONTENIDO ---
     scroll = ctk.CTkScrollableFrame(modal, fg_color="transparent")
-    scroll.pack(fill="both", expand=True, padx=20, pady=20)
+    scroll.pack(fill="both", expand=True, padx=20, pady=(0, 20))
     
     for i, sug in enumerate(sugerencias, 1):
         f = ctk.CTkFrame(scroll, fg_color="#F8FAFC", border_width=1, border_color="#E2E8F0")
         f.pack(fill="x", pady=10)
         
-        ctk.CTkLabel(f, text=f"Propuesta {i}: {sug.get('titulo_sugerido', '')}", 
+        titulo_label = f"Propuesta {i}" if num_sugerencias > 1 else "Contenido Optimizado"
+        
+        ctk.CTkLabel(f, text=f"{titulo_label}: {sug.get('titulo_sugerido', '')}", 
                      font=("Inter", 12, "bold"), text_color=COLOR_GUINDA, anchor="w").pack(fill="x", padx=15, pady=(10, 5))
         
         ctk.CTkLabel(f, text=sug.get('contenido_optimizado', ''), font=("Inter", 11),
                      wraplength=400, justify="left").pack(fill="x", padx=15, pady=(0, 15))
+
+    # Botón de cierre explícito dentro del modal
+    ctk.CTkButton(modal, text="Entendido", command=al_cerrar, fg_color=COLOR_GUINDA, corner_radius=10).pack(pady=10)
 
 def _build_header(parent):
     header = ctk.CTkFrame(parent, fg_color="transparent")
