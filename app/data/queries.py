@@ -139,3 +139,21 @@ def obtener_temario_materia(nombre_materia):
                 temas_lista[-1]["subtemas"].append(str_s)
                 
     return temario
+
+def obtener_id_y_version_presentacion(nombre_presentacion, id_materia):
+    """Obtiene el ID de la presentación y su versión más alta."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT p.id_presentacion, MAX(hv.numero_version)
+        FROM Presentacion p
+        JOIN Historial_de_Versiones hv ON p.id_presentacion = hv.id_presentacion
+        WHERE p.presentacion = ? AND p.id_unidad_aprendizaje = ?
+    """, (nombre_presentacion, id_materia))
+    res = cursor.fetchone()
+    conn.close()
+    
+    # Si la presentación existe, retorna el ID y la versión. Si no, None y 0.
+    if res and res[0]:
+        return res[0], res[1]
+    return None, 0

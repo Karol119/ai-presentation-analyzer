@@ -45,13 +45,24 @@ def _cargar_datos_json(nombre_presentacion):
     try:
         contexto = navigator.get_contexto_analisis()
         ruta_pdf = contexto.get("ruta_pdf")
+        
+        # Obtenemos el directorio donde están guardados los archivos
         directorio = os.path.dirname(ruta_pdf)
-        nombre_base = os.path.splitext(nombre_presentacion)[0]
+        
+        # Extraemos el nombre EXACTO del archivo (ya versionado) a partir del PDF
+        # Ejemplo: Si el PDF es "Clase_v2.pdf", nombre_base será "Clase_v2"
+        nombre_archivo_versionado = os.path.basename(ruta_pdf)
+        nombre_base = os.path.splitext(nombre_archivo_versionado)[0]
+        
+        # Armamos la ruta del JSON correcto
         ruta_json = os.path.join(directorio, f"{nombre_base}_analysis.json")
 
         if os.path.exists(ruta_json):
             with open(ruta_json, "r", encoding="utf-8") as f:
                 _widgets["cached_data"] = json.load(f)
+        else:
+            print(f"No se encontró el archivo de análisis en: {ruta_json}")
+            _widgets["cached_data"] = None
     except Exception as e:
         print(f"Error cargando JSON: {e}")
         _widgets["cached_data"] = None

@@ -154,3 +154,79 @@ def eliminar_datos_materia_cascada(id_materia):
         conn.rollback()
         return False
     finally: conn.close()
+
+def registrar_nueva_version(id_presentacion, ruta_origen, hash_unico, num_diapositivas, nueva_version, id_materia):
+    """Guarda archivos físicos y actualiza el nombre de la presentación al nombre del archivo cargado."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    try:
+        # 1. Obtener nombre de materia para la ruta
+        cursor.execute("SELECT unidad_aprendizaje FROM Unidad_de_Aprendizaje WHERE id_unidad_aprendizaje = ?", (id_materia,))
+        resultado = cursor.fetchone()
+        if not resultado: return False, "La materia no existe."
+        nombre_materia = resultado[0]
+        
+        # 2. Preparar nombres
+        # nombre_display: El nombre que el usuario eligió (ej: "Clase_V2.pptx")
+        nombre_display = os.path.basename(ruta_origen)
+        nombre_sin_ext, ext = os.path.splitext(nombre_display)
+        
+        # nombre_archivo_fisico: Asegura que no se sobrescriban archivos anteriores en el storage
+        nombre_archivo_fisico = f"{nombre_sin_ext}_v{nueva_version}{ext}"
+        
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        carpeta_destino = os.path.join(base_dir, "storage", "presentaciones", nombre_materia)
+        os.makedirs(carpeta_destino, exist_ok=True)
+        
+        ruta_destino = os.path.join(carpeta_destino, nombre_archivo_fisico)
+        shutil.copy2(ruta_origen, ruta_destino)
+
+        # Generar PDF y Miniatura
+        ruta_thumb = os.path.join(carpeta_destino, f"{nombre_sin_ext}_v{nueva_version}_thumb.png")
+        generar_miniatura(ruta_destino, ruta_thumb)
+
+        ruta_pdf = os.path.join(carpeta_destino, f"{nombre_sin_ext}_v{nueva_version}.pdf")
+        generar_pdf(ruta_destino, ruta_pdf)
+
+        # 3. ACTUALIZACIÓN: Cambiar el nombre en la tabla maestra Presentacion
+        # Esto permite que el tarjetero muestre el nombre del archivo más reciente
+        cursor.execute("UPDATE Presentacion SET presentacion = ? WHERE id_presentacion = ?", (nombre_display, id_presentacion))
+
+        # 4. Registrar la nueva versión en el historial
+        id_version = str(uuid.uuid4())
+        fecha = datetime.now().strftime("%Y-%m-%d")
+        
+        cursor.execute("""
+            INSERT INTO Historial_de_Versiones 
+            (id_version, id_presentacion, numero_version, analisis, fecha_carga, total_diapositivas, hash, ruta, ruta_miniatura, ruta_pdf)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (id_version, id_presentacion, nueva_version, 0, fecha, num_diapositivas, hash_unico, ruta_destino, ruta_thumb, ruta_pdf))
+
+        conn.commit()
+        return True, "Presentación actualizada con el nuevo nombre."
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+    finally:
+        conn.close()
+
+def actualizar_metricas_version(id_version, calificacion, recomendacion):
+    """Actualiza los campos de calificación y recomendación de una versión específica."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    try:
+        query = """
+            UPDATE Historial_de_Versiones 
+            SET calificacion_presentacion = ?, 
+                recomendacion_presentacion = ?
+            WHERE id_version = ?
+        """
+        cursor.execute(query, (calificacion, recomendacion, id_version))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar métricas: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
