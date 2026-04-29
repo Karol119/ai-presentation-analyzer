@@ -12,9 +12,10 @@ from app.presentation.views.ui_state import estado, ui
 from app.core.controller.presentation_controller import (
     orquestar_proceso_completo,
     orquestar_eliminacion_presentacion,
-    orquestar_actualizacion_analisis,
-    orquestar_analisis_ia
+    orquestar_analisis_ia,
+    orquestar_actualizacion_presentacion  # <-- Esta es la nueva
 )
+
 from app.core.controller.subject_controller import (
     obtener_id_materia, 
     obtener_archivos_materia
@@ -24,7 +25,6 @@ from app.core.controller.subject_controller import (
 from app.presentation.widgets.dialogs import (
     mostrar_modal_cargando, 
     advertir_presentacion_existente,
-    confirmar_eliminacion_archivo
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 from app.presentation.views import navigator
@@ -36,7 +36,7 @@ COLOR_GUINDA_HOVER = "#4D1324"
 COLOR_ORO          = "#BC955C"
 
 CARD_W = 175
-CARD_H = 232
+CARD_H = 270
 
 def build_content_area(comando_actualizar_boton):
     """Construye el contenedor principal y limpia registros previos."""
@@ -233,7 +233,8 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     opciones = [
         ("🖥   Presentar clase",  "#1E293B", _placeholder),
         (texto_analisis,          "#1E293B", cmd_analisis),
-        ("🕓   Ver historial",    "#1E293B", _placeholder),
+        ("🔄   Actualizar presentación", "#1E293B", lambda: _actualizar_presentacion_ui(subject, name, toggle_menu, comando_actualizar_boton)),
+        ("🕓   Ver historial",    "#1E293B", lambda: _ver_historial(subject, name, toggle_menu)),
         ("📈   Ver rendimiento",  "#1E293B", _placeholder),
     ]
 
@@ -251,6 +252,57 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
                   anchor="w", command=on_delete).pack(fill="x", padx=6, pady=(4, 8), side="bottom")
 
     return outer # Retornamos el contenedor para usarlo con .grid()
+
+def _actualizar_presentacion_ui(subject: str, nombre_presentacion: str, toggle_menu, comando_actualizar_boton):
+    """
+    Abre el cuadro de diálogo para seleccionar el nuevo archivo .pptx,
+    bloquea la UI, ejecuta la orquestación en hilo secundario y refresca la vista.
+    """
+    # 1. Verificar candado
+    if estado.get("bloqueo_ui"): return
+    
+    # Cerrar el menú de la tarjeta
+    toggle_menu(False) 
+    
+    # 2. Pedir el nuevo archivo
+    file_path = filedialog.askopenfilename(filetypes=[("PPTX", "*.pptx")])
+    if not file_path:
+        return # El usuario canceló
+    
+    # 3. Bloquear UI y mostrar modal de carga
+    estado["bloqueo_ui"] = True
+    loading_modal = mostrar_modal_cargando(ui["root"], "Actualizando versión...")
+    subject_id = obtener_id_materia(subject)
+
+    def update_task():
+        # Llama a la capa de negocio (nuestro controlador)
+        return orquestar_actualizacion_presentacion(file_path, nombre_presentacion, subject_id)
+
+    def finalize_update(resultado_tupla):
+        exito, mensaje = resultado_tupla
+        
+        # Quitar modal de carga dando un respiro a la UI
+        if loading_modal.winfo_exists():
+            ui["root"].after(100, loading_modal.destroy)
+        
+        if exito:
+            # Refrescar el estado local y reconstruir las tarjetas
+            estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
+            rebuild_cards(subject, comando_actualizar_boton)
+            comando_actualizar_boton()
+        else:
+            # Si hubo un error (ej. seleccionó el mismo archivo exacto), mostrar alerta
+            advertir_presentacion_existente(ui["root"], mensaje)
+            
+        # Liberar candado
+        estado["bloqueo_ui"] = False
+
+    # 4. Ejecutar en hilo secundario para no congelar la app
+    ejecutar_tarea_asincrona(
+        target_task=update_task,
+        on_finished_callback=finalize_update
+    )
+
 
 def _menu_item(parent, text: str, color: str, command):
     """Crea un botón de opción dentro del menú de la tarjeta."""
@@ -311,7 +363,7 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, tog
         exito, contenido = resultado_tupla
         
         if loading_modal.winfo_exists():
-            loading_modal.destroy()
+            ui["root"].after(100, loading_modal.destroy)
             
         if exito:
             # Actualizamos la lista local de archivos para que la tarjeta cambie a "Ver análisis"
@@ -343,6 +395,14 @@ def _ver_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_
     """
     toggle_menu(False) # Cierra el menú de la tarjeta
     navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
+
+
+def _ver_historial(subject: str, nombre_presentacion: str, toggle_menu):
+    """
+    Navega a la vista del historial de versiones.
+    """
+    toggle_menu(False) # Cierra el menú de la tarjeta
+    navigator.ir_a_historial(subject, nombre_presentacion)
     
 def _make_upload_card(parent, subject, comando_actualizar_boton):
     """Crea y retorna la tarjeta de carga (sin posicionarla)."""
@@ -386,7 +446,7 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
 
     def finalize_ui_update(skipped_presentations: list):
         if loading_modal.winfo_exists():
-            loading_modal.destroy()
+            ui["root"].after(100, loading_modal.destroy)
         
         if skipped_presentations:
             file_names = "\n• " + "\n• ".join(skipped_presentations)

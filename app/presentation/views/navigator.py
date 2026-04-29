@@ -8,6 +8,7 @@ Toda transición de pantalla pasa por este módulo.
 Vistas registradas:
   - main_gui     → pantalla principal (sidebar + content + right panel)
   - analysis_gui → pantalla de análisis (presentation_panel + results_panel)
+  - history_gui  → pantalla de historial de versiones
 """
 
 from app.presentation.views.ui_state import ui
@@ -15,7 +16,7 @@ from app.presentation.widgets.topbar import set_modo_analisis, set_modo_principa
 
 # Estado interno del navegador
 _estado_navegador = {
-    "vista_actual":         "main",   # "main" | "analysis"
+    "vista_actual":         "main",   # "main" | "analysis" | "history"
     "subject":              None,
     "nombre_presentacion":  None,
     "ruta_pdf":             None,
@@ -26,50 +27,72 @@ _estado_navegador = {
 # API pública
 # ---------------------------------------------------------------------------
 
+def ir_a_historial(subject: str, nombre_presentacion: str):
+    """
+    Transición: vista principal → vista de historial.
+    """
+    if _estado_navegador["vista_actual"] == "history":
+        return
+
+    _estado_navegador["vista_actual"] = "history"
+    _estado_navegador["subject"] = subject
+    _estado_navegador["nombre_presentacion"] = nombre_presentacion
+
+    # 1. Ocultar vista principal
+    ui["body"].pack_forget()
+
+    # 2. Configurar el topbar para mostrar el título y botón de volver
+    set_modo_analisis(f"Historial: {nombre_presentacion}", on_back=ir_a_principal)
+
+    # 3. Construir y mostrar la vista de historial
+    from app.presentation.views.history_gui import mostrar_vista_historial
+    mostrar_vista_historial(subject, nombre_presentacion)
+
+
 def ir_a_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str):
     """
-    Transición: vista principal → vista de análisis.
-
-    1. Oculta el body principal
-    2. Cambia el topbar al modo análisis
-    3. Construye y muestra la vista de análisis
+    Transición: vista principal/historial → vista de análisis.
     """
     if _estado_navegador["vista_actual"] == "analysis":
-        return  # Evitar transiciones duplicadas
+        return 
+
+    # Si venimos del historial, ocultamos sus componentes primero
+    if _estado_navegador["vista_actual"] == "history":
+        from app.presentation.views.history_gui import ocultar_vista_historial
+        ocultar_vista_historial()
 
     _estado_navegador["vista_actual"]       = "analysis"
     _estado_navegador["subject"]            = subject
     _estado_navegador["nombre_presentacion"]= nombre_presentacion
     _estado_navegador["ruta_pdf"]           = ruta_pdf
 
-    # 1. Ocultar vista principal
+    # Ocultar body principal (si es que no estaba ya oculto)
     ui["body"].pack_forget()
 
-    # 2. Cambiar topbar
+    # Cambiar topbar
     set_modo_analisis(nombre_presentacion, on_back=ir_a_principal)
 
-    # 3. Construir y mostrar la vista de análisis
-    #    Import local para evitar dependencias circulares en el arranque
+    # Construir y mostrar la vista de análisis
     from app.presentation.views.analysis_gui import mostrar_vista_analisis
     mostrar_vista_analisis(subject, nombre_presentacion, ruta_pdf)
 
 
 def ir_a_principal():
     """
-    Transición: vista de análisis → vista principal.
-
-    1. Destruye la vista de análisis
-    2. Restaura el topbar al modo principal
-    3. Muestra de nuevo el body principal
+    Transición: cualquier vista → vista principal.
     """
     if _estado_navegador["vista_actual"] == "main":
-        return  # Evitar transiciones duplicadas
+        return
+
+    # 1. Identificar qué vista destruir
+    if _estado_navegador["vista_actual"] == "analysis":
+        from app.presentation.views.analysis_gui import ocultar_vista_analisis
+        ocultar_vista_analisis()
+    elif _estado_navegador["vista_actual"] == "history":
+        from app.presentation.views.history_gui import ocultar_vista_historial
+        ocultar_vista_historial()
 
     _estado_navegador["vista_actual"] = "main"
-
-    # 1. Destruir vista de análisis
-    from app.presentation.views.analysis_gui import ocultar_vista_analisis
-    ocultar_vista_analisis()
 
     # 2. Restaurar topbar
     set_modo_principal()
@@ -83,14 +106,13 @@ def ir_a_principal():
 # ---------------------------------------------------------------------------
 
 def vista_actual() -> str:
-    """Retorna 'main' o 'analysis'."""
+    """Retorna 'main', 'analysis' o 'history'."""
     return _estado_navegador["vista_actual"]
 
 
 def get_contexto_analisis() -> dict:
     """
-    Retorna el contexto completo de la sesión de análisis activa.
-    Usado por presentation_panel y results_panel para obtener sus datos.
+    Retorna el contexto completo de la sesión activa.
     """
     return {
         "subject":              _estado_navegador["subject"],

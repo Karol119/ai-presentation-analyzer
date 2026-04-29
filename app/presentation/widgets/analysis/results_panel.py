@@ -14,6 +14,7 @@ _widgets = {
     "titulo_slide":    None,
     "contenido_frame": None,
     "cached_data":     None,
+    "modal_abierto":   False,
 }
 
 def build_results_panel(subject: str, nombre_presentacion: str):
@@ -44,13 +45,24 @@ def _cargar_datos_json(nombre_presentacion):
     try:
         contexto = navigator.get_contexto_analisis()
         ruta_pdf = contexto.get("ruta_pdf")
+        
+        # Obtenemos el directorio donde están guardados los archivos
         directorio = os.path.dirname(ruta_pdf)
-        nombre_base = os.path.splitext(nombre_presentacion)[0]
+        
+        # Extraemos el nombre EXACTO del archivo (ya versionado) a partir del PDF
+        # Ejemplo: Si el PDF es "Clase_v2.pdf", nombre_base será "Clase_v2"
+        nombre_archivo_versionado = os.path.basename(ruta_pdf)
+        nombre_base = os.path.splitext(nombre_archivo_versionado)[0]
+        
+        # Armamos la ruta del JSON correcto
         ruta_json = os.path.join(directorio, f"{nombre_base}_analysis.json")
 
         if os.path.exists(ruta_json):
             with open(ruta_json, "r", encoding="utf-8") as f:
                 _widgets["cached_data"] = json.load(f)
+        else:
+            print(f"No se encontró el archivo de análisis en: {ruta_json}")
+            _widgets["cached_data"] = None
     except Exception as e:
         print(f"Error cargando JSON: {e}")
         _widgets["cached_data"] = None
@@ -69,42 +81,46 @@ def _on_pagina_cambiada(indice: int):
 
     slide_data = data["slides"][indice]
 
-    # REGLA: Si omitida es True, no mostrar nada
-    if slide_data.get("omitida", False):
-        ctk.CTkLabel(container, text="Diapositiva omitida del análisis", 
-                     font=("Inter", 12, "italic"), text_color="#64748B").pack(pady=40)
-        return
-
-    # 1. Etiqueta de Tipo
+    # --- REGLA 1: Renderizar etiqueta SIEMPRE, incluso si está omitida ---
     _renderizar_tipo(container, slide_data)
 
-    # 2. Apartado de Calificación (Score y Zona)
+    if slide_data.get("omitida", False):
+        ctk.CTkLabel(
+            container, 
+            text="Diapositiva omitida del análisis detallado.", 
+            font=("Inter", 12, "italic"), 
+            text_color="#64748B"
+        ).pack(pady=40)
+        return
+
+    # Renderizado de componentes para diapositivas analizadas
     _renderizar_calificacion(container, slide_data)
-
-    # 3. Métricas (Diseño: métrica: valor | etiqueta: estado + feedback)
     _renderizar_metricas(container, slide_data)
-
-    # 4. Botón de Reestructuración
     _renderizar_boton_reestructuracion(container, slide_data)
 
 def _renderizar_tipo(parent, slide_data):
     tipo_raw = slide_data.get("tipo", "N/A")
     tipo_texto = tipo_raw.replace("_", " ").capitalize()
     
-    # Solo mostrar una etiqueta
     lbl_tipo = ctk.CTkLabel(
         parent, text=tipo_texto, fg_color=COLOR_GUINDA, 
         text_color="white", corner_radius=6, font=("Inter", 11, "bold"), padx=10
     )
     lbl_tipo.pack(pady=(10, 5))
 
+    # --- REGLA 2: Advertencia si el contenido es "Visual" ---
     if tipo_raw.lower() == "visual":
-        alerta = ctk.CTkLabel(
-            parent, text="⚠️ Actualmente la IA no es capaz de procesar imágenes.",
-            text_color="#92400E", wraplength=250, font=("Inter", 10, "bold"),
-            fg_color="#FEF3C7", corner_radius=4
-        )
-        alerta.pack(fill="x", pady=5)
+        alerta_box = ctk.CTkFrame(parent, fg_color="#FFFBEB", corner_radius=8, border_width=1, border_color="#FEF3C7")
+        alerta_box.pack(fill="x", pady=10, padx=5)
+        
+        ctk.CTkLabel(
+            alerta_box, 
+            text="⚠️ Advertencia:\nActualmente el prototipo no es capaz de analizar imágenes.",
+            text_color="#92400E", 
+            wraplength=250, 
+            font=("Inter", 10, "bold"),
+            justify="center"
+        ).pack(pady=10, padx=10)
 
 def _renderizar_calificacion(parent, slide_data):
     score = slide_data.get("score_slide", "N/A")
@@ -128,11 +144,9 @@ def _renderizar_metricas(parent, slide_data):
         m_frame = ctk.CTkFrame(parent, fg_color="transparent")
         m_frame.pack(fill="x", pady=8)
 
-        # Diseño: metrica: valor | etiqueta: indica el estado
         header_txt = f"{nombre.upper()}: {info.get('valor', 0)}  |  {info.get('estado', 'N/A')}"
         ctk.CTkLabel(m_frame, text=header_txt, font=("Inter", 11, "bold"), anchor="w", text_color="#1E293B").pack(fill="x")
         
-        # Feedback
         ctk.CTkLabel(
             m_frame, text=info.get('feedback', ''), font=("Inter", 11),
             text_color="#64748B", wraplength=260, justify="left"
@@ -143,30 +157,63 @@ def _renderizar_boton_reestructuracion(parent, slide_data):
     if reest and reest.get("diapositivas_generadas"):
         btn = ctk.CTkButton(
             parent, text="Ver sugerencias de reestructuración",
-            fg_color=COLOR_GUINDA, hover_color="#4D1324",
-            command=lambda: _abrir_modal_reestructuracion(reest["diapositivas_generadas"])
+            fg_color=COLOR_GUINDA, hover_color="#4D1324"
         )
+        btn.configure(command=lambda: _abrir_modal_reestructuracion(reest["diapositivas_generadas"], btn))
         btn.pack(pady=20, fill="x", padx=10)
 
-def _abrir_modal_reestructuracion(sugerencias):
+def _abrir_modal_reestructuracion(sugerencias, boton_disparador):
+    if _widgets.get("modal_abierto"):
+        return
+
+    _widgets["modal_abierto"] = True
+    boton_disparador.configure(state="disabled")
+
     modal = ctk.CTkToplevel(ui["root"])
-    modal.title("Sugerencias de Reestructuración")
+    modal.title("Sugerencias de Mejora")
     modal.geometry("500x600")
+    
+    modal.transient(ui["root"])
+    modal.grab_set()
     modal.attributes("-topmost", True)
     modal.configure(fg_color="white")
     
+    def al_cerrar():
+        _widgets["modal_abierto"] = False
+        if boton_disparador.winfo_exists():
+            boton_disparador.configure(state="normal")
+        modal.grab_release()
+        modal.destroy()
+
+    modal.protocol("WM_DELETE_WINDOW", al_cerrar)
+
+    num_sugerencias = len(sugerencias)
+    texto_rec = (f"Se recomienda dividir la diapositiva en {num_sugerencias} diapositivas:" 
+                 if num_sugerencias > 1 else 
+                 "Se recomienda redactar el contenido de la siguiente manera:")
+
+    ctk.CTkLabel(
+        modal, text=texto_rec, 
+        font=("Inter", 13, "bold"), text_color=COLOR_GUINDA,
+        wraplength=450, justify="center"
+    ).pack(pady=(20, 10), padx=20)
+
     scroll = ctk.CTkScrollableFrame(modal, fg_color="transparent")
-    scroll.pack(fill="both", expand=True, padx=20, pady=20)
+    scroll.pack(fill="both", expand=True, padx=20, pady=(0, 20))
     
     for i, sug in enumerate(sugerencias, 1):
         f = ctk.CTkFrame(scroll, fg_color="#F8FAFC", border_width=1, border_color="#E2E8F0")
         f.pack(fill="x", pady=10)
         
-        ctk.CTkLabel(f, text=f"Propuesta {i}: {sug.get('titulo_sugerido', '')}", 
-                     font=("Inter", 12, "bold"), text_color=COLOR_GUINDA, anchor="w").pack(fill="x", padx=15, pady=(10, 5))
+        titulo_label = f"Diapositiva {i}" if num_sugerencias > 1 else "Contenido Optimizado"
+        
+        ctk.CTkLabel(f, text=f"{titulo_label}: {sug.get('titulo_sugerido', '')}", 
+                      font=("Inter", 12, "bold"), text_color=COLOR_GUINDA, anchor="w").pack(fill="x", padx=15, pady=(10, 5))
         
         ctk.CTkLabel(f, text=sug.get('contenido_optimizado', ''), font=("Inter", 11),
-                     wraplength=400, justify="left").pack(fill="x", padx=15, pady=(0, 15))
+                      wraplength=400, justify="left").pack(fill="x", padx=15, pady=(0, 15))
+
+    ctk.CTkButton(modal, text="Entendido", command=al_cerrar, fg_color=COLOR_GUINDA, corner_radius=10).pack(pady=10)
 
 def _build_header(parent):
     header = ctk.CTkFrame(parent, fg_color="transparent")
