@@ -156,7 +156,7 @@ def eliminar_datos_materia_cascada(id_materia):
     finally: conn.close()
 
 def registrar_nueva_version(id_presentacion, ruta_origen, hash_unico, num_diapositivas, nueva_version, id_materia):
-    """Guarda archivos físicos y actualiza el nombre de la presentación al nombre del archivo cargado."""
+    """Guarda archivos físicos y registra una nueva versión manteniendo intacta la tabla Presentacion."""
     conn = conectar_db()
     cursor = conn.cursor()
     try:
@@ -166,12 +166,9 @@ def registrar_nueva_version(id_presentacion, ruta_origen, hash_unico, num_diapos
         if not resultado: return False, "La materia no existe."
         nombre_materia = resultado[0]
         
-        # 2. Preparar nombres
-        # nombre_display: El nombre que el usuario eligió (ej: "Clase_V2.pptx")
-        nombre_display = os.path.basename(ruta_origen)
-        nombre_sin_ext, ext = os.path.splitext(nombre_display)
-        
-        # nombre_archivo_fisico: Asegura que no se sobrescriban archivos anteriores en el storage
+        # 2. Generar nombres físicos con sufijo _vX para no sobrescribir en disco
+        nombre_archivo_original = os.path.basename(ruta_origen)
+        nombre_sin_ext, ext = os.path.splitext(nombre_archivo_original)
         nombre_archivo_fisico = f"{nombre_sin_ext}_v{nueva_version}{ext}"
         
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -181,18 +178,14 @@ def registrar_nueva_version(id_presentacion, ruta_origen, hash_unico, num_diapos
         ruta_destino = os.path.join(carpeta_destino, nombre_archivo_fisico)
         shutil.copy2(ruta_origen, ruta_destino)
 
-        # Generar PDF y Miniatura
+        # 3. Generar PDF y Miniatura
         ruta_thumb = os.path.join(carpeta_destino, f"{nombre_sin_ext}_v{nueva_version}_thumb.png")
         generar_miniatura(ruta_destino, ruta_thumb)
 
         ruta_pdf = os.path.join(carpeta_destino, f"{nombre_sin_ext}_v{nueva_version}.pdf")
         generar_pdf(ruta_destino, ruta_pdf)
 
-        # 3. ACTUALIZACIÓN: Cambiar el nombre en la tabla maestra Presentacion
-        # Esto permite que el tarjetero muestre el nombre del archivo más reciente
-        cursor.execute("UPDATE Presentacion SET presentacion = ? WHERE id_presentacion = ?", (nombre_display, id_presentacion))
-
-        # 4. Registrar la nueva versión en el historial
+        # 4. Insertar en Historial_de_Versiones respetando el esquema original
         id_version = str(uuid.uuid4())
         fecha = datetime.now().strftime("%Y-%m-%d")
         
@@ -203,7 +196,7 @@ def registrar_nueva_version(id_presentacion, ruta_origen, hash_unico, num_diapos
         """, (id_version, id_presentacion, nueva_version, 0, fecha, num_diapositivas, hash_unico, ruta_destino, ruta_thumb, ruta_pdf))
 
         conn.commit()
-        return True, "Presentación actualizada con el nuevo nombre."
+        return True, "Nueva versión registrada con éxito."
     except Exception as e:
         conn.rollback()
         return False, str(e)

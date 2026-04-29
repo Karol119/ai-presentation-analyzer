@@ -39,7 +39,7 @@ def obtener_id_materia(nombre):
     return res[0] if res else None
 
 def obtener_presentaciones_por_materia(id_materia):
-    """Recupera la última versión de cada presentación de una materia."""
+    """Recupera la última versión de cada presentación conservando el nombre original."""
     conn = conectar_db()
     cursor = conn.cursor()
     query = """
@@ -157,3 +157,19 @@ def obtener_id_y_version_presentacion(nombre_presentacion, id_materia):
     if res and res[0]:
         return res[0], res[1]
     return None, 0
+
+def obtener_historial_presentacion(nombre_presentacion, id_materia):
+    """Recupera todo el historial de versiones de una presentación específica."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT hv.numero_version, hv.fecha_carga, hv.total_diapositivas, 
+               hv.analisis, hv.recomendacion_presentacion
+        FROM Historial_de_Versiones hv
+        JOIN Presentacion p ON hv.id_presentacion = p.id_presentacion
+        WHERE p.presentacion = ? AND p.id_unidad_aprendizaje = ?
+        ORDER BY hv.numero_version DESC
+    """, (nombre_presentacion, id_materia))
+    resultados = cursor.fetchall()
+    conn.close()
+    return resultados
