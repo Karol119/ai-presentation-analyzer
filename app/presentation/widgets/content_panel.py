@@ -234,7 +234,7 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
         ("🖥   Presentar clase",  "#1E293B", _placeholder),
         (texto_analisis,          "#1E293B", cmd_analisis),
         ("🔄   Actualizar presentación", "#1E293B", lambda: _actualizar_presentacion_ui(subject, name, toggle_menu, comando_actualizar_boton)),
-        ("🕓   Ver historial",    "#1E293B", _placeholder),
+        ("🕓   Ver historial",    "#1E293B", lambda: _ver_historial(subject, name, toggle_menu)),
         ("📈   Ver rendimiento",  "#1E293B", _placeholder),
     ]
 
@@ -395,6 +395,14 @@ def _ver_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_
     """
     toggle_menu(False) # Cierra el menú de la tarjeta
     navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
+
+
+def _ver_historial(subject: str, nombre_presentacion: str, toggle_menu):
+    """
+    Navega a la vista del historial de versiones.
+    """
+    toggle_menu(False) # Cierra el menú de la tarjeta
+    navigator.ir_a_historial(subject, nombre_presentacion)
     
 def _make_upload_card(parent, subject, comando_actualizar_boton):
     """Crea y retorna la tarjeta de carga (sin posicionarla)."""

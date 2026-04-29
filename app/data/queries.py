@@ -159,12 +159,12 @@ def obtener_id_y_version_presentacion(nombre_presentacion, id_materia):
     return None, 0
 
 def obtener_historial_presentacion(nombre_presentacion, id_materia):
-    """Recupera todo el historial de versiones de una presentación específica."""
+    """Recupera el historial de versiones incluyendo la ruta al PDF para localizar el JSON."""
     conn = conectar_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT hv.numero_version, hv.fecha_carga, hv.total_diapositivas, 
-               hv.analisis, hv.recomendacion_presentacion
+               hv.analisis, hv.ruta_pdf
         FROM Historial_de_Versiones hv
         JOIN Presentacion p ON hv.id_presentacion = p.id_presentacion
         WHERE p.presentacion = ? AND p.id_unidad_aprendizaje = ?
