@@ -5,15 +5,14 @@ from typing import List, Dict, Any
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
-# --- CONFIGURATION & THRESHOLDS ---
-TITLE_TOP_THRESHOLD   = 0.25
-FOOTER_TOP_THRESHOLD  = 0.75  
-MAX_TITLE_WORDS       = 25
-MAX_TITLE_CHARS       = 180
+UMBRAL_SUPERIOR_TITULO = 0.25
+UMBRAL_SUPERIOR_PIE = 0.75  
+MAX_PALABRAS_TITULO = 25
+MAX_CARACTERES_TITULO = 180
 
-_RE_ONLY_NUMBERS = re.compile(r'^\d{1,3}$')
+_RE_SOLO_NUMEROS = re.compile(r'^\d{1,3}$')
 
-_META_PATTERNS = [
+_PATRONES_META = [
     re.compile(r'\b(materia|asignatura|unidad|semestre|grupo|docente|profesor|instituto|tecnol[oó]gico|universidad|facultad)\b', re.IGNORECASE),
     re.compile(r'\d{1,2}[/-]\d{1,2}[/-]\d{2,4}'),
     re.compile(r'\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b', re.IGNORECASE),
@@ -21,33 +20,33 @@ _META_PATTERNS = [
     re.compile(r'^[A-ZÁÉÍÓÚ][a-záéíóú]+ [A-ZÁÉÍÓÚ][a-záéíóú]+ [A-ZÁÉÍÓÚ][a-záéíóú]+$'),
 ]
 
-def count_slides(pptx_path: str) -> int:
+def contar_diapositivas(ruta_pptx: str) -> int:
     try:
-        return len(Presentation(pptx_path).slides)
+        return len(Presentation(ruta_pptx).slides)
     except Exception as e:
-        print(f"[text_extractor] Error counting slides: {e}")
+        print(f"[text_extractor] Error al contar diapositivas: {e}")
         return 0
 
-def extract_pptx_data(pptx_path: str) -> Dict[str, Any]:
-    presentation = Presentation(pptx_path)
-    slide_height = presentation.slide_height
+def extraer_datos_pptx(ruta_pptx: str) -> Dict[str, Any]:
+    presentacion = Presentation(ruta_pptx)
+    altura_diapositiva = presentacion.slide_height
 
-    result = {
-        "filename":     os.path.basename(pptx_path),
-        "total_slides": len(presentation.slides),
+    resultado = {
+        "filename":     os.path.basename(ruta_pptx),
+        "total_slides": len(presentacion.slides),
         "slides":       []
     }
 
-    for idx, slide in enumerate(presentation.slides):
-        result["slides"].append(
-            _process_slide(slide, idx + 1, slide_height)
+    for indice, diapositiva in enumerate(presentacion.slides):
+        resultado["slides"].append(
+            _procesar_diapositiva(diapositiva, indice + 1, altura_diapositiva)
         )
 
-    return result
+    return resultado
 
-def _process_slide(slide: Any, slide_number: int, slide_height: float) -> Dict[str, Any]:
-    slide_info = {
-        "slide_number":      slide_number,
+def _procesar_diapositiva(diapositiva: Any, numero_diapositiva: int, altura_diapositiva: float) -> Dict[str, Any]:
+    info_diapositiva = {
+        "slide_number":      numero_diapositiva,
         "title":             "",
         "content":           [],
         "footer":            [],
@@ -55,139 +54,127 @@ def _process_slide(slide: Any, slide_number: int, slide_height: float) -> Dict[s
         "tiene_solo_imagen": False,
     }
 
-    if slide.shapes.title and slide.shapes.title.has_text_frame and slide.shapes.title.text.strip():
-        raw_title = _clean_text(slide.shapes.title.text)
-        if not _is_decorative_number(slide.shapes.title, raw_title, slide_height):
-            slide_info["title"] = raw_title
+    if diapositiva.shapes.title and diapositiva.shapes.title.has_text_frame and diapositiva.shapes.title.text.strip():
+        titulo_crudo = _limpiar_texto(diapositiva.shapes.title.text)
+        if not _es_numero_decorativo(diapositiva.shapes.title, titulo_crudo, altura_diapositiva):
+            info_diapositiva["title"] = titulo_crudo
 
-    title_candidates: List[Dict[str, Any]] = []
+    candidatos_titulo: List[Dict[str, Any]] = []
 
-    for shape in slide.shapes:
-        _process_shape(shape, slide_info, title_candidates, slide_height)
+    for forma in diapositiva.shapes:
+        _procesar_forma(forma, info_diapositiva, candidatos_titulo, altura_diapositiva)
 
-    # Lógica para elegir el mejor candidato a título
-    if not slide_info["title"] and title_candidates:
-        title_candidates.sort(key=lambda x: (x["size"] or 0, -x["top"]), reverse=True)
-        best_candidate = title_candidates[0]
+    if not info_diapositiva["title"] and candidatos_titulo:
+        candidatos_titulo.sort(key=lambda x: (x["size"] or 0, -x["top"]), reverse=True)
+        mejor_candidato = candidatos_titulo[0]
         
-        if best_candidate["words"] <= MAX_TITLE_WORDS and len(best_candidate["text"]) <= MAX_TITLE_CHARS:
-            slide_info["title"] = best_candidate["text"]
-            slide_info["content"].extend([c["text"] for c in title_candidates[1:]])
+        if mejor_candidato["words"] <= MAX_PALABRAS_TITULO and len(mejor_candidato["text"]) <= MAX_CARACTERES_TITULO:
+            info_diapositiva["title"] = mejor_candidato["text"]
+            info_diapositiva["content"].extend([c["text"] for c in candidatos_titulo[1:]])
         else:
-            slide_info["content"].extend([c["text"] for c in title_candidates])
+            info_diapositiva["content"].extend([c["text"] for c in candidatos_titulo])
 
-    # Variables booleanas de control
-    is_textless = len(slide_info["content"]) == 0 and slide_info["title"] == ""
-    slide_info["tiene_solo_imagen"] = is_textless and len(slide_info["images"]) > 0
-    
-    # --- LA CONEXIÓN CON EL CORTAFUEGOS ---
-    # Exportamos explícitamente el conteo de imágenes para que la IA sepa evadirlas
-    slide_info["image_count"] = len(slide_info["images"])
+    sin_texto = len(info_diapositiva["content"]) == 0 and info_diapositiva["title"] == ""
+    info_diapositiva["tiene_solo_imagen"] = sin_texto and len(info_diapositiva["images"]) > 0
+    info_diapositiva["image_count"] = len(info_diapositiva["images"])
 
-    return slide_info
+    return info_diapositiva
 
-def _process_shape(shape: Any, slide_info: Dict[str, Any], title_candidates: List[Dict[str, Any]], slide_height: float) -> None:
-    # Manejo de agrupaciones (Busca imágenes dentro de grupos)
-    if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
-        for child in shape.shapes:
-            _process_shape(child, slide_info, title_candidates, slide_height)
+def _procesar_forma(forma: Any, info_diapositiva: Dict[str, Any], candidatos_titulo: List[Dict[str, Any]], altura_diapositiva: float) -> None:
+    if forma.shape_type == MSO_SHAPE_TYPE.GROUP:
+        for hijo in forma.shapes:
+            _procesar_forma(hijo, info_diapositiva, candidatos_titulo, altura_diapositiva)
         return
 
-    # Detección de Imágenes
-    is_image = False
-    if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
-        is_image = True
-    elif getattr(shape, "is_placeholder", False) and hasattr(shape, "image"):
-        is_image = True
+    es_imagen = False
+    if forma.shape_type == MSO_SHAPE_TYPE.PICTURE:
+        es_imagen = True
+    elif getattr(forma, "is_placeholder", False) and hasattr(forma, "image"):
+        es_imagen = True
 
-    if is_image:
-        slide_info["images"].append(shape.name)
+    if es_imagen:
+        info_diapositiva["images"].append(forma.name)
         return
 
-    # Detección de Tablas
-    if shape.shape_type == MSO_SHAPE_TYPE.TABLE:
-        for row in shape.table.rows:
-            for cell in row.cells:
-                cell_text = _clean_text(cell.text)
-                # CORRECCIÓN AQUÍ: Se pasa 'shape' (la tabla) en lugar de 'cell'
-                if cell_text and not _is_decorative_number(shape, cell_text, slide_height):
-                    slide_info["content"].append(cell_text)
+    if forma.shape_type == MSO_SHAPE_TYPE.TABLE:
+        for fila in forma.table.rows:
+            for celda in fila.cells:
+                texto_celda = _limpiar_texto(celda.text)
+                if texto_celda and not _es_numero_decorativo(forma, texto_celda, altura_diapositiva):
+                    info_diapositiva["content"].append(texto_celda)
         return
 
-    # Extracción de Texto Normal
-    if not getattr(shape, "has_text_frame", False) or not shape.has_text_frame or not shape.text.strip():
+    if not getattr(forma, "has_text_frame", False) or not forma.has_text_frame or not forma.text.strip():
         return
 
-    text = _clean_text(shape.text)
-    if not text or text == slide_info["title"]:
+    texto = _limpiar_texto(forma.text)
+    if not texto or texto == info_diapositiva["title"]:
         return
 
-    if _is_decorative_number(shape, text, slide_height):
+    if _es_numero_decorativo(forma, texto, altura_diapositiva):
         return
 
-    top_ratio = shape.top / slide_height
-    word_count = len(text.split())
+    proporcion_superior = forma.top / altura_diapositiva
+    conteo_palabras = len(texto.split())
 
-    # Detección de Pie de Página
-    if top_ratio >= FOOTER_TOP_THRESHOLD:
-        if _is_footer(text, word_count, top_ratio):
-            slide_info["footer"].append(text)
+    if proporcion_superior >= UMBRAL_SUPERIOR_PIE:
+        if _es_pie_de_pagina(texto, conteo_palabras, proporcion_superior):
+            info_diapositiva["footer"].append(texto)
             return
 
-    # Detección de Títulos huérfanos
-    if not slide_info["title"] and top_ratio < TITLE_TOP_THRESHOLD:
-        font_size = _get_font_size(shape)
-        title_candidates.append({
-            "text": text, 
-            "size": font_size,
-            "top": shape.top, 
-            "words": word_count
+    if not info_diapositiva["title"] and proporcion_superior < UMBRAL_SUPERIOR_TITULO:
+        tamano_fuente = _obtener_tamano_fuente(forma)
+        candidatos_titulo.append({
+            "text": texto, 
+            "size": tamano_fuente,
+            "top": forma.top, 
+            "words": conteo_palabras
         })
         return
 
-    slide_info["content"].append(text)
+    info_diapositiva["content"].append(texto)
     
-def _is_footer(text: str, word_count: int, top_ratio: float) -> bool:
-    if top_ratio >= 0.85 and word_count <= 25:
+def _es_pie_de_pagina(texto: str, conteo_palabras: int, proporcion_superior: float) -> bool:
+    if proporcion_superior >= 0.85 and conteo_palabras <= 25:
         return True
-    if word_count <= 6:
+    if conteo_palabras <= 6:
         return True
-    if word_count <= 15:
-        for pattern in _META_PATTERNS:
-            if pattern.search(text):
+    if conteo_palabras <= 15:
+        for patron in _PATRONES_META:
+            if patron.search(texto):
                 return True
     return False
 
-def _is_decorative_number(shape: Any, text: str, slide_height: float) -> bool:
-    clean_text = text.strip()
-    if not bool(_RE_ONLY_NUMBERS.match(clean_text)):
+def _es_numero_decorativo(forma: Any, texto: str, altura_diapositiva: float) -> bool:
+    texto_limpio = texto.strip()
+    if not bool(_RE_SOLO_NUMEROS.match(texto_limpio)):
         return False
     
-    top_ratio = shape.top / slide_height
-    is_numbering_zone = top_ratio < 0.05 or top_ratio > 0.90
+    proporcion_superior = forma.top / altura_diapositiva
+    es_zona_numeracion = proporcion_superior < 0.05 or proporcion_superior > 0.90
     
-    obj_name = shape.name.lower()
-    is_page_num_type = "slide number" in obj_name or "page" in obj_name
+    nombre_obj = forma.name.lower()
+    es_tipo_num_pagina = "slide number" in nombre_obj or "page" in nombre_obj
 
-    return is_numbering_zone or is_page_num_type
+    return es_zona_numeracion or es_tipo_num_pagina
 
-def _get_font_size(shape: Any) -> int:
-    if getattr(shape, "has_text_frame", False):
+def _obtener_tamano_fuente(forma: Any) -> int:
+    if getattr(forma, "has_text_frame", False):
         try:
-            for paragraph in shape.text_frame.paragraphs:
-                for run in paragraph.runs:
+            for parrafo in forma.text_frame.paragraphs:
+                for run in parrafo.runs:
                     if run.font and run.font.size:
                         return int(run.font.size)
         except Exception:
             pass
     return 0
 
-def _clean_text(text: str) -> str:
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    lines = [line.strip() for line in text.split("\n") if line.strip()]
-    return " \n ".join(lines)
+def _limpiar_texto(texto: str) -> str:
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
+    lineas = [linea.strip() for linea in texto.split("\n") if linea.strip()]
+    return " \n ".join(lineas)
 
-def clean_for_metrics(text: str) -> str:
-    if not text: return ""
-    temp_text = re.sub(r'\s+', ' ', text)
-    return temp_text.strip()
+def limpiar_para_metricas(texto: str) -> str:
+    if not texto: return ""
+    texto_temp = re.sub(r'\s+', ' ', texto)
+    return texto_temp.strip()

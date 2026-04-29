@@ -56,29 +56,28 @@ _STOPWORDS = {
     "también","además","sin","embargo","aunque","entonces","luego",
     "después","antes","finalmente","primero","segundo","tercero",
 }
-_RE_TOKENS = re.compile(r'[a-záéíóúüñ]+', re.IGNORECASE)
 
-def calculate_lexical_density(slide_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    text = preparar_texto_slide(slide_data)
-    tokens = _tokenize(text)
+def calcular_densidad_lexica(datos_diapositiva: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    texto = preparar_texto_slide(datos_diapositiva)
+    tokens = _tokenizar(texto)
 
     if len(tokens) < 5:
         return None
 
-    total_words = len(tokens)
-    functional_words = sum(1 for t in tokens if t in _STOPWORDS)
-    content_words = total_words - functional_words
+    total_palabras = len(tokens)
+    palabras_funcionales = sum(1 for t in tokens if t in _STOPWORDS)
+    palabras_contenido = total_palabras - palabras_funcionales
 
-    ld = (content_words / total_words) * 100
-    ldn = ld / 100.0
+    dl = (palabras_contenido / total_palabras) * 100
+    dln = dl / 100.0
 
     return {
-        "total_palabras":     total_words,
-        "palabras_contenido": content_words,
-        "palabras_funcional": functional_words,
-        "dl":  round(ld, 2),
-        "dln": round(ldn, 4)
+        "total_palabras":     total_palabras,
+        "palabras_contenido": palabras_contenido,
+        "palabras_funcional": palabras_funcionales,
+        "dl":  round(dl, 2),
+        "dln": round(dln, 4)
     }
 
-def _tokenize(text: str) -> list[str]:
-    return [t.lower() for t in _RE_TOKENS.findall(text)]
+def _tokenizar(texto: str) -> list[str]:
+    return [t.lower() for t in _RE_TOKENS.findall(texto)]

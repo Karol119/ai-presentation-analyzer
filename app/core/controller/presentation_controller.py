@@ -3,7 +3,8 @@ import json
 import os
 from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
-from app.core.logic.text_extractor import count_slides
+# Cambio de nombre en la importación
+from app.core.logic.text_extractor import contar_diapositivas
 
 # Importaciones de datos
 from app.data.queries import existe_hash_en_db, obtener_id_version_actual, obtener_id_y_version_presentacion
@@ -14,7 +15,8 @@ from app.data.persistence import (
     registrar_analisis_completo,
     registrar_nueva_version
 )
-from app.core.controller.analyzer_controller import analyze_presentation
+# Este controlador ya usa la versión traducida
+from app.core.controller.analyzer_controller import analizar_presentacion
 
 def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
@@ -33,8 +35,8 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
         if existe_hash_en_db(hash_unico):
             return False, "Esta presentación ya ha sido procesada anteriormente."
         
-        # 4. Conteo de diapositivas
-        num_diapositivas = count_slides(ruta_pptx)
+        # 4. Conteo de diapositivas (Nombre actualizado)
+        num_diapositivas = contar_diapositivas(ruta_pptx)
         if num_diapositivas == 0:
             return False, "No se pudo leer el archivo o está vacío."
         
@@ -73,29 +75,31 @@ def orquestar_analisis_ia(ruta_pptx: str, nombre_presentacion: str, id_materia: 
     """
     try:
         if status_cb: status_cb("Iniciando motores de IA...")
-        resultado_datos = analyze_presentation(ruta_pptx, status_cb=status_cb)
+        
+        # CAMBIO CLAVE: Se usa 'callback_estado' en lugar de 'status_cb' para coincidir con el controlador
+        resultado_datos = analizar_presentacion(ruta_pptx, callback_estado=status_cb)
 
         # 1. Persistencia en Base de Datos
         id_version = obtener_id_version_actual(nombre_presentacion, id_materia)
         if id_version:
             json_string = json.dumps(resultado_datos, ensure_ascii=False)
             
-            # Guardamos el JSON completo en la tabla Analisis (usando tu función existente)
+            # Guardamos el JSON completo en la tabla Analisis
             registrar_analisis_completo(id_version, json_string)
             
-            # Extraemos métricas para actualizar la tabla Historial_de_Versiones
-            # Asumiendo que tu IA devuelve 'puntuacion_general' y 'recomendacion_general'
-            score = resultado_datos.get("puntuacion_general", 0.0)
-            recommendation = resultado_datos.get("recomendacion_general", "")
+            # Extraemos métricas basadas en la nueva estructura del JSON traducido
+            datos_score = resultado_datos.get("score_global_presentacion", {})
+            score = datos_score.get("score_global", 0.0)
+            zona = datos_score.get("zona_global", "N/A")
             
-            # Llamaremos a una nueva función de persistencia para llenar los campos correspondientes
+            # Actualizamos las métricas en el historial (Score y la etiqueta de Zona como recomendación)
             from app.data.persistence import actualizar_metricas_version
-            actualizar_metricas_version(id_version, score, recommendation)
+            actualizar_metricas_version(id_version, score, zona)
             
-            # Actualizamos el estado de la versión a "analizada" (analisis = 1)
+            # Actualizamos el estado de la versión a "analizada"
             actualizar_estado_analisis(nombre_presentacion, id_materia, 1)
 
-        # 2. Persistencia en Disco (Usando el nombre físico para evitar sobrescritura)
+        # 2. Persistencia en Disco
         directorio = os.path.dirname(ruta_pptx)
         nombre_fisico_sin_ext = os.path.splitext(os.path.basename(ruta_pptx))[0]
         ruta_json = os.path.join(directorio, f"{nombre_fisico_sin_ext}_analysis.json")
@@ -122,12 +126,11 @@ def orquestar_actualizacion_presentacion(ruta_pptx, nombre_presentacion, id_mate
         # 2. Genera hash
         hash_unico = generar_hash_archivo(ruta_pptx)
         
-        # Opcional pero recomendado: evitar subir un archivo que ya existe en general
         if existe_hash_en_db(hash_unico):
             return False, "El archivo seleccionado es idéntico a una versión que ya existe en el sistema."
         
-        # 3. Conteo de diapositivas
-        num_diapositivas = count_slides(ruta_pptx)
+        # 3. Conteo de diapositivas (Nombre actualizado)
+        num_diapositivas = contar_diapositivas(ruta_pptx)
         if num_diapositivas == 0:
             return False, "No se pudo leer el archivo o está vacío."
         

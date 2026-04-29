@@ -8,7 +8,8 @@ from colorama import init, Fore, Style
 init(autoreset=True)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.core.controller.analyzer_controller import analyze_presentation
+# Importamos la función ya traducida al español
+from app.core.controller.analyzer_controller import analizar_presentacion
 
 def seleccionar_archivo() -> str:
     root = tk.Tk()
@@ -28,7 +29,8 @@ def ejecutar_test():
     if not ruta: return
     
     try:
-        resultado = analyze_presentation(ruta, status_cb=print_progreso)
+        # Usamos el nuevo nombre de la función y su parámetro en español
+        resultado = analizar_presentacion(ruta, callback_estado=print_progreso)
         
         score_data = resultado.get('score_global_presentacion', {})
         tiempo_total = resultado.get('tiempo_total_formateado', 'N/A')

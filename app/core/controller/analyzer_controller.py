@@ -3,86 +3,85 @@ import concurrent.futures
 from pathlib import Path
 from typing import Dict, Any, List, Callable, Optional
 
-from app.core.logic.text_extractor import extract_pptx_data
-from app.core.logic.metrics.icd import calculate_presentation_icd
-from app.infrastructure.ai.llm_provider import verify_ai_connection  # <-- Importación del Fail Fast
-from app.core.logic.metrics.word_count import calculate_presentation_wps
-from app.core.logic.metrics.ai_restructure import restructure_slides_batch
-from app.core.logic.metrics.ai_batch_metrics import calculate_ai_metrics_batch
-from app.core.logic.presentation_score import calculate_global_score, calculate_slide_score
+from app.core.logic.text_extractor import extraer_datos_pptx
+from app.core.logic.metrics.icd import calcular_icd_presentacion
+from app.infrastructure.ai.llm_provider import verificar_conexion_ia  
+from app.core.logic.metrics.word_count import calcular_wps_presentacion
+from app.core.logic.metrics.ai_restructure import reestructurar_diapositivas_lote
+from app.core.logic.metrics.ai_batch_metrics import calcular_metricas_ia_lote
+from app.core.logic.presentation_score import calcular_puntaje_global, calcular_puntaje_diapositiva
 
-def _run_local_metrics(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _ejecutar_metricas_locales(diapositivas_contenido: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {
-        "icd": calculate_presentation_icd(content_slides),
-        "wps": calculate_presentation_wps(content_slides)
+        "icd": calcular_icd_presentacion(diapositivas_contenido),
+        "wps": calcular_wps_presentacion(diapositivas_contenido)
     }
 
-def _run_ai_metrics(content_slides: List[Dict[str, Any]]) -> Dict[str, Any]:
-    return calculate_ai_metrics_batch(content_slides)
+def _ejecutar_metricas_ia(diapositivas_contenido: List[Dict[str, Any]]) -> Dict[str, Any]:
+    return calcular_metricas_ia_lote(diapositivas_contenido)
 
-def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -> Dict[str, Any]:
+def analizar_presentacion(ruta_archivo: str, callback_estado: Optional[Callable] = None) -> Dict[str, Any]:
     
     # --- PRE-FLIGHT CHECK (FAIL FAST) ---
-    if status_cb: status_cb("[SISTEMA] Comprobando estado del motor de Inteligencia Artificial...")
+    if callback_estado: callback_estado("[SISTEMA] Comprobando estado del motor de Inteligencia Artificial...")
     try:
-        verify_ai_connection()
+        verificar_conexion_ia()
     except Exception as e:
-        if status_cb: status_cb("[CANCELADO] El análisis no pudo iniciar.")
-        raise e # Detiene el programa instantáneamente antes de extraer datos
+        if callback_estado: callback_estado("[CANCELADO] El análisis no pudo iniciar.")
+        raise e 
 
     # --- INICIO DEL PROCESO ---
-    if status_cb: status_cb("[SISTEMA] Iniciando extracción de datos...")
-    extracted_data = extract_pptx_data(file_path)
+    if callback_estado: callback_estado("[SISTEMA] Iniciando extracción de datos...")
+    datos_extraidos = extraer_datos_pptx(ruta_archivo)
     
-    total_diapositivas_pptx = extracted_data.get("total_slides", 0)
-    content_slides = extracted_data["slides"]
+    total_diapositivas_pptx = datos_extraidos.get("total_slides", 0)
+    diapositivas_contenido = datos_extraidos["slides"]
 
-    if status_cb: status_cb(f"[SISTEMA] Analizando {len(content_slides)} diapositivas en hilos paralelos...")
+    if callback_estado: callback_estado(f"[SISTEMA] Analizando {len(diapositivas_contenido)} diapositivas en hilos paralelos...")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        local_future = executor.submit(_run_local_metrics, content_slides)
-        ai_future    = executor.submit(_run_ai_metrics, content_slides)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ejecutor:
+        futuro_local = ejecutor.submit(_ejecutar_metricas_locales, diapositivas_contenido)
+        futuro_ia    = ejecutor.submit(_ejecutar_metricas_ia, diapositivas_contenido)
         
         try:
-            local_res = local_future.result()
-            if status_cb: status_cb("[OK] Métricas locales completadas.")
+            res_local = futuro_local.result()
+            if callback_estado: callback_estado("[OK] Métricas locales completadas.")
             
-            ai_res = ai_future.result()
-            if status_cb: status_cb("[OK] Evaluación de IA y clasificación completadas.")
+            res_ia = futuro_ia.result()
+            if callback_estado: callback_estado("[OK] Evaluación de IA y clasificación completadas.")
         except Exception as e:
-            if status_cb: status_cb("[CANCELADO] Proceso interrumpido por un error de IA.")
+            if callback_estado: callback_estado("[CANCELADO] Proceso interrumpido por un error de IA.")
             raise e
 
-    res_icd, res_wps = local_res["icd"], local_res["wps"]
-    res_hss, res_nts = ai_res["hss"], ai_res["nts"]
-    datos_ia_batch = ai_res.get("clasificaciones", {})
+    res_icd, res_wps = res_local["icd"], res_local["wps"]
+    res_hss, res_nts = res_ia["hss"], res_ia["nts"]
+    datos_ia_lote = res_ia.get("clasificaciones", {})
 
-    final_slides = []
-    slides_para_enriquecer = []
+    diapositivas_finales = []
+    diapositivas_para_enriquecer = []
     tiempo_total_segundos = 0
     
-    # Variables para calcular el score global sin trampas
-    valid_slide_count = 0
-    sum_icd = 0.0
-    sum_wps = 0.0
-    sum_hss = 0.0
-    sum_nts = 0.0
+    conteo_diapositivas_validas = 0
+    suma_icd = 0.0
+    suma_wps = 0.0
+    suma_hss = 0.0
+    suma_nts = 0.0
     
-    for slide in content_slides:
-        num = slide["slide_number"]
-        info_ia = datos_ia_batch.get(num, {"tipo": "contenido", "tiempo": 10})
+    for diapositiva in diapositivas_contenido:
+        num = diapositiva["slide_number"]
+        info_ia = datos_ia_lote.get(num, {"tipo": "contenido", "tiempo": 10})
         
         tipo_detectado = info_ia["tipo"]
-        tiempo_slide = info_ia["tiempo"]
-        tiempo_total_segundos += tiempo_slide
+        tiempo_diapositiva = info_ia["tiempo"]
+        tiempo_total_segundos += tiempo_diapositiva
         
         omitida = (tipo_detectado != "contenido")
         
         if omitida:
-            final_slides.append({
+            diapositivas_finales.append({
                 "slide_number": num,
                 "tipo":         tipo_detectado,
-                "tiempo_exposicion": tiempo_slide,
+                "tiempo_exposicion": tiempo_diapositiva,
                 "omitida":      True,
                 "score_slide":  None,
                 "zona_slide":   None,
@@ -98,28 +97,27 @@ def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -
         mh = next((r for r in res_hss["resultados"] if r["slide_number"] == num), {})
         mn = next((r for r in res_nts["resultados"] if r["slide_number"] == num), {})
         
-        slide_score_data = calculate_slide_score(mi, mw, mh, mn)
-        estados = slide_score_data["estados"]
-        norm_vals = slide_score_data["valores_normalizados"]
+        datos_puntaje_diapositiva = calcular_puntaje_diapositiva(mi, mw, mh, mn)
+        estados = datos_puntaje_diapositiva["estados"]
+        valores_norm = datos_puntaje_diapositiva["valores_normalizados"]
         
-        # Acumular para el global SOLO si no fue omitida
-        valid_slide_count += 1
-        sum_icd += norm_vals["icd"]
-        sum_wps += norm_vals["wps"]
-        sum_hss += norm_vals["hss"]
-        sum_nts += norm_vals["nts"]
+        conteo_diapositivas_validas += 1
+        suma_icd += valores_norm["icd"]
+        suma_wps += valores_norm["wps"]
+        suma_hss += valores_norm["hss"]
+        suma_nts += valores_norm["nts"]
         
-        necesita_reestructurar = slide_score_data["necesita_recomendacion"]
-        feedback_combinado = f"ICD: {mi.get('feedback_local','')} | WPS: {mw.get('feedback_local','')} | HSS: {mh.get('feedback_ai','')} | NTS: {mn.get('feedback_ai','')}"
+        necesita_reestructurar = datos_puntaje_diapositiva["necesita_recomendacion"]
+        retroalimentacion_combinada = f"ICD: {mi.get('feedback_local','')} | WPS: {mw.get('feedback_local','')} | HSS: {mh.get('feedback_ai','')} | NTS: {mn.get('feedback_ai','')}"
 
-        slide_db_format = {
+        formato_db_diapositiva = {
             "slide_number": num,
             "tipo":         tipo_detectado,
-            "tiempo_exposicion": tiempo_slide,
+            "tiempo_exposicion": tiempo_diapositiva,
             "omitida":      False,
             "requiere_reestructuracion": necesita_reestructurar,
-            "score_slide":  slide_score_data["score_total"],
-            "zona_slide":   slide_score_data["zona"],
+            "score_slide":  datos_puntaje_diapositiva["score_total"],
+            "zona_slide":   datos_puntaje_diapositiva["zona"],
             "metricas": {
                 "icd": {"valor": estados["icd"]["valor"], "estado": estados["icd"]["estado"], "feedback": mi.get("feedback_local")},
                 "wps": {"valor": estados["wps"]["valor"], "estado": estados["wps"]["estado"], "feedback": mw.get("feedback_local")},
@@ -129,53 +127,52 @@ def analyze_presentation(file_path: str, status_cb: Optional[Callable] = None) -
             "preguntas": [],
             "datos_curiosos": [],
             "reestructuracion": None,
-            "content": slide.get("content", []),
-            "feedback_combinado": feedback_combinado
+            "content": diapositiva.get("content", []),
+            "feedback_combinado": retroalimentacion_combinada
         }
         
-        final_slides.append(slide_db_format)
-        slides_para_enriquecer.append(slide_db_format)
+        diapositivas_finales.append(formato_db_diapositiva)
+        diapositivas_para_enriquecer.append(formato_db_diapositiva)
 
-    # --- CÁLCULO DEL SCORE GLOBAL ESTRICTO ---
-    if status_cb: status_cb("[SISTEMA] Calculando Score Global final...")
-    if valid_slide_count > 0:
-        global_score_data = calculate_global_score(
-            sum_icd / valid_slide_count,
-            sum_wps / valid_slide_count,
-            sum_hss / valid_slide_count,
-            sum_nts / valid_slide_count
+    if callback_estado: callback_estado("[SISTEMA] Calculando Score Global final...")
+    if conteo_diapositivas_validas > 0:
+        datos_puntaje_global = calcular_puntaje_global(
+            suma_icd / conteo_diapositivas_validas,
+            suma_wps / conteo_diapositivas_validas,
+            suma_hss / conteo_diapositivas_validas,
+            suma_nts / conteo_diapositivas_validas
         )
     else:
-        global_score_data = calculate_global_score(0, 0, 0, 0)
+        datos_puntaje_global = calcular_puntaje_global(0, 0, 0, 0)
 
-    if slides_para_enriquecer:
-        if status_cb: status_cb("[SISTEMA] Generando Material Didáctico y Reestructurando...")
+    if diapositivas_para_enriquecer:
+        if callback_estado: callback_estado("[SISTEMA] Generando Material Didáctico y Reestructurando...")
         try:
-            mapa_reestructurado = restructure_slides_batch([
+            mapa_reestructurado = reestructurar_diapositivas_lote([
                 {
                     "slide_number": s["slide_number"], 
                     "content": s.pop("content"), 
                     "requiere_reestructuracion": s["requiere_reestructuracion"],
                     "feedback_a_corregir": s.pop("feedback_combinado")
                 } 
-                for s in slides_para_enriquecer
+                for s in diapositivas_para_enriquecer
             ])
         except Exception as e:
-            if status_cb: status_cb("[CANCELADO] El enriquecimiento fue interrumpido.")
+            if callback_estado: callback_estado("[CANCELADO] El enriquecimiento fue interrumpido.")
             raise e
         
-        for s in final_slides:
+        for s in diapositivas_finales:
             if not s["omitida"]:
-                datos_ai = mapa_reestructurado.get(s["slide_number"], {})
-                s["preguntas"] = datos_ai.get("preguntas", [])
-                s["datos_curiosos"] = datos_ai.get("datos_curiosos", [])
-                arreglo_gen = datos_ai.get("diapositivas_generadas", [])
+                datos_ia = mapa_reestructurado.get(s["slide_number"], {})
+                s["preguntas"] = datos_ia.get("preguntas", [])
+                s["datos_curiosos"] = datos_ia.get("datos_curiosos", [])
+                arreglo_gen = datos_ia.get("diapositivas_generadas", [])
                 s["reestructuracion"] = {"diapositivas_generadas": arreglo_gen} if arreglo_gen else None
 
     return {
         "total_diapositivas": total_diapositivas_pptx,
-        "score_global_presentacion": global_score_data,
+        "score_global_presentacion": datos_puntaje_global,
         "tiempo_total_exposicion_segundos": tiempo_total_segundos,
         "tiempo_total_formateado": f"{tiempo_total_segundos // 60}m {tiempo_total_segundos % 60}s",
-        "slides": final_slides,
+        "slides": diapositivas_finales,
     }

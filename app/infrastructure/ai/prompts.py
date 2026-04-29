@@ -1,9 +1,9 @@
 # app/infrastructure/ai/prompts.py
 """
-Instruction templates for AI models using the Batch Processing pattern.
+Plantillas de instrucciones para modelos de IA usando el patrón de Procesamiento en Lote.
 """
 
-BATCH_EVALUATION_PROMPT = """[INST] Eres un experto en pedagogía universitaria y diseño instruccional.
+PROMPT_EVALUACION_LOTE = """[INST] Eres un experto en pedagogía universitaria y diseño instruccional.
 Tu tarea es evaluar en LOTE un conjunto de diapositivas de una presentación académica. 
 Para cada diapositiva realizarás CUATRO tareas:
 1. CLASIFICACIÓN: Identificar el tipo de diapositiva.
@@ -40,7 +40,7 @@ Estructura esperada:
 
 
 # Prompt para Reestructuración en Lote
-RESTRUCTURE_BATCH_PROMPT = """[INST] Eres un experto en diseño instruccional y síntesis de información.
+PROMPT_REESTRUCTURACION_LOTE = """[INST] Eres un experto en diseño instruccional y síntesis de información.
 Tu tarea es ENRIQUECER y, si es necesario, REESTRUCTURAR el contenido de diapositivas académicas.
 
 DATOS DE ENTRADA (JSON):
