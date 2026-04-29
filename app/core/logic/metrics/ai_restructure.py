@@ -1,3 +1,4 @@
+# app/core/logic/metrics/ai_restructure.py
 import json
 import re
 from typing import Dict, Any, List

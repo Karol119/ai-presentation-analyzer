@@ -1,3 +1,4 @@
+# app/core/logic/metrics/text_counter.py
 """
 text_counter.py
 Utilidades de conteo para el cálculo de complejidad textual.

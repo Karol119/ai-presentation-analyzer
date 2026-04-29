@@ -1,3 +1,4 @@
+# app/core/logic/metrics/word_count.py
 from typing import Dict, Any, List, Optional
 from app.core.logic.metrics.text_counter import contar_palabras
 

@@ -1,3 +1,4 @@
+# app/infrastructure/ai/prompts.py
 """
 Instruction templates for AI models using the Batch Processing pattern.
 """

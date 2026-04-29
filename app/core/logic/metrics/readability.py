@@ -1,3 +1,4 @@
+# app/core/logic/metrics/readability.py
 from typing import Dict, Any, Optional
 from app.core.logic.metrics.text_counter import (
     contar_palabras, contar_silabas, segmentar_frases, preparar_texto_slide

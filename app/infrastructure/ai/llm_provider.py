@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import time
-import socket
 import requests
 import subprocess
 from pathlib import Path
@@ -17,22 +16,22 @@ ruta_env = ruta_raiz / ".env"
 load_dotenv(dotenv_path=ruta_env, override=True)
 
 # --- 2. CONFIGURACIÓN ---
-ACTIVE_MODEL = os.getenv("ACTIVE_AI_MODEL", "qwen3:1.7b").lower().strip()
+ACTIVE_MODEL = os.getenv("ACTIVE_AI_MODEL", "gemini").lower().strip()
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/api/generate")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 
 def verify_ai_connection():
-    """Verifica la conectividad ANTES de empezar a procesar la presentación."""
+    """Verifica la conectividad REAL ANTES de empezar a procesar la presentación."""
     if ACTIVE_MODEL == "gemini":
         try:
-            # Intentamos conectar al DNS de Google (8.8.8.8) por el puerto 53. 
-            # Timeout de 3 segundos para no hacer esperar al usuario.
-            socket.create_connection(("8.8.8.8", 53), timeout=3)
-        except OSError as e:
-            raise RuntimeError("SIN CONEXIÓN A INTERNET: El modelo en la nube (Gemini) requiere conexión a la red. Verifica tu Wi-Fi e intenta de nuevo.") from e
+            # Hacemos una petición directa a los servidores de la API de Gemini (Límite 3 segundos)
+            # Esto es a prueba de balas contra redes sin internet real o portales cautivos.
+            requests.get("https://generativelanguage.googleapis.com", timeout=3)
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError("SIN CONEXIÓN A INTERNET: No se puede alcanzar el servidor de Gemini. Verifica tu Wi-Fi e intenta de nuevo.") from e
     else:
-        # Si es Ollama (Local), usamos tu función que ya existía para encenderlo
+        # Si es Ollama (Local), usamos la función para encenderlo
         try:
             _ensure_ollama_is_running()
         except Exception as e:
@@ -45,28 +44,29 @@ def _ensure_ollama_is_running():
     base_url = OLLAMA_URL.replace("/api/generate", "")
     
     try:
-        # 1. Intentamos hacer un 'ping' rápido al servidor local de Ollama (1 segundo de espera)
-        requests.get(base_url, timeout=1)
-        # Si no da error, significa que Ollama ya estaba prendido. No hacemos nada.
+        # 1. Intentamos hacer un 'ping' al servidor local de Ollama.
+        # AUMENTAMOS EL TIMEOUT a 3 segundos (Ollama recién encendido puede ser lento)
+        requests.get(base_url, timeout=3)
         
-    except requests.exceptions.ConnectionError:
-        print("[AI PROVIDER] Ollama está apagado. Encendiendo el motor local automáticamente...")
+    # EL CAMBIO CLAVE: RequestException atrapa Timeout, ConnectionError y todo lo relacionado a red
+    except requests.exceptions.RequestException: 
+        print("[AI PROVIDER] Ollama está inactivo o cargando. Encendiendo el motor local automáticamente...")
         try:
-            # 2. Configuramos el subproceso para que no abra ventanas emergentes en Windows
+            # 2. Configuramos el subproceso sin ventanas en Windows
             kwargs = {}
             if sys.platform == "win32":
                 kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
 
-            # 3. Encendemos el servidor de Ollama en segundo plano (equivalente a correr 'ollama serve')
+            # 3. Encendemos el servidor de Ollama
             subprocess.Popen(
                 ["ollama", "serve"],
-                stdout=subprocess.DEVNULL, # Ocultamos los textos de consola de Ollama
-                stderr=subprocess.DEVNULL, # Ocultamos los errores de Ollama
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 **kwargs
             )
             
-            # 4. Le damos a la computadora 3 segundos para arrancar el motor antes de continuar
-            time.sleep(3)
+            # 4. Le damos 5 segundos a la computadora para arrancar el motor de IA
+            time.sleep(5)
             print("[AI PROVIDER] Motor de Ollama inicializado con éxito.")
             
         except FileNotFoundError:
@@ -105,7 +105,7 @@ def _query_ollama(prompt: str, model_name: str, temperature: float) -> str:
         response.raise_for_status()
         return response.json().get("response", "").strip()
     except requests.exceptions.ConnectionError as e:
-        # ERROR CRÍTICO: Ollama apagado
+        # ERROR CRÍTICO: Ollama apagado mid-process
         raise RuntimeError("OLLAMA ESTÁ APAGADO. Por favor abre la aplicación de Ollama en tu PC y vuelve a intentar.") from e
     except requests.exceptions.HTTPError as e:
         # ERROR CRÍTICO: Modelo no encontrado
@@ -118,11 +118,16 @@ def _query_gemini(prompt: str, temperature: float) -> str:
         model = genai.GenerativeModel('gemini-2.5-flash') 
         response = model.generate_content(
             prompt,
-            generation_config=genai.types.GenerationConfig(temperature=temperature)
+            generation_config=genai.types.GenerationConfig(temperature=temperature),
+            request_options={"retry": None}
         )
         return response.text.strip()
     except Exception as e:
         error_str = str(e)
+        
+        # --- ATRApar PÉRDIDA DE INTERNET DURANTE LA EJECUCIÓN ---
+        if "Failed to establish a new connection" in error_str or "Network is unreachable" in error_str or "Connection aborted" in error_str:
+            raise RuntimeError("SE PERDIÓ LA CONEXIÓN A INTERNET durante el análisis. Verifica tu red.") from e
         
         if "Quota" in error_str or "429" in error_str or "exhausted" in error_str.lower():
             # 1. Extraemos los segundos exactos de espera que pide Google
