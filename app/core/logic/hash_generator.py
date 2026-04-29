@@ -1,3 +1,4 @@
+# app/core/logic/hash_generator.py
 import hashlib
 
 def generar_hash_archivo(ruta_archivo):
