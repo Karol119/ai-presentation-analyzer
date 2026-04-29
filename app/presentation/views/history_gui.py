@@ -116,7 +116,7 @@ def _crear_fila_version(parent, data, cols_config):
         btn_eval = ctk.CTkButton(
             fila, text="Ver Evaluación",
             width=130, height=32, corner_radius=8,
-            fg_color=COLOR_ORO, hover_color=COLOR_ORO_HOVER,  # Usamos Oro para diferenciar del de recomendaciones
+            fg_color=COLOR_GUINDA, hover_color="#4D1324",  # Usamos Oro para diferenciar del de recomendaciones
             font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda p=ruta_pdf, v=v_num: mostrar_modal_evaluacion_json(p, v)
         )
