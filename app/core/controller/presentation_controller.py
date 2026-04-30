@@ -3,10 +3,7 @@ import json
 import os
 from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
-# Cambio de nombre en la importación
 from app.core.logic.text_extractor import contar_diapositivas
-
-# Importaciones de datos
 from app.data.queries import existe_hash_en_db, obtener_id_version_actual, obtener_id_y_version_presentacion
 from app.data.persistence import (
     registrar_presentacion, 
@@ -15,7 +12,7 @@ from app.data.persistence import (
     registrar_analisis_completo,
     registrar_nueva_version
 )
-# Este controlador ya usa la versión traducida
+
 from app.core.controller.analyzer_controller import analizar_presentacion
 
 def orquestar_proceso_completo(ruta_pptx, id_materia):

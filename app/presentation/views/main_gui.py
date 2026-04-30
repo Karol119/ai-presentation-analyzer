@@ -2,25 +2,6 @@
 import unicodedata
 import customtkinter as ctk
 
-
-def _normalizar_texto(texto: str) -> str:
-    """
-    Normaliza una cadena para búsquedas insensibles a acentos y mayúsculas.
-    Ejemplos:
-      'Cálculo'     -> 'calculo'
-      'Análisis'    -> 'analisis'
-      'Programación'-> 'programacion'
-    """
-    if not texto:
-        return ""
-    # NFD descompone los caracteres acentuados en base + combinador.
-    # Luego filtramos los combinadores (categoría 'Mn' = Mark, Nonspacing).
-    descompuesto = unicodedata.normalize("NFD", texto)
-    sin_acentos = "".join(
-        c for c in descompuesto if unicodedata.category(c) != "Mn"
-    )
-    return sin_acentos.casefold().strip()
-
 from app.core.controller.presentation_controller import (
     orquestar_proceso_completo,
     orquestar_eliminacion_presentacion,
@@ -44,10 +25,30 @@ COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
 COLOR_ORO          = "#BC955C"
 COLOR_ORO_HOVER    = "#9E7C4A"
+COLOR_GUINDA_SUAVE = "#FDF2F4"
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
+
+
+def _normalizar_texto(texto: str) -> str:
+    """
+    Normaliza una cadena para búsquedas insensibles a acentos y mayúsculas.
+    Ejemplos:
+      'Cálculo'     -> 'calculo'
+      'Análisis'    -> 'analisis'
+      'Programación'-> 'programacion'
+    """
+    if not texto:
+        return ""
+    # NFD descompone los caracteres acentuados en base + combinador.
+    # Luego filtramos los combinadores (categoría 'Mn' = Mark, Nonspacing).
+    descompuesto = unicodedata.normalize("NFD", texto)
+    sin_acentos = "".join(
+        c for c in descompuesto if unicodedata.category(c) != "Mn"
+    )
+    return sin_acentos.casefold().strip()
 
 
 def _toggle_right_panel():

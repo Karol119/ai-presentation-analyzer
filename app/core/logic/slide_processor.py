@@ -20,24 +20,25 @@ def generar_miniatura(ruta_pptx: str, ruta_salida_png: str) -> bool:
 
 
 def generar_pdf(ruta_pptx: str, ruta_salida_pdf: str) -> bool:
-    """
-    Convierte PPTX a PDF usando PowerPoint COM.
-    Requiere Microsoft Office instalado.
-    PowerPoint COM requiere Visible = True — la ventana aparece brevemente.
-    ppSaveAsPDF = 32
-    """
     powerpoint = None
-    deck       = None
+    deck = None
     try:
         ruta_pptx_abs = os.path.abspath(ruta_pptx)
         ruta_pdf_abs  = os.path.abspath(ruta_salida_pdf)
 
-        powerpoint         = comtypes.client.CreateObject("Powerpoint.Application")
-        powerpoint.Visible = True   # Requerido por COM — no se puede ocultar
+        powerpoint = comtypes.client.CreateObject("Powerpoint.Application")
+
+        try:
+            powerpoint.Visible = False
+        except Exception:
+            powerpoint.Visible = True
+            try:
+                powerpoint.WindowState = 2  
+            except Exception:
+                pass
 
         deck = powerpoint.Presentations.Open(ruta_pptx_abs, WithWindow=False)
-        deck.SaveAs(ruta_pdf_abs, 32)
-
+        deck.SaveAs(ruta_pdf_abs, 32)  # ppSaveAsPDF
         return True
 
     except Exception as e:
