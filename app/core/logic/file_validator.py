@@ -1,7 +1,7 @@
 # app/core/logic/file_validator.py
 import os
 
-def validar_tamano_archivo(ruta_archivo, limite_mb=30):
+def validar_tamano_archivo(ruta_archivo, limite_mb=50):
     """Valida que el archivo no exceda un tamaño específico en MB.
 
     Args:

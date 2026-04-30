@@ -96,52 +96,72 @@ def confirmar_eliminacion_archivo(parent, nombre_archivo, callback_confirmar):
 def mostrar_modal_cargando(parent, mensaje="Procesando presentación(es)..."):
     """
     Crea un modal visual que indica que el sistema está cargando/procesando.
+    No tiene barra de título ni botón de cerrar — el usuario no puede cancelarlo.
     Retorna la ventana para que pueda ser destruida externamente.
     """
     win = ctk.CTkToplevel(parent)
-    win.title("Cargando")
     win.geometry("360x180")
     win.grab_set()
-    win.after(10, lambda: win.focus_force())
     win.configure(fg_color="white")
     win.resizable(False, False)
-    
-    # Franja superior color Oro (Identidad)
-    ctk.CTkFrame(win, fg_color=COLOR_ORO, height=6, corner_radius=0).pack(fill="x")
-    
+
+    # 🔒 Blindaje extra por si acaso
+    win.protocol("WM_DELETE_WINDOW", lambda: None)
+    win.bind("<Escape>",  lambda e: "break")
+    win.bind("<Alt-F4>",  lambda e: "break")
+
+    # 🔒 Quita la barra de título y centra sobre la ventana padre
+    def _preparar_ventana():
+        win.update_idletasks()
+        ancho, alto = 360, 180
+        x = parent.winfo_rootx() + (parent.winfo_width()  // 2) - (ancho // 2)
+        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - (alto  // 2)
+        win.geometry(f"{ancho}x{alto}+{x}+{y}")
+        win.overrideredirect(True)
+        win.focus_force()
+
+    win.after(20, _preparar_ventana)
+
+    # Marco contenedor con borde sutil (reemplaza visualmente la barra de título)
+    marco = ctk.CTkFrame(win, fg_color="white", border_width=1, border_color="#E2E8F0", corner_radius=0)
+    marco.pack(fill="both", expand=True)
+
+    # Franja superior color Oro (Identidad ESCOM)
+    ctk.CTkFrame(marco, fg_color=COLOR_ORO, height=6, corner_radius=0).pack(fill="x")
+
     # Contenedor para centrar
-    container = ctk.CTkFrame(win, fg_color="transparent")
+    container = ctk.CTkFrame(marco, fg_color="transparent")
     container.place(relx=0.5, rely=0.5, anchor="center")
-    
-    # Icono o Texto de carga
+
+    # Icono de carga
     ctk.CTkLabel(
-        container, 
-        text="⏳", 
+        container,
+        text="⏳",
         font=ctk.CTkFont(size=32)
     ).pack(pady=(0, 10))
-    
+
     # Texto descriptivo
     ctk.CTkLabel(
-        container, 
-        text=mensaje, 
+        container,
+        text=mensaje,
         font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
-        text_color="#1E293B", 
-        wraplength=320, 
+        text_color="#1E293B",
+        wraplength=320,
         justify="center"
     ).pack(pady=(0, 15))
-    
-    # ✅ Barra de progreso indeterminada (se mueve constantemente)
+
+    # Barra de progreso indeterminada
     progress = ctk.CTkProgressBar(
-        container, 
+        container,
         orientation="horizontal",
-        mode="indefinite", # Modo carga
-        width=280, 
-        height=10, 
+        mode="indefinite",
+        width=280,
+        height=10,
         corner_radius=5,
-        progress_color=COLOR_GUINDA, 
+        progress_color=COLOR_GUINDA,
         fg_color="#F1F5F9"
     )
     progress.pack()
-    progress.start() # Inicia la animación
-    
-    return win # Retornamos la ventana para poder cerrarla después
+    progress.start()
+
+    return win

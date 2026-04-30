@@ -1,4 +1,5 @@
 # app/presentation/views/main_gui.py
+import unicodedata
 import customtkinter as ctk
 
 from app.core.controller.presentation_controller import (
@@ -24,10 +25,30 @@ COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
 COLOR_ORO          = "#BC955C"
 COLOR_ORO_HOVER    = "#9E7C4A"
+COLOR_GUINDA_SUAVE = "#FDF2F4"
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
+
+
+def _normalizar_texto(texto: str) -> str:
+    """
+    Normaliza una cadena para búsquedas insensibles a acentos y mayúsculas.
+    Ejemplos:
+      'Cálculo'     -> 'calculo'
+      'Análisis'    -> 'analisis'
+      'Programación'-> 'programacion'
+    """
+    if not texto:
+        return ""
+    # NFD descompone los caracteres acentuados en base + combinador.
+    # Luego filtramos los combinadores (categoría 'Mn' = Mark, Nonspacing).
+    descompuesto = unicodedata.normalize("NFD", texto)
+    sin_acentos = "".join(
+        c for c in descompuesto if unicodedata.category(c) != "Mn"
+    )
+    return sin_acentos.casefold().strip()
 
 
 def _toggle_right_panel():
@@ -182,64 +203,257 @@ def _ejecutar_borrado_real_materia(nombre_materia):
         estado["bloqueo_ui"] = False
 
 def _abrir_modal_agregar_materia():
+    """Modal con buscador en vivo y lista de tarjetas seleccionables."""
     win = ctk.CTkToplevel(ui["root"])
     win.title("Agregar materia")
-    win.geometry("440x360")
+    win.geometry("520x620")
     win.resizable(False, False)
     win.grab_set()
     win.configure(fg_color="white")
 
-    accent = ctk.CTkFrame(win, fg_color=COLOR_GUINDA, height=6, corner_radius=0)
-    accent.pack(fill="x")
+    # Centrar la ventana relativa a la principal
+    win.after(10, lambda: win.focus_force())
+
+    # --- FRANJA SUPERIOR DECORATIVA ---
+    ctk.CTkFrame(win, fg_color=COLOR_GUINDA, height=6, corner_radius=0).pack(fill="x")
+
+    # --- ENCABEZADO ---
+    header = ctk.CTkFrame(win, fg_color="transparent")
+    header.pack(fill="x", padx=28, pady=(20, 4))
+
+    icon_bg = ctk.CTkFrame(header, fg_color="#FDF2F4", corner_radius=10,
+                           width=40, height=40)
+    icon_bg.pack(side="left", padx=(0, 12))
+    icon_bg.pack_propagate(False)
+    ctk.CTkLabel(icon_bg, text="📚", font=ctk.CTkFont(size=20),
+                 text_color=COLOR_GUINDA).place(relx=0.5, rely=0.5, anchor="center")
+
+    title_box = ctk.CTkFrame(header, fg_color="transparent")
+    title_box.pack(side="left", fill="x", expand=True)
 
     ctk.CTkLabel(
-        win,
+        title_box,
         text="Agregar materia",
         font=ctk.CTkFont(family="Segoe UI", size=18, weight="bold"),
         text_color=COLOR_GUINDA,
-    ).pack(pady=(24, 4), padx=28, anchor="w")
+        anchor="w",
+    ).pack(fill="x", anchor="w")
 
     ctk.CTkLabel(
-        win,
-        text="Selecciona una materia del catálogo ESCOM para activarla:",
-        font=ctk.CTkFont(size=11),
+        title_box,
+        text="Selecciona una materia del catálogo ESCOM",
+        font=ctk.CTkFont(family="Segoe UI", size=11),
         text_color="#64748B",
-    ).pack(pady=(0, 18), padx=28, anchor="w")
+        anchor="w",
+    ).pack(fill="x", anchor="w")
 
     available = obtener_materias_para_agregar()
 
     if not available:
         ctk.CTkLabel(
             win,
-            text="No hay más materias disponibles.",
-            font=ctk.CTkFont(size=12),
+            text="✓ Todas las materias ya están agregadas.",
+            font=ctk.CTkFont(family="Segoe UI", size=13),
             text_color=COLOR_GUINDA,
-        ).pack(pady=20)
-        ctk.CTkButton(win, text="Cerrar", command=win.destroy,
-                      fg_color="#64748B", corner_radius=8).pack()
+        ).pack(pady=40)
+        ctk.CTkButton(
+            win, text="Cerrar", command=win.destroy,
+            fg_color=COLOR_GUINDA, hover_color=COLOR_GUINDA_HOVER,
+            corner_radius=10, width=140, height=36,
+        ).pack(pady=(0, 24))
         return
 
-    selected_var = ctk.StringVar(value=available[0])
-    ctk.CTkOptionMenu(
-        win,
-        values=available,
-        variable=selected_var,
-        fg_color="white",
-        button_color=COLOR_GUINDA,
-        button_hover_color=COLOR_GUINDA_HOVER,
-        text_color="#0F172A",
-        dropdown_hover_color="#FDF2F4",
-        corner_radius=10,
-        width=380,
-        height=42,
-    ).pack(padx=28, pady=(0, 28))
+    # --- BARRA DE BÚSQUEDA ---
+    search_box = ctk.CTkFrame(
+        win, fg_color="#F8FAFC", corner_radius=10,
+        border_width=1, border_color="#E2E8F0",
+    )
+    search_box.pack(fill="x", padx=28, pady=(18, 6))
 
+    ctk.CTkLabel(search_box, text="🔍", font=ctk.CTkFont(size=14),
+                 text_color="#94A3B8").pack(side="left", padx=(12, 4), pady=8)
+
+    search_var = ctk.StringVar()
+    search_entry = ctk.CTkEntry(
+        search_box,
+        textvariable=search_var,
+        placeholder_text="Buscar materia…",
+        fg_color="transparent",
+        border_width=0,
+        text_color="#0F172A",
+        font=ctk.CTkFont(family="Segoe UI", size=12),
+        height=32,
+    )
+    search_entry.pack(side="left", fill="x", expand=True, padx=(2, 10), pady=4)
+
+    # Contador de resultados
+    count_lbl = ctk.CTkLabel(
+        win, text=f"{len(available)} materias disponibles",
+        font=ctk.CTkFont(family="Segoe UI", size=10),
+        text_color="#94A3B8", anchor="w",
+    )
+    count_lbl.pack(fill="x", padx=28, pady=(0, 6))
+
+    # --- LISTA DESPLAZABLE DE TARJETAS ---
+    list_container = ctk.CTkFrame(
+        win, fg_color="#FAFBFC", corner_radius=12,
+        border_width=1, border_color="#E8ECF2",
+    )
+    list_container.pack(fill="both", expand=True, padx=28, pady=(0, 14))
+
+    list_scroll = ctk.CTkScrollableFrame(
+        list_container,
+        fg_color="transparent",
+        corner_radius=0,
+        scrollbar_button_color="#CBD5E1",
+        scrollbar_button_hover_color="#94A3B8",
+    )
+    list_scroll.pack(fill="both", expand=True, padx=4, pady=4)
+
+    # Estado de selección compartido entre callbacks
+    selection = {"name": None, "row": None}
+
+    # Botón "Agregar" — referencia para habilitar/deshabilitar
+    add_btn_ref = {"btn": None}
+
+    def _set_selected(name, row_widget):
+        """Marca visualmente la tarjeta seleccionada."""
+        # Restaurar la tarjeta anterior
+        prev = selection["row"]
+        if prev is not None and prev.winfo_exists():
+            prev.configure(
+                fg_color="white",
+                border_color="#E2E8F0",
+                border_width=1,
+            )
+            prev._label.configure(text_color="#1E293B",
+                                  font=ctk.CTkFont(family="Segoe UI",
+                                                   size=12, weight="normal"))
+            prev._check.configure(text="")
+
+        # Activar la nueva
+        row_widget.configure(
+            fg_color=COLOR_GUINDA_SUAVE,
+            border_color=COLOR_GUINDA,
+            border_width=2,
+        )
+        row_widget._label.configure(
+            text_color=COLOR_GUINDA,
+            font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+        )
+        row_widget._check.configure(text="✓")
+
+        selection["name"] = name
+        selection["row"] = row_widget
+
+        if add_btn_ref["btn"] is not None:
+            add_btn_ref["btn"].configure(
+                state="normal",
+                fg_color=COLOR_GUINDA,
+                text_color="white",
+            )
+
+    def _make_row(parent, name):
+        """Crea una tarjeta clickeable para una materia."""
+        row = ctk.CTkFrame(
+            parent, fg_color="white", corner_radius=10,
+            border_width=1, border_color="#E2E8F0",
+            cursor="hand2",
+        )
+        row.pack(fill="x", padx=6, pady=3)
+        # Col 0 = label expansible, Col 1 = check
+        row.grid_columnconfigure(0, weight=1)
+
+        label = ctk.CTkLabel(
+            row, text=name, anchor="w", justify="left",
+            wraplength=380,
+            font=ctk.CTkFont(family="Segoe UI", size=12),
+            text_color="#1E293B",
+            cursor="hand2",
+        )
+        label.grid(row=0, column=0, sticky="ew", padx=14, pady=10)
+
+        check = ctk.CTkLabel(
+            row, text="", width=20,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            text_color=COLOR_GUINDA,
+        )
+        check.grid(row=0, column=1, sticky="e", padx=(0, 12), pady=10)
+
+        row._label = label
+        row._check = check
+
+        def on_click(_e=None):
+            _set_selected(name, row)
+
+        def on_enter(_e=None):
+            if selection["row"] is not row:
+                row.configure(border_color="#E2C5CF")
+
+        def on_leave(_e=None):
+            if selection["row"] is not row:
+                row.configure(border_color="#E2E8F0")
+
+        for w in (row, label, check):
+            w.bind("<Button-1>", on_click)
+            w.bind("<Enter>", on_enter)
+            w.bind("<Leave>", on_leave)
+
+        return row
+
+    # Almacena las tarjetas creadas para poder filtrarlas
+    rows_index = []
+
+    def _build_rows(filter_text=""):
+        # Limpiar contenido actual
+        for w in list_scroll.winfo_children():
+            w.destroy()
+        rows_index.clear()
+
+        ft = _normalizar_texto(filter_text)
+        if ft:
+            matches = [n for n in available if ft in _normalizar_texto(n)]
+        else:
+            matches = available
+
+        if not matches:
+            ctk.CTkLabel(
+                list_scroll,
+                text="Sin coincidencias para tu búsqueda.",
+                font=ctk.CTkFont(family="Segoe UI", size=11, slant="italic"),
+                text_color="#94A3B8",
+            ).pack(pady=30)
+            count_lbl.configure(text="0 resultados")
+            return
+
+        for n in matches:
+            row = _make_row(list_scroll, n)
+            rows_index.append((n, row))
+            # Restaurar el resaltado si esta materia ya estaba seleccionada
+            if selection["name"] == n:
+                _set_selected(n, row)
+
+        if ft:
+            count_lbl.configure(
+                text=f"{len(matches)} de {len(available)} resultados"
+            )
+        else:
+            count_lbl.configure(text=f"{len(available)} materias disponibles")
+
+    # Filtro en vivo
+    search_var.trace_add("write", lambda *_: _build_rows(search_var.get()))
+
+    _build_rows()
+
+    # --- BOTONES INFERIORES ---
     btn_row = ctk.CTkFrame(win, fg_color="transparent")
-    btn_row.pack(fill="x", padx=28)
+    btn_row.pack(fill="x", padx=28, pady=(0, 22))
 
     def confirm():
-        name = selected_var.get()
-        if name and activar_materia(name):
+        name = selection["name"]
+        if not name:
+            return
+        if activar_materia(name):
             estado["subjects"].append(name)
             estado["subject_files"][name] = []
             from app.presentation.widgets.sidebar import create_sidebar_item
@@ -255,24 +469,33 @@ def _abrir_modal_agregar_materia():
         command=win.destroy,
         fg_color="transparent",
         text_color="#64748B",
+        hover_color="#F1F5F9",
         border_width=1,
         border_color="#E2E8F0",
         width=160,
-        height=38,
+        height=40,
         corner_radius=10,
+        font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
     ).pack(side="left")
 
-    ctk.CTkButton(
+    add_btn = ctk.CTkButton(
         btn_row,
         text="Agregar materia",
         command=confirm,
-        fg_color=COLOR_GUINDA,
+        fg_color="#CBD5E1",          # Gris hasta que haya selección
         hover_color=COLOR_GUINDA_HOVER,
-        text_color="white",
-        width=170,
-        height=38,
+        text_color="#94A3B8",
+        width=180,
+        height=40,
         corner_radius=10,
-    ).pack(side="right")
+        state="disabled",
+        font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+    )
+    add_btn.pack(side="right")
+    add_btn_ref["btn"] = add_btn
+
+    # Foco en la búsqueda al abrir
+    win.after(120, lambda: search_entry.focus_set())
 
 
 def _analyze():
