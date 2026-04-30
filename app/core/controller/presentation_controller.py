@@ -24,7 +24,7 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
     try:
         # 1. Valida tamaño (30MB)
-        es_valido, mensaje_val = validar_tamano_archivo(ruta_pptx, limite_mb=30)
+        es_valido, mensaje_val = validar_tamano_archivo(ruta_pptx, limite_mb=50)
         if not es_valido:
             return False, mensaje_val
         

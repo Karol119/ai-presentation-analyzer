@@ -7,6 +7,13 @@ COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_SUAVE = "#FDF2F4"
 COLOR_ORO          = "#BC955C"
 
+# Ancho de envoltura del nombre de materia.
+# Sidebar = 240 px. Restamos: indicador (4) + paddings + botón borrar (~28)
+# + scrollbar y márgenes internos del scroll frame.
+# Sin badge hay un poco más de espacio horizontal disponible.
+WRAP_NAME = 135
+
+
 def build_left_sidebar(comando_abrir_modal, comando_seleccionar, comando_eliminar):
     """
     Construye la barra lateral izquierda que contiene el catálogo de materias activas.
@@ -72,64 +79,41 @@ def build_left_sidebar(comando_abrir_modal, comando_seleccionar, comando_elimina
 
 def create_sidebar_item(name, comando_seleccionar, comando_eliminar):
     """
-    Crea una fila individual para una materia con soporte de hover para eliminación.
+    Crea una fila individual para una materia. Usa grid interno para que el
+    nombre pueda envolverse en varias líneas y el botón de borrar quede
+    siempre alineado a la derecha sin tapar el texto.
     """
     is_active = name == estado["active"]
 
+    # Sin altura fija ni pack_propagate(False): la fila crece con el
+    # contenido cuando el nombre necesita 2 líneas.
     row = ctk.CTkFrame(
         ui["sidebar_list"],
         fg_color=COLOR_GUINDA_SUAVE if is_active else "transparent",
         corner_radius=10,
-        height=44,
         cursor="hand2",
     )
     row.pack(fill="x", pady=2)
-    row.pack_propagate(False)
+
+    # Layout interno con grid:
+    # col 0 = indicador (barra guinda izquierda)
+    # col 1 = nombre (expansible, con wrap)
+    # col 2 = botón borrar
+    row.grid_columnconfigure(0, minsize=8)
+    row.grid_columnconfigure(1, weight=1)
+    row.grid_columnconfigure(2, minsize=0)
 
     # Indicador visual de selección (barra lateral izquierda)
     indicator = ctk.CTkFrame(
         row,
         width=4,
+        height=28,
         fg_color=COLOR_GUINDA if is_active else "transparent",
         corner_radius=2,
     )
-    indicator.pack(side="left", fill="y", padx=(4, 0), pady=10)
+    indicator.grid(row=0, column=0, sticky="ns", padx=(4, 0), pady=8)
 
-    # Badge contador de presentaciones
-    badge_var = ctk.StringVar(value="")
-    badge = ctk.CTkLabel(
-        row,
-        textvariable=badge_var,
-        font=ctk.CTkFont(size=10, weight="bold"),
-        text_color="white",
-        fg_color=COLOR_ORO,
-        corner_radius=10,
-        width=22,
-        height=18,
-    )
-    # El badge se empaqueta si hay archivos (refresh_badge se encarga)
-    badge.pack(side="right", padx=(0, 4))
-    badge.pack_forget()
-
-    # Botón de eliminar (🗑) - Siempre visible, anclado a la derecha
-    close = ctk.CTkButton(
-        row,
-        text="🗑",
-        width=28,
-        height=28,
-        font=ctk.CTkFont(size=13),
-        fg_color="#FEF2F2",
-        hover_color="#FECACA",
-        text_color="#F87171",
-        border_width=1,
-        border_color="#FECACA",
-        corner_radius=8,
-        command=lambda n=name: comando_eliminar(n),
-    )
-    # Se empaqueta ANTES del label para que el layout reserve su espacio
-    close.pack(side="right", padx=(0, 8))
-
-    # Nombre de la materia
+    # Nombre de la materia (con wraplength para nombres largos)
     label = ctk.CTkLabel(
         row,
         text=name,
@@ -140,10 +124,12 @@ def create_sidebar_item(name, comando_seleccionar, comando_eliminar):
         ),
         text_color=COLOR_GUINDA if is_active else "#475569",
         anchor="w",
+        justify="left",
+        wraplength=WRAP_NAME,
     )
-    label.pack(side="left", fill="both", expand=True, padx=10)
+    label.grid(row=0, column=1, sticky="ew", padx=10, pady=8)
 
-    # Botón de eliminar (🗑) - Siempre visible, anclado a la derecha
+    # Botón de eliminar (🗑) - único, anclado a la derecha
     close = ctk.CTkButton(
         row,
         text="🗑",
@@ -158,14 +144,11 @@ def create_sidebar_item(name, comando_seleccionar, comando_eliminar):
         corner_radius=8,
         command=lambda n=name: comando_eliminar(n),
     )
-    # Se empaqueta ANTES del label para que el layout reserve su espacio
-    close.pack(side="right", padx=(0, 8))
+    close.grid(row=0, column=2, padx=(0, 8), pady=8)
 
     # Guardar referencias en el objeto row para acceso rápido
     row._indicator = indicator
     row._label     = label
-    row._badge     = badge
-    row._badge_var = badge_var
     row._close     = close
 
     # --- LÓGICA DE INTERACCIÓN (Selección) ---
@@ -173,22 +156,15 @@ def create_sidebar_item(name, comando_seleccionar, comando_eliminar):
         w.bind("<Button-1>", lambda e, n=name: comando_seleccionar(n))
 
     ui["sidebar_btns"][name] = row
-    refresh_badge(name)
 
 
 def refresh_badge(name: str):
-    """Actualiza el número de presentaciones mostrado en el badge de la materia."""
-    row = ui["sidebar_btns"].get(name)
-    if not row:
-        return
-    # Contar archivos en el estado global
-    count = len(estado["subject_files"].get(name, []))
-    if count > 0:
-        row._badge_var.set(str(count))
-        # Asegurar que el badge sea visible
-        row._badge.pack(side="right", padx=(0, 6))
-    else:
-        row._badge.pack_forget()
+    """
+    Stub conservado por compatibilidad: el badge contador fue removido
+    de la interfaz. Se mantiene la firma para no romper llamadas externas
+    que pudieran existir en otros módulos.
+    """
+    return
 
 
 def refresh_sidebar_styles():

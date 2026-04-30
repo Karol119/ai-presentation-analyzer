@@ -97,7 +97,7 @@ def _consultar_ollama(prompt: str, nombre_modelo: str, temperatura: float) -> st
 
 def _consultar_gemini(prompt: str, temperatura: float) -> str:
     try:
-        modelo = genai.GenerativeModel('gemini-2.5-flash') 
+        modelo = genai.GenerativeModel('gemini-2.5-flash-lite') 
         respuesta = modelo.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(temperature=temperatura),
