@@ -25,6 +25,7 @@ from app.core.controller.subject_controller import (
 from app.presentation.widgets.dialogs import (
     mostrar_modal_cargando, 
     advertir_presentacion_existente,
+    mostrar_modal_advertencia
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 from app.presentation.views import navigator
@@ -338,7 +339,7 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, tog
     # Creamos el modal de carga. 
     # TIP: Como tu modal es estático, el status_cb imprimirá en consola, 
     # pero el usuario verá que el sistema está trabajando.
-    loading_modal = mostrar_modal_cargando(ui["root"], "Analizando con IA...")
+    loading_modal = mostrar_modal_cargando(ui["root"], "Analizando presentación...")
 
     def update_status_console(msg):
         """Callback que recibe los mensajes del analyzer_controller"""
@@ -366,22 +367,21 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, tog
             ui["root"].after(100, loading_modal.destroy)
             
         if exito:
-            # Actualizamos la lista local de archivos para que la tarjeta cambie a "Ver análisis"
             id_materia = obtener_id_materia(subject)
             estado["subject_files"][subject] = obtener_archivos_materia(id_materia)
-            
-            # Refrescamos la UI
             rebuild_cards(subject, comando_actualizar_boton)
             comando_actualizar_boton()
-
-            # Liberamos candado y navegamos
             estado["bloqueo_ui"] = False 
             navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
         else:
-            # Si falló, liberamos el candado y podrías mostrar una alerta
             estado["bloqueo_ui"] = False
             print(f"Error en el análisis: {contenido}")
-            # Opcional: mostrar_modal_error(contenido)
+            
+            # --- IMPORTAMOS DESDE dialogs.py ---
+            from app.presentation.widgets.dialogs import mostrar_modal_advertencia
+            
+            # Llamamos a tu modal de alarmas pasándole la ventana principal y el error
+            mostrar_modal_advertencia(ui["root"], contenido, "Error de Conexión IA")
 
     ejecutar_tarea_asincrona(
         target_task=tarea_analisis,
@@ -426,32 +426,48 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
     if estado.get("bloqueo_ui"): return
     estado["bloqueo_ui"] = True
 
-    file_paths = filedialog.askopenfilenames(filetypes=[("PPTX", "*.pptx")])
-    if not file_paths:
+    # Cambiamos a askopenfilename (SIN 's') para un solo archivo
+    file_path = filedialog.askopenfilename(filetypes=[("PPTX", "*.pptx")])
+    
+    if not file_path:
         # Si el usuario cancela la ventana de Windows, liberamos el candado
         estado["bloqueo_ui"] = False
         return
     
-    loading_modal = mostrar_modal_cargando(ui["root"], "Cargando...")
+    loading_modal = mostrar_modal_cargando(ui["root"], "Cargando presentación...")
     subject_id = obtener_id_materia(subject)
 
-    def processing_task() -> list:
-        skipped_files = []
-        for path in file_paths:
-            success, message = orquestar_proceso_completo(path, subject_id)
-            if not success:
-                if "ya ha sido procesada" in message or "hash" in message:
-                    skipped_files.append(os.path.basename(path))
-        return skipped_files
-
-    def finalize_ui_update(skipped_presentations: list):
-        if loading_modal.winfo_exists():
-            ui["root"].after(100, loading_modal.destroy)
+    def processing_task() -> dict:
+        # Usamos un diccionario para saber qué tipo de error ocurrió
+        resultados = {"duplicado": None, "pesado": None}
         
-        if skipped_presentations:
-            file_names = "\n• " + "\n• ".join(skipped_presentations)
-            alert_msg = f"Las siguientes presentaciones ya se encuentran registradas:{file_names}"
+        success, message = orquestar_proceso_completo(file_path, subject_id)
+        
+        if not success:
+            nombre = os.path.basename(file_path)
+            # Detectamos qué regla se rompió usando el mensaje del controlador
+            if "ya ha sido procesada" in message or "hash" in message:
+                resultados["duplicado"] = nombre
+            elif "demasiado pesado" in message: # <--- Aquí está la captura del límite de 30MB
+                resultados["pesado"] = nombre
+                
+        return resultados
+
+    def finalize_ui_update(resultados_procesamiento: dict):
+        if loading_modal.winfo_exists():
+            ui["root"].after(500, loading_modal.destroy)
+        
+        duplicado = resultados_procesamiento["duplicado"]
+        pesado = resultados_procesamiento["pesado"]
+        
+        # 3. Lanzamos el modal visual que corresponda
+        if duplicado:
+            alert_msg = f"La presentación '{duplicado}' ya se encuentra registrada."
             advertir_presentacion_existente(ui["root"], alert_msg)
+            
+        elif pesado:
+            alert_msg = f"La presentación '{pesado}' supera el límite de 30MB y no fue cargada."
+            mostrar_modal_advertencia(ui["root"], alert_msg, "Límite de tamaño excedido")
         
         estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
         rebuild_cards(subject, comando_actualizar_boton)

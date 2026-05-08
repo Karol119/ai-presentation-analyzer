@@ -21,7 +21,7 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
     try:
         # 1. Valida tamaño (30MB)
-        es_valido, mensaje_val = validar_tamano_archivo(ruta_pptx, limite_mb=50)
+        es_valido, mensaje_val = validar_tamano_archivo(ruta_pptx, limite_mb=30)
         if not es_valido:
             return False, mensaje_val
         
@@ -124,7 +124,7 @@ def orquestar_actualizacion_presentacion(ruta_pptx, nombre_presentacion, id_mate
         hash_unico = generar_hash_archivo(ruta_pptx)
         
         if existe_hash_en_db(hash_unico):
-            return False, "El archivo seleccionado es idéntico a una versión que ya existe en el sistema."
+            return False, "El archivo seleccionado es idéntico a una versión que ya existe."
         
         # 3. Conteo de diapositivas (Nombre actualizado)
         num_diapositivas = contar_diapositivas(ruta_pptx)
