@@ -17,7 +17,7 @@ init(autoreset=True)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))) # Ajusta '..' si lo metes en una subcarpeta
 
 # Importamos EXCLUSIVAMENTE las herramientas de extracción y conteo (Cero IA)
-from app.core.logic.text_extractor import extract_pptx_data
+from app.core.logic.text_extractor import extraer_datos_pptx
 from app.core.logic.metrics.text_counter import (
     preparar_texto_slide, contar_palabras, contar_silabas, segmentar_frases
 )
@@ -68,7 +68,7 @@ def procesar_archivo(ruta_archivo) -> list:
     """Extrae un PPTX y evalúa todas sus diapositivas."""
     nombre = Path(ruta_archivo).name
     try:
-        data = extract_pptx_data(str(ruta_archivo))
+        data = extraer_datos_pptx(str(ruta_archivo))
         resultados_slides = []
         for slide in data["slides"]:
             res = calcular_metricas_base(slide, nombre)

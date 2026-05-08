@@ -90,8 +90,12 @@ def calcular_puntaje_diapositiva(res_icd: Dict[str, Any], res_wps: Dict[str, Any
 
 def _normalizar_icd(icd: float) -> float:
     if icd is None: return 0.0 
-    if 4.0 <= icd <= 6.5: return 10.0
-    if icd < 4.0: return max(0.0, 10.0 - (4.0 - icd) * 5.0)
+    
+    # RANGO SEGURO CON TOLERANCIA (+- 0.5): [3.5 a 6.5]
+    if 3.5 <= icd <= 6.5: return 10.0
+    
+    # Penalización SEVERA fuera del rango de tolerancia
+    if icd < 3.5: return max(0.0, 10.0 - (3.5 - icd) * 5.0)
     return max(0.0, 10.0 - (icd - 6.5) * 5.0)
 
 def _obtener_zona_global(puntaje: float) -> str:

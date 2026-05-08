@@ -11,8 +11,8 @@ MIN_PALABRAS_ICD = 15
 
 _ESCALA = [
     (2.0,  "muy simple"),
-    (4.0,  "simple"),
-    (6.0,  "apropiado"),
+    (3.5,  "simple"),      
+    (6.5,  "apropiado"),   
     (8.0,  "complejo"),
     (10.0, "muy complejo"),
 ]
@@ -96,10 +96,12 @@ def _extraer_palabras_complejas(texto: str, max_palabras: int = 3) -> List[str]:
     return tokens_validos[:max_palabras]
 
 def _generar_retroalimentacion_icd(puntaje_icd: float, texto: str) -> Optional[str]:
-    if puntaje_icd is None or 4.0 <= puntaje_icd <= 6.0:
+    # TOLERANCIA APLICADA AQUÍ: Ya no es 4.0 a 6.0, ahora abarca de 3.5 a 6.5
+    if puntaje_icd is None or 3.5 <= puntaje_icd <= 6.5:
         return None
     
-    if puntaje_icd > 6.0:
+    # ACTUALIZADO: Compara si es mayor al nuevo límite superior
+    if puntaje_icd > 6.5:
         palabras_complejas = _extraer_palabras_complejas(texto)
         cadena_palabras = ", ".join(palabras_complejas)
         texto_ejemplo = f" (por ejemplo: '{cadena_palabras}')" if palabras_complejas else ""
@@ -111,6 +113,7 @@ def _generar_retroalimentacion_icd(puntaje_icd: float, texto: str) -> Optional[s
             f"dividiendo las oraciones, cuidando de no perder el concepto académico original."
         )
     else:
+        # Se ejecuta si el ICD es menor estricto que 3.5
         return (
             f"El lenguaje utilizado es demasiado básico para el nivel superior (ICD: {puntaje_icd}). "
             f"Se sugiere incorporar terminología académica o técnica apropiada para enriquecer el aprendizaje."

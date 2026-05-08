@@ -1,4 +1,3 @@
-# app/core/logic/text_extractor.py
 import os
 import re
 from typing import List, Dict, Any
@@ -87,22 +86,22 @@ def _procesar_forma(forma: Any, info_diapositiva: Dict[str, Any], candidatos_tit
         return
 
     es_imagen = False
+    
+    # --- MODIFICACIÓN AQUÍ: Considerar a las tablas como si fueran imágenes ---
     if forma.shape_type == MSO_SHAPE_TYPE.PICTURE:
         es_imagen = True
     elif getattr(forma, "is_placeholder", False) and hasattr(forma, "image"):
         es_imagen = True
+    elif forma.shape_type == MSO_SHAPE_TYPE.TABLE: # La tabla ahora activa la bandera de imagen
+        es_imagen = True
 
     if es_imagen:
-        info_diapositiva["images"].append(forma.name)
+        # Usamos getattr por si una tabla o placeholder raro no tiene el atributo 'name'
+        nombre_forma = getattr(forma, "name", "Tabla_o_Imagen")
+        info_diapositiva["images"].append(nombre_forma)
         return
 
-    if forma.shape_type == MSO_SHAPE_TYPE.TABLE:
-        for fila in forma.table.rows:
-            for celda in fila.cells:
-                texto_celda = _limpiar_texto(celda.text)
-                if texto_celda and not _es_numero_decorativo(forma, texto_celda, altura_diapositiva):
-                    info_diapositiva["content"].append(texto_celda)
-        return
+    # (El bloque de código que procesaba las celdas de la tabla ha sido eliminado)
 
     if not getattr(forma, "has_text_frame", False) or not forma.has_text_frame or not forma.text.strip():
         return

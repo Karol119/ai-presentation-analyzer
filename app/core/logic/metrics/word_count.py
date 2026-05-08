@@ -2,8 +2,8 @@
 from typing import Dict, Any, List, Optional
 from app.core.logic.metrics.text_counter import contar_palabras
 
-MAX_PALABRAS_OPTIMO = 45
-PENALIZACION_EXCESO    = 15
+MAX_PALABRAS_OPTIMO = 50
+PENALIZACION_EXCESO = 15
 
 def calcular_wps(datos_diapositiva: Dict[str, Any]) -> Dict[str, Any]:
     texto = " ".join(datos_diapositiva.get("content", [])) if "content" in datos_diapositiva else ""
