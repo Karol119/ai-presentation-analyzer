@@ -4,6 +4,8 @@ import tkinter.messagebox as messagebox
 import json
 import os
 from app.presentation.views.ui_state import ui
+from app.core.controller.presentation_controller import orquestar_obtener_reporte_tiempo
+from app.core.controller.subject_controller import obtener_id_materia_controlador
 
 _contenedor_presentacion = None
 _visor_panel = None
@@ -12,7 +14,7 @@ _ventana_proyeccion = None
 _watchdog_id = None
 
 # --- FORMULARIO MODAL UNIFICADO ---
-def _obtener_configuracion_clase(root, ruta_reporte):
+def _obtener_configuracion_clase(root, json_reporte_raw):
     resultado = {"grupo": None, "tiempo": 0, "monitor_idx": 0, "cancelado": True}
 
     dialogo = ctk.CTkToplevel(root)
@@ -24,11 +26,12 @@ def _obtener_configuracion_clase(root, ruta_reporte):
 
     ctk.CTkLabel(dialogo, text="⚙️ Iniciar Clase", font=ctk.CTkFont(size=20, weight="bold"), text_color="#005088").pack(pady=(20, 10))
 
+    # Lectura desde el string JSON en memoria (desde la BD)
     grupos_existentes = []
-    if os.path.exists(ruta_reporte):
+    if json_reporte_raw:
         try:
-            with open(ruta_reporte, "r", encoding="utf-8") as f:
-                grupos_existentes = list(json.load(f).get("grupos", {}).keys())
+            data = json.loads(json_reporte_raw)
+            grupos_existentes = list(data.get("grupos", {}).keys())
         except Exception: pass
 
     frame_g = ctk.CTkFrame(dialogo, fg_color="transparent")
@@ -90,7 +93,11 @@ def _obtener_configuracion_clase(root, ruta_reporte):
         lista_monitores = ["Pantalla 1 (Simulada)"]
 
     combo_monitores = ctk.CTkComboBox(frame_m, values=lista_monitores, state="readonly")
-    combo_monitores.set(lista_monitores[-1])
+    # Forzamos a que intente seleccionar el proyector si existe
+    if len(lista_monitores) > 1:
+        combo_monitores.set(lista_monitores[1])
+    else:
+        combo_monitores.set(lista_monitores[0])
     combo_monitores.pack(fill="x", pady=5)
 
     lbl_error = ctk.CTkLabel(dialogo, text="", text_color="red", font=ctk.CTkFont(size=12, weight="bold"))
@@ -120,9 +127,16 @@ def _obtener_configuracion_clase(root, ruta_reporte):
             lbl_error.configure(text="Error: Ingresa un número entero válido para el tiempo.")
             return
 
+        # --- NUEVA REGLA: Evitar que proyecte en su propia laptop ---
+        monitor_seleccionado_str = combo_monitores.get()
+        if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
+            lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
+            return
+        # ------------------------------------------------------------
+
         resultado["grupo"] = grupo_final
         resultado["tiempo"] = t_val
-        resultado["monitor_idx"] = lista_monitores.index(combo_monitores.get())
+        resultado["monitor_idx"] = lista_monitores.index(monitor_seleccionado_str)
         resultado["cancelado"] = False
         
         dialogo.grab_release()
@@ -196,12 +210,12 @@ def _lanzar_proyeccion(root, ruta_pdf, indice_actual, pos_x, pos_y, ancho, alto)
         _watchdog_id = root.after(2000, verificar_conexion)
 
 
-def _seleccionar_monitor_y_proyectar(root, ruta_pdf, indice_actual):
-    directorio_base = os.path.dirname(ruta_pdf)
-    nombre_base = os.path.splitext(os.path.basename(ruta_pdf))[0]
-    ruta_reporte = os.path.join(directorio_base, f"{nombre_base}_time_report.json")
+def _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pdf, indice_actual):
+    # 1. Traer datos desde BD a través del controlador
+    id_materia = obtener_id_materia_controlador(subject)
+    json_reporte_raw = orquestar_obtener_reporte_tiempo(nombre_presentacion, id_materia)
 
-    conf = _obtener_configuracion_clase(root, ruta_reporte)
+    conf = _obtener_configuracion_clase(root, json_reporte_raw)
     if conf["cancelado"]:
         return
 
@@ -217,14 +231,18 @@ def _seleccionar_monitor_y_proyectar(root, ruta_pdf, indice_actual):
         if hasattr(_datos_panel, "sesion_actual_llave"):
             delattr(_datos_panel, "sesion_actual_llave")
 
-    # --- LECTURA DIRECTA DE LA DIAPOSITIVA (NUEVO JSON) ---
+    # --- LECTURA DIRECTA DE LA DIAPOSITIVA (JSON BASE 1 EN MEMORIA) ---
     slide_reanudada = indice_actual
-    if os.path.exists(ruta_reporte):
+    if json_reporte_raw:
         try:
-            with open(ruta_reporte, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                grupo_data = data.get("grupos", {}).get(grupo_seleccionado, {})
-                slide_reanudada = grupo_data.get("ultima_diapositiva", 0)
+            data = json.loads(json_reporte_raw)
+            grupo_data = data.get("grupos", {}).get(grupo_seleccionado, {})
+            
+            # Leemos la diapositiva en base 1 (para humanos)
+            slide_guardada = grupo_data.get("ultima_diapositiva", 1)
+            
+            # Le restamos 1 para que el sistema interno no se salte ninguna
+            slide_reanudada = max(0, slide_guardada - 1)
         except Exception: pass
         
     if _visor_panel is not None:
@@ -262,10 +280,27 @@ def mostrar_vista_presentacion(root, subject: str, nombre_presentacion: str, rut
         if _ventana_proyeccion is not None and _ventana_proyeccion.winfo_exists():
             _ventana_proyeccion.cerrar()
         else:
-            _seleccionar_monitor_y_proyectar(root, ruta_pdf, _visor_panel.pagina_actual)
+            # --- NUEVA REGLA: Bloqueo si no hay proyector ---
+            try:
+                from screeninfo import get_monitors
+                if len(get_monitors()) < 2:
+                    messagebox.showwarning(
+                        "Proyector no detectado", 
+                        "No se puede iniciar la clase.\nDebe conectar un proyector o monitor secundario para presentar."
+                    )
+                    return # Abortamos antes de mostrar la modal
+            except Exception as e:
+                print(f"Error leyendo monitores (librería no disponible): {e}")
+                pass 
+            # ------------------------------------------------
 
+            # Enviamos el subject y nombre de presentacion al orquestador de monitor
+            _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pdf, _visor_panel.pagina_actual)
+
+    # Inyectamos "subject" en crear_panel_datos
     _datos_panel = crear_panel_datos(
         master=_contenedor_presentacion,
+        subject=subject,
         nombre_presentacion=nombre_presentacion,
         ruta_pdf=ruta_pdf,
         visor_referencia=None,
