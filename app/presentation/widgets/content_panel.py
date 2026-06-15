@@ -30,8 +30,6 @@ from app.presentation.widgets.dialogs import (
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 from app.presentation.views import navigator
 
-
-
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
 COLOR_ORO          = "#BC955C"
@@ -72,7 +70,7 @@ def create_panel(name: str, comando_actualizar_boton):
     sub_header = ctk.CTkFrame(panel, fg_color="transparent")
     sub_header.pack(fill="x", padx=26, pady=(6, 0))
     ctk.CTkLabel(
-        sub_header, text="📄  Mis Presentaciones",
+        sub_header, text="📄   Mis Presentaciones",
         font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
         text_color="#475569",
     ).pack(side="left")
@@ -95,7 +93,6 @@ def show_panel(name: str):
             p.place(relx=0, rely=0, relwidth=1, relheight=1)
         else:
             p.place_forget()
-
 
 def show_empty_state():
     """Muestra una vista de bienvenida cuando no hay materias activas."""
@@ -181,7 +178,6 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     card.place(x=3, y=3)
     card.pack_propagate(False)
 
-    # --- Lógica de Caras (Preview/Menú) idéntica a tu código actual ---
     # Cara Preview
     face_prev = ctk.CTkFrame(card, fg_color="transparent", corner_radius=0)
     face_prev.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -232,11 +228,11 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     cmd_analisis   = (lambda: _ver_analisis(subject, name, ruta_pdf, toggle_menu)) if ya_analizada else (lambda: _iniciar_analisis(subject, name, ruta_pdf, toggle_menu, comando_actualizar_boton))
 
     opciones = [
-        ("🖥   Presentar clase",  "#1E293B", _placeholder),
-        (texto_analisis,          "#1E293B", cmd_analisis),
-        ("🔄   Actualizar presentación", "#1E293B", lambda: _actualizar_presentacion_ui(subject, name, toggle_menu, comando_actualizar_boton)),
-        ("🕓   Ver historial",    "#1E293B", lambda: _ver_historial(subject, name, toggle_menu)),
-        ("📈   Ver rendimiento",  "#1E293B", _placeholder),
+        ("🖥   Presentar clase",          "#1E293B", lambda: _presentar_clase_ui(subject, name, ruta_pdf, toggle_menu)),
+        (texto_analisis,                  "#1E293B", cmd_analisis),
+        ("🔄   Actualizar presentación",   "#1E293B", lambda: _actualizar_presentacion_ui(subject, name, toggle_menu, comando_actualizar_boton)),
+        ("🕓   Ver historial",            "#1E293B", lambda: _ver_historial(subject, name, toggle_menu)),
+        ("📈   Ver rendimiento",          "#1E293B", _placeholder),
     ]
 
     for label, color, cmd in opciones:
@@ -252,57 +248,48 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
                   hover_color="#FEF2F2", font=ctk.CTkFont(size=11, weight="bold"),
                   anchor="w", command=on_delete).pack(fill="x", padx=6, pady=(4, 8), side="bottom")
 
-    return outer # Retornamos el contenedor para usarlo con .grid()
+    return outer 
+
+
+def _presentar_clase_ui(subject: str, name: str, ruta_pdf: str, toggle_menu):
+    """Cierra la cara del menú y ordena al navegador cargar el modo presentación."""
+    toggle_menu(False)
+    navigator.ir_a_presentacion(subject, name, ruta_pdf)
+
 
 def _actualizar_presentacion_ui(subject: str, nombre_presentacion: str, toggle_menu, comando_actualizar_boton):
     """
     Abre el cuadro de diálogo para seleccionar el nuevo archivo .pptx,
     bloquea la UI, ejecuta la orquestación en hilo secundario y refresca la vista.
     """
-    # 1. Verificar candado
     if estado.get("bloqueo_ui"): return
-    
-    # Cerrar el menú de la tarjeta
     toggle_menu(False) 
     
-    # 2. Pedir el nuevo archivo
     file_path = filedialog.askopenfilename(filetypes=[("PPTX", "*.pptx")])
-    if not file_path:
-        return # El usuario canceló
+    if not file_path: return
     
-    # 3. Bloquear UI y mostrar modal de carga
     estado["bloqueo_ui"] = True
     loading_modal = mostrar_modal_cargando(ui["root"], "Actualizando versión...")
     subject_id = obtener_id_materia(subject)
 
     def update_task():
-        # Llama a la capa de negocio (nuestro controlador)
         return orquestar_actualizacion_presentacion(file_path, nombre_presentacion, subject_id)
 
     def finalize_update(resultado_tupla):
         exito, mensaje = resultado_tupla
-        
-        # Quitar modal de carga dando un respiro a la UI
         if loading_modal.winfo_exists():
             ui["root"].after(100, loading_modal.destroy)
         
         if exito:
-            # Refrescar el estado local y reconstruir las tarjetas
             estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
             rebuild_cards(subject, comando_actualizar_boton)
             comando_actualizar_boton()
         else:
-            # Si hubo un error (ej. seleccionó el mismo archivo exacto), mostrar alerta
             advertir_presentacion_existente(ui["root"], mensaje)
             
-        # Liberar candado
         estado["bloqueo_ui"] = False
 
-    # 4. Ejecutar en hilo secundario para no congelar la app
-    ejecutar_tarea_asincrona(
-        target_task=update_task,
-        on_finished_callback=finalize_update
-    )
+    ejecutar_tarea_asincrona(target_task=update_task, on_finished_callback=finalize_update)
 
 
 def _menu_item(parent, text: str, color: str, command):
@@ -320,6 +307,7 @@ def _menu_item(parent, text: str, color: str, command):
         command=command,
     ).pack(fill="x", pady=1)
 
+
 def _placeholder():
     pass
 
@@ -333,36 +321,24 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, tog
     """
     if estado.get("bloqueo_ui"): return
     estado["bloqueo_ui"] = True
-
     toggle_menu(False)
     
-    # Creamos el modal de carga. 
-    # TIP: Como tu modal es estático, el status_cb imprimirá en consola, 
-    # pero el usuario verá que el sistema está trabajando.
     loading_modal = mostrar_modal_cargando(ui["root"], "Analizando presentación...")
 
     def update_status_console(msg):
-        """Callback que recibe los mensajes del analyzer_controller"""
         print(f"[UI-STATUS] {msg}")
 
     def tarea_analisis():
         id_materia = obtener_id_materia(subject)
-        
-        # IMPORTANTE: El análisis se hace sobre el PPTX. 
-        # Buscamos la ruta del PPTX en nuestro estado local
         archivos = estado["subject_files"].get(subject, [])
         ruta_pptx = next((f[1] for f in archivos if f[0] == nombre_presentacion), None)
         
         if not ruta_pptx:
             return False, "No se encontró la ruta del archivo original."
-
-        # Llamamos al orquestador real que definimos en el paso 1
         return orquestar_analisis_ia(ruta_pptx, nombre_presentacion, id_materia, status_cb=update_status_console)
 
     def finalizar(resultado_tupla):
-        # resultado_tupla es (exito, datos_o_error)
         exito, contenido = resultado_tupla
-        
         if loading_modal.winfo_exists():
             ui["root"].after(100, loading_modal.destroy)
             
@@ -376,34 +352,24 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, tog
         else:
             estado["bloqueo_ui"] = False
             print(f"Error en el análisis: {contenido}")
-            
-            # --- IMPORTAMOS DESDE dialogs.py ---
             from app.presentation.widgets.dialogs import mostrar_modal_advertencia
-            
-            # Llamamos a tu modal de alarmas pasándole la ventana principal y el error
             mostrar_modal_advertencia(ui["root"], contenido, "Error de Conexión IA")
 
-    ejecutar_tarea_asincrona(
-        target_task=tarea_analisis,
-        on_finished_callback=finalizar,
-    )
+    ejecutar_tarea_asincrona(target_task=tarea_analisis, on_finished_callback=finalizar)
 
-    
+
 def _ver_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, toggle_menu):
-    """
-    Navega directamente a la vista de análisis sin simular carga ni actualizar BD.
-    """
-    toggle_menu(False) # Cierra el menú de la tarjeta
+    """Navega directamente a la vista de análisis sin simular carga ni actualizar BD."""
+    toggle_menu(False)
     navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
 
 
 def _ver_historial(subject: str, nombre_presentacion: str, toggle_menu):
-    """
-    Navega a la vista del historial de versiones.
-    """
-    toggle_menu(False) # Cierra el menú de la tarjeta
+    """Navega a la vista del historial de versiones."""
+    toggle_menu(False)
     navigator.ir_a_historial(subject, nombre_presentacion)
-    
+
+
 def _make_upload_card(parent, subject, comando_actualizar_boton):
     """Crea y retorna la tarjeta de carga (sin posicionarla)."""
     card = ctk.CTkFrame(parent, width=CARD_W, height=CARD_H, fg_color="#FAFBFD", 
@@ -418,19 +384,15 @@ def _make_upload_card(parent, subject, comando_actualizar_boton):
     def pick(e=None): _pick_files(subject, comando_actualizar_boton)
     card.bind("<Button-1>", pick)
     for w in inner.winfo_children(): w.bind("<Button-1>", pick)
-    
-    return card # Retornamos el widget
+    return card
+
 
 def _pick_files(subject: str, comando_actualizar_boton: Callable):
-    # 1. VERIFICAR Y ACTIVAR CANDADO
     if estado.get("bloqueo_ui"): return
     estado["bloqueo_ui"] = True
 
-    # Cambiamos a askopenfilename (SIN 's') para un solo archivo
     file_path = filedialog.askopenfilename(filetypes=[("PPTX", "*.pptx")])
-    
     if not file_path:
-        # Si el usuario cancela la ventana de Windows, liberamos el candado
         estado["bloqueo_ui"] = False
         return
     
@@ -438,19 +400,14 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
     subject_id = obtener_id_materia(subject)
 
     def processing_task() -> dict:
-        # Usamos un diccionario para saber qué tipo de error ocurrió
         resultados = {"duplicado": None, "pesado": None}
-        
         success, message = orquestar_proceso_completo(file_path, subject_id)
-        
         if not success:
             nombre = os.path.basename(file_path)
-            # Detectamos qué regla se rompió usando el mensaje del controlador
             if "ya ha sido procesada" in message or "hash" in message:
                 resultados["duplicado"] = nombre
-            elif "demasiado pesado" in message: # <--- Aquí está la captura del límite de 30MB
+            elif "demasiado pesado" in message:
                 resultados["pesado"] = nombre
-                
         return resultados
 
     def finalize_ui_update(resultados_procesamiento: dict):
@@ -460,11 +417,9 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
         duplicado = resultados_procesamiento["duplicado"]
         pesado = resultados_procesamiento["pesado"]
         
-        # 3. Lanzamos el modal visual que corresponda
         if duplicado:
             alert_msg = f"La presentación '{duplicado}' ya se encuentra registrada."
             advertir_presentacion_existente(ui["root"], alert_msg)
-            
         elif pesado:
             alert_msg = f"La presentación '{pesado}' supera el límite de 30MB y no fue cargada."
             mostrar_modal_advertencia(ui["root"], alert_msg, "Límite de tamaño excedido")
@@ -472,20 +427,13 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
         estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
         rebuild_cards(subject, comando_actualizar_boton)
         comando_actualizar_boton()
-        
-        # 2. LIBERAR CANDADO AL TERMINAR
         estado["bloqueo_ui"] = False
 
-    ejecutar_tarea_asincrona(
-        target_task=processing_task, 
-        on_finished_callback=finalize_ui_update
-    )
-    
+    ejecutar_tarea_asincrona(target_task=processing_task, on_finished_callback=finalize_ui_update)
+
+
 def _remove_file(subject, name, comando_actualizar_boton):
-    """
-    Nota: Esta función sigue usando la lógica anterior. 
-    Mantenida completa según tu solicitud.
-    """
+    """Ejecuta la confirmación y orquestación de eliminación."""
     from app.presentation.views.main_gui import confirmar_eliminacion
     def on_confirm():
         id_m = obtener_id_materia(subject)
