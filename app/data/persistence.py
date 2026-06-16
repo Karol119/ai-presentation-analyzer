@@ -223,3 +223,18 @@ def actualizar_metricas_version(id_version, calificacion, recomendacion):
         return False
     finally:
         conn.close()
+
+def actualizar_reporte_tiempo_db(id_version, texto_reporte):
+    """Guarda el texto crudo del reporte de tiempo en la base de datos."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE Historial_de_Versiones SET reporte_tiempo = ? WHERE id_version = ?", (texto_reporte, id_version))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error al guardar tiempo: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()

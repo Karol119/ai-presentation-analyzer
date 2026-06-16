@@ -173,3 +173,12 @@ def obtener_historial_presentacion(nombre_presentacion, id_materia):
     resultados = cursor.fetchall()
     conn.close()
     return resultados
+
+def obtener_reporte_tiempo_db(id_version):
+    """Recupera el texto crudo del reporte de tiempo almacenado para una versión."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT reporte_tiempo FROM Historial_de_Versiones WHERE id_version = ?", (id_version,))
+    res = cursor.fetchone()
+    conn.close()
+    return res[0] if res else None

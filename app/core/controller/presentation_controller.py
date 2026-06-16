@@ -4,6 +4,9 @@ import os
 from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
 from app.core.logic.text_extractor import contar_diapositivas
+from app.data.queries import obtener_reporte_tiempo_db
+from app.data.persistence import actualizar_reporte_tiempo_db
+from app.data.queries import obtener_analisis_desde_db
 from app.data.queries import existe_hash_en_db, obtener_id_version_actual, obtener_id_y_version_presentacion
 from app.data.persistence import (
     registrar_presentacion, 
@@ -150,3 +153,24 @@ def orquestar_actualizacion_presentacion(ruta_pptx, nombre_presentacion, id_mate
 
     except Exception as e:
         return False, f"Error en el flujo: {str(e)}"
+    
+def orquestar_obtener_reporte_tiempo(nombre_presentacion, id_materia):
+    """Busca el id_version y orquesta la lectura del reporte de tiempo (texto crudo)."""
+    id_version = obtener_id_version_actual(nombre_presentacion, id_materia)
+    if not id_version:
+        return None
+    return obtener_reporte_tiempo_db(id_version)
+
+def orquestar_guardado_tiempos(nombre_presentacion, id_materia, texto_reporte):
+    """Busca el id_version y orquesta la escritura del reporte de tiempo."""
+    id_version = obtener_id_version_actual(nombre_presentacion, id_materia)
+    if not id_version:
+        return False
+    return actualizar_reporte_tiempo_db(id_version, texto_reporte)
+
+def orquestar_obtener_analisis(nombre_presentacion, id_materia):
+    """Busca el id_version y orquesta la lectura del análisis (texto crudo)."""
+    id_version = obtener_id_version_actual(nombre_presentacion, id_materia)
+    if not id_version:
+        return None
+    return obtener_analisis_desde_db(id_version)
