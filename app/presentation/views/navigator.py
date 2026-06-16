@@ -10,6 +10,7 @@ Vistas registradas:
   - analysis_gui     → pantalla de análisis (presentation_panel + results_panel)
   - history_gui      → pantalla de historial de versiones
   - presentation_gui → pantalla de modo presentación de clase (TT2)
+  - performance_gui  → pantalla de rendimiento / desviaciones de tiempo (TT2)
 """
 
 from app.presentation.views.ui_state import ui
@@ -17,7 +18,7 @@ from app.presentation.widgets.topbar import set_modo_analisis, set_modo_principa
 
 # Estado interno del navegador extendido para TT2
 _estado_navegador = {
-    "vista_actual":         "main",   # "main" | "analysis" | "history" | "presentation"
+    "vista_actual":         "main",   # "main" | "analysis" | "history" | "presentation" | "performance"
     "subject":              None,
     "nombre_presentacion":  None,
     "ruta_pdf":             None,
@@ -93,6 +94,31 @@ def ir_a_presentacion(subject: str, nombre_presentacion: str, ruta_pdf: str):
     mostrar_vista_presentacion(ui["root"], subject, nombre_presentacion, ruta_pdf)
 
 
+def ir_a_rendimiento(subject: str, nombre_presentacion: str, ruta_pdf: str):
+    """
+    Transición: cualquier vista → vista de rendimiento (desviaciones de tiempo).
+    Mismo patrón que ir_a_presentacion: oculta el body, ajusta la topbar y
+    delega en performance_gui mediante carga perezosa.
+    """
+    if _estado_navegador["vista_actual"] == "performance":
+        return
+
+    _estado_navegador["vista_actual"] = "performance"
+    _estado_navegador["subject"] = subject
+    _estado_navegador["nombre_presentacion"] = nombre_presentacion
+    _estado_navegador["ruta_pdf"] = ruta_pdf
+
+    # Ocultar body principal
+    ui["body"].pack_forget()
+
+    # Topbar en modo secundario con botón de regreso
+    set_modo_analisis(f"Rendimiento: {nombre_presentacion}", ir_a_principal)
+
+    # Carga perezosa de la vista de rendimiento
+    from app.presentation.views.rendimiento_gui import mostrar_vista_rendimiento
+    mostrar_vista_rendimiento(ui["root"], subject, nombre_presentacion, ruta_pdf)
+
+
 def ir_a_principal():
     """
     Transición: cualquier vista secundaria → restauración de la vista principal.
@@ -117,6 +143,9 @@ def ir_a_principal():
     elif _estado_navegador["vista_actual"] == "presentation":
         from app.presentation.views.presentation_gui import ocultar_vista_presentacion
         ocultar_vista_presentacion()
+    elif _estado_navegador["vista_actual"] == "performance":
+        from app.presentation.views.rendimiento_gui import ocultar_vista_rendimiento
+        ocultar_vista_rendimiento()
 
     _estado_navegador["vista_actual"] = "main"
 

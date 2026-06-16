@@ -232,7 +232,7 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
         (texto_analisis,                  "#1E293B", cmd_analisis),
         ("🔄   Actualizar presentación",   "#1E293B", lambda: _actualizar_presentacion_ui(subject, name, toggle_menu, comando_actualizar_boton)),
         ("🕓   Ver historial",            "#1E293B", lambda: _ver_historial(subject, name, toggle_menu)),
-        ("📈   Ver rendimiento",          "#1E293B", _placeholder),
+        ("📈   Ver rendimiento",          "#1E293B", lambda: _ver_rendimiento_ui(subject, ruta_pdf, name, toggle_menu)),
     ]
 
     for label, color, cmd in opciones:
@@ -249,6 +249,11 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
                   anchor="w", command=on_delete).pack(fill="x", padx=6, pady=(4, 8), side="bottom")
 
     return outer 
+
+def _ver_rendimiento_ui(subject: str, ruta_pdf: str, nombre_presentacion: str, toggle_menu):
+    """Navega a la vista de análisis de rendimiento y tiempos."""
+    toggle_menu(False)
+    navigator.ir_a_rendimiento(subject, nombre_presentacion, ruta_pdf)
 
 
 def _presentar_clase_ui(subject: str, name: str, ruta_pdf: str, toggle_menu):
