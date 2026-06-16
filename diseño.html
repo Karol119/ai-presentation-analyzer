@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de IA - ESCOM AI</title>
+    <style>
+        :root {
+            --guinda: #6A1B31;
+            --guinda-suave: #FDF2F4;
+            --oro: #BC955C;
+            --bg-main: #f4f7f6;
+            --bg-card: #ffffff;
+            --bg-gray: #F8FAFC;
+            --border-color: #E8ECF2;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --radius: 14px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            gap: 20px;
+            overflow: hidden; /* Evitar scroll en toda la página */
+        }
+
+        /* --- PANEL IZQUIERDO: VISOR DE PRESENTACIÓN --- */
+        .presentation-panel {
+            flex: 1;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .panel-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--guinda);
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg-gray);
+            margin-bottom: 15px;
+        }
+
+        .slide-area {
+            flex-grow: 1;
+            background-color: var(--bg-gray);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #CBD5E1;
+            position: relative;
+        }
+
+        .slide-placeholder {
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .slide-placeholder h2 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--text-dark);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            color: var(--guinda);
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--guinda-suave);
+        }
+
+        .nav-btn.primary {
+            background-color: var(--guinda);
+            color: white;
+            border-color: var(--guinda);
+        }
+
+        .nav-btn.primary:hover {
+            background-color: #4D1324;
+        }
+
+        .page-counter {
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* --- PANEL DERECHO: RESULTADOS DEL ANÁLISIS --- */
+        .results-panel {
+            width: 350px; /* Ancho fijo como en tu Tkinter */
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .ia-header-subtitle {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--oro);
+            margin: 0 0 5px 0;
+        }
+
+        .ia-header-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin: 0 0 15px 0;
+        }
+
+        .scrollable-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .scrollable-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background-color: #CBD5E1;
+            border-radius: 4px;
+        }
+
+        .badge-tipo {
+            background-color: var(--guinda);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .warning-box {
+            background-color: #FFFBEB;
+            border: 1px solid #FEF3C7;
+            border-radius: 8px;
+            padding: 12px;
+            color: #92400E;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            display: none; /* Oculto por defecto */
+        }
+
+        .score-box {
+            background-color: #F1F5F9;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .score-text {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .score-zone {
+            font-weight: bold;
+            font-size: 12px;
+            color: var(--oro);
+        }
+
+        .metric-card {
+            margin-bottom: 15px;
+        }
+
+        .metric-header {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .metric-feedback {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .btn-restructure {
+            background-color: var(--guinda);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-restructure:hover {
+            background-color: #4D1324;
+        }
+
+        /* --- MODAL (Toplevel simulación) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 500px;
+            max-height: 80vh;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            text-align: center;
+            color: var(--guinda);
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .modal-scroll {
+            overflow-y: auto;
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+
+        .suggestion-card {
+            background-color: var(--bg-gray);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-title {
+            color: var(--guinda);
+            font-weight: bold;
+            font-size: 13px;
+            margin: 0 0 8px 0;
+        }
+
+        .suggestion-text {
+            font-size: 12px;
+            color: var(--text-dark);
+            margin: 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-panel">
+        <div class="panel-header">
+            ACCESS CONTROL LIST.pptx
+        </div>
+        
+        <div class="slide-area">
+            <div class="slide-placeholder" id="vista-diapositiva">
+                <h2>Puertos Bien Conocidos</h2>
+                <p style="margin-top: 20px;">[Contenido simulado de la diapositiva]</p>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" onclick="cambiarSlide(-1)">&lt;</button>
+            <span class="page-counter" id="contador">2 / 10</span>
+            <button class="nav-btn primary" onclick="cambiarSlide(1)">&gt;</button>
+        </div>
+    </div>
+
+    <div class="results-panel">
+        <p class="ia-header-subtitle">ANÁLISIS DE IA</p>
+        <h2 class="ia-header-title" id="titulo-slide">Diapositiva 2</h2>
+
+        <div class="scrollable-content" id="contenido-metricas">
+            <div class="badge-tipo" id="etiqueta-tipo">Contenido</div>
+            
+            <div class="warning-box" id="warning-visual">
+                ⚠️ Advertencia:<br>Actualmente el prototipo no es capaz de analizar imágenes.
+            </div>
+
+            <div class="score-box" id="caja-score">
+                <span class="score-text">Score Slide: 7.52</span>
+                <span class="score-zone">BUENO</span>
+            </div>
+
+            <div id="lista-metricas">
+                <div class="metric-card">
+                    <div class="metric-header">ICD: 7.02  |  <span style="color: #EF4444;">MEJORAR</span></div>
+                    <p class="metric-feedback">El nivel de complejidad es alto. Se sugiere simplificar la redacción utilizando sinónimos más accesibles o dividiendo las oraciones.</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">WPS: 10  |  <span style="color: #10B981;">BIEN</span></div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">HSS: 5  |  <span style="color: #EF4444;">MEJORAR</span></div>
+                    <p class="metric-feedback">El título está ausente, lo que impide evaluar la coherencia.</p>
+                </div>
+            </div>
+
+            <button class="btn-restructure" id="btn-reest" onclick="abrirModal()">Ver sugerencias de reestructuración</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalSugerencias">
+        <div class="modal-content">
+            <h3 class="modal-title">Se recomienda redactar el contenido de la siguiente manera:</h3>
+            
+            <div class="modal-scroll">
+                <div class="suggestion-card">
+                    <h4 class="suggestion-title">Contenido Optimizado: Puertos Bien Conocidos: Servicios Estándar</h4>
+                    <p class="suggestion-text">Los Puertos Bien Conocidos abarcan el rango de 0 a 1023. Estos puertos están asociados a servicios estándar y ampliamente reconocidos, como los fundamentales para servidores y hardware de red. Su utilización por aplicaciones requiere permisos administrativos especiales.</p>
+                </div>
+            </div>
+
+            <button class="btn-restructure" onclick="cerrarModal()" style="margin-top: 0;">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        // --- SIMULACIÓN DE NAVEGACIÓN ---
+        let slideActual = 2;
+
+        function cambiarSlide(dir) {
+            if (slideActual === 2 && dir === 1) {
+                // Simular ir a la Diapositiva 10 (Visual)
+                document.getElementById('contador').innerText = "10 / 10";
+                document.getElementById('titulo-slide').innerText = "Diapositiva 10";
+                document.getElementById('etiqueta-tipo').innerText = "Visual";
+                document.getElementById('vista-diapositiva').innerHTML = "<h2>[ IMAGEN O GRÁFICA ]</h2>";
+                
+                // Mostrar advertencia, ocultar métricas
+                document.getElementById('warning-visual').style.display = "block";
+                document.getElementById('caja-score').style.display = "none";
+                document.getElementById('lista-metricas').style.display = "none";
+                document.getElementById('btn-reest').style.display = "none";
+                slideActual = 10;
+            } else if (slideActual === 10 && dir === -1) {
+                // Volver a Diapositiva 2
+                document.getElementById('contador').innerText = "2 / 10";
+                document.getElementById('titulo-slide').innerText = "Diapositiva 2";
+                document.getElementById('etiqueta-tipo').innerText = "Contenido";
+                document.getElementById('vista-diapositiva').innerHTML = "<h2>Puertos Bien Conocidos</h2><p style='margin-top:20px'>[Contenido simulado...]</p>";
+                
+                // Ocultar advertencia, mostrar métricas
+                document.getElementById('warning-visual').style.display = "none";
+                document.getElementById('caja-score').style.display = "flex";
+                document.getElementById('lista-metricas').style.display = "block";
+                document.getElementById('btn-reest').style.display = "block";
+                slideActual = 2;
+            }
+        }
+
+        // --- MANEJO DEL MODAL ---
+        function abrirModal() {
+            document.getElementById('modalSugerencias').style.display = "flex";
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalSugerencias').style.display = "none";
+        }
+    </script>
+</body>
+</html>

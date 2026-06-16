@@ -15,6 +15,7 @@ __pycache__/
 uploads/
 *.pptx
 *.json
+*.db
 
 
 # Archivos generados al crear el ejecutable (.exe) con PyInstaller
