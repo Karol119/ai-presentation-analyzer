@@ -115,7 +115,7 @@ def ir_a_rendimiento(subject: str, nombre_presentacion: str, ruta_pdf: str):
     set_modo_analisis(f"Rendimiento: {nombre_presentacion}", ir_a_principal)
 
     # Carga perezosa de la vista de rendimiento
-    from app.presentation.views.rendimiento_gui import mostrar_vista_rendimiento
+    from app.presentation.views.performance_gui import mostrar_vista_rendimiento
     mostrar_vista_rendimiento(ui["root"], subject, nombre_presentacion, ruta_pdf)
 
 
@@ -144,7 +144,7 @@ def ir_a_principal():
         from app.presentation.views.presentation_gui import ocultar_vista_presentacion
         ocultar_vista_presentacion()
     elif _estado_navegador["vista_actual"] == "performance":
-        from app.presentation.views.rendimiento_gui import ocultar_vista_rendimiento
+        from app.presentation.views.performance_gui import ocultar_vista_rendimiento
         ocultar_vista_rendimiento()
 
     _estado_navegador["vista_actual"] = "main"
