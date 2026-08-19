@@ -1,6 +1,6 @@
 # app/core/controller/analyzer_controller.py
 import concurrent.futures
-from pathlib import Path
+from builtins import str
 from typing import Dict, Any, List, Callable, Optional
 
 from app.core.logic.text_extractor import extraer_datos_pptx
