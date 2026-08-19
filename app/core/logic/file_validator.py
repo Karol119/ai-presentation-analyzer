@@ -1,3 +1,4 @@
+# app/core/logic/file_validator.py
 import os
 
 def validar_tamano_archivo(ruta_archivo, limite_mb=30):

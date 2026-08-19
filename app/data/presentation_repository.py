@@ -27,7 +27,6 @@ def guardar_todo(ruta_origen, datos_json):
         5. Se guarda el JSON de vectorización en la misma carpeta.
       
     """
-    # Tu lógica de guardado que ya tenemos
     base_dir = os.path.dirname(os.path.abspath(__file__))
     storage_base = os.path.abspath(os.path.join(base_dir, "..", "..", "storage", "presentaciones"))
     

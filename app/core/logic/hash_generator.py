@@ -1,3 +1,4 @@
+# app/core/logic/hash_generator.py
 import hashlib
 
 def generar_hash_archivo(ruta_archivo):
@@ -5,7 +6,6 @@ def generar_hash_archivo(ruta_archivo):
     sha256_hash = hashlib.sha256()
     # Leemos en binario ("rb")
     with open(ruta_archivo, "rb") as f:
-        # Leemos en bloques para no saturar la memoria RAM
         for bloque in iter(lambda: f.read(4096), b""):
             sha256_hash.update(bloque)
     return sha256_hash.hexdigest()

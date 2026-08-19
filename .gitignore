@@ -2,25 +2,21 @@
 venv/
 env/
 .env
+*.env
 
 # Archivos compilados de Python
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Bases de datos locales (Capa de Datos)
-*.sqlite3
-*.db
 
 # Archivos de prueba (Reglas de Negocio: Carga de Archivos)
 # Evita subir los .pptx reales al repositorio
 uploads/
 *.pptx
 *.json
+*.db
 
-# Archivos autogenerados por PyQt6 (si deciden compilar los .ui a .py)
-ui_*.py
-*_rc.py
 
 # Archivos generados al crear el ejecutable (.exe) con PyInstaller
 build/
@@ -48,3 +44,6 @@ logs/
 
 # Caché si deciden hacer pruebas unitarias después
 .pytest_cache/
+
+__pycache__/
+*.pyc

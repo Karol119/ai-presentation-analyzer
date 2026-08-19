@@ -9,7 +9,26 @@
 ![Ollama](https://img.shields.io/badge/LLM%20local-Ollama-000000?logo=ollama&logoColor=white)
 ![Status](https://img.shields.io/badge/Estado-En%20desarrollo-orange)
 
-AI Presentation Analyzer es un prototipo de escritorio que evalúa la **calidad de presentaciones `.pptx`** mediante un conjunto de métricas objetivas y modelos de lenguaje. Permite al docente analizar cada diapositiva, comparar su contenido contra el temario oficial de la unidad de aprendizaje, recibir recomendaciones de mejora y, durante la exposición en vivo, medir la gestión del tiempo.
+AI Presentation Analyzer es un prototipo de escritorio que evalúa la **calidad pedagógica de presentaciones `.pptx`** mediante un conjunto de métricas objetivas y modelos de lenguaje. Permite al docente analizar cada diapositiva, comparar su contenido contra el temario oficial de la unidad de aprendizaje, recibir recomendaciones de mejora y, durante la exposición en vivo, medir la gestión del tiempo.
+
+> ⚠️ **Nombre provisional:** el proyecto aún no cuenta con un nombre oficial; por ahora se identifica como `ai-presentation-analyzer`.
+
+---
+
+## 📑 Tabla de contenidos
+
+- [¿Qué hace?](#-qué-hace)
+- [Métricas de análisis](#-métricas-de-análisis)
+- [Arquitectura](#-arquitectura)
+- [Tecnologías y dependencias](#-tecnologías-y-dependencias)
+- [Instalación](#-instalación)
+- [Configuración](#-configuración)
+- [Uso](#-uso)
+- [Requerimientos funcionales](#-requerimientos-funcionales)
+- [Estructura del proyecto](#-estructura-del-proyecto)
+- [Pruebas](#-pruebas)
+- [Estado del proyecto](#-estado-del-proyecto)
+- [Notas](#-notas)
 
 ---
 
@@ -225,6 +244,13 @@ Flujo básico:
 
 ---
 
+## 🧪 Pruebas
+
+```bash
+python -m unittest discover tests/
+```
+
+---
 
 ## 🚧 Estado del proyecto
 
