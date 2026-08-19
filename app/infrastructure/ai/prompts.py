@@ -5,15 +5,26 @@ Plantillas de instrucciones para modelos de IA usando el patrón de Procesamient
 
 PROMPT_EVALUACION_LOTE = """[INST] Eres un evaluador experto en presentaciones académicas universitarias.
 
-Analiza el LOTE de diapositivas y entrega, para cada una, cinco resultados:
+Analiza el LOTE de diapositivas y entrega los siguientes resultados:    
+
+
+PARA CADA DIAPOSITIVA:
 1. CLASIFICACIÓN del tipo de diapositiva.
 2. TIPO RETÓRICO del contenido (función expositiva).
 3. HSS - Coherencia entre el título y el contenido (escala 1-10).
 4. NTS - Progresión semántica respecto a la diapositiva anterior (escala 1-10).
 5. TIEMPO ESTIMADO de exposición en segundos.
 
+PARA LA PRESENTACIÓN COMPLETA:
+6. COBERTURA DEL TEMARIO - Identifica qué unidades, temas y subtemas del
+temario oficial están realmente abordados en el contenido de la presentación.
+Esta evaluación es global y NO debe indicar en qué diapositivas aparece cada tema.
+
 DATOS DEL LOTE:
 {batch_data}
+
+TEMARIO OFICIAL DE LA MATERIA:
+{temario}
 
 ==========================================
 PASO 1 — CLASIFICACIÓN
@@ -96,6 +107,38 @@ Asigna UNO de estos tipos según la PRIMERA coincidencia clara:
 
 Para tipos distintos a "contenido", asigna "tipo_retorico": null.
 
+
+==========================================
+PASO 6 — COBERTURA DEL TEMARIO
+==========================================
+
+Además de analizar cada diapositiva, determina qué partes del temario oficial
+están realmente presentes en el contenido de TODA la presentación.
+
+IMPORTANTE:
+- Esta evaluación es GLOBAL para toda la presentación.
+- NO indiques en qué diapositiva aparece cada tema.
+- NO es necesario que todas las diapositivas correspondan a un tema.
+- Un mismo tema puede estar desarrollado en varias diapositivas.
+- Considera el contenido completo de la presentación, no únicamente los títulos.
+- Solo marca un tema como presente cuando exista evidencia suficiente en las diapositivas.
+- No marques un tema únicamente porque el título de una diapositiva se parezca.
+- No inventes temas que no aparezcan en el temario proporcionado.
+- Puedes incluir un tema aunque solo tenga una parte de sus subtemas desarrollados.
+- Si un tema tiene subtemas, indica únicamente los subtemas que realmente estén presentes.
+- Si un tema NO tiene subtemas en el temario oficial, no agregues una propiedad "subtemas".
+- Conserva exactamente los nombres y numeración proporcionados en el temario oficial.
+
+La salida debe contener un campo adicional llamado "temas_presentacion"
+que represente la cobertura temática global de la presentación.
+
+Solo incluye unidades y temas que tengan evidencia de estar presentes.
+
+Si ningún tema del temario tiene evidencia suficiente en la presentación:
+
+"temas_presentacion": []
+
+
 ==========================================
 REGLAS DE FEEDBACK
 ==========================================
@@ -107,20 +150,39 @@ REGLAS DE FEEDBACK
 ==========================================
 FORMATO DE RESPUESTA
 ==========================================
-Responde EXCLUSIVAMENTE con un arreglo JSON válido. Sin markdown, sin texto adicional, sin comentarios.
 
-[
-  {{
-    "slide_number": 1,
-    "tipo": "contenido",
-    "tipo_retorico": "definicion",
-    "hss_score": 9,
-    "hss_feedback": "",
-    "nts_score": 10,
-    "nts_feedback": "",
-    "tiempo_estimado_segundos": 45
-  }}
-]
+Responde EXCLUSIVAMENTE con un objeto JSON válido.
+Sin markdown, sin texto adicional, sin comentarios.
+La estructura debe ser exactamente:
+
+{{
+  "diapositivas": [
+    {{
+      "slide_number": 1,
+      "tipo": "contenido",
+      "tipo_retorico": "definicion",
+      "hss_score": 9,
+      "hss_feedback": "",
+      "nts_score": 10,
+      "nts_feedback": "",
+      "tiempo_estimado_segundos": 45
+    }}
+  ],
+  "temas_presentacion": [
+    {{
+      "unidad": "Unidad Temática 1. Fundamentos de los servicios de red",
+      "temas": [
+        {{
+          "tema": "1.1 Servicios de red",
+          "subtemas": [
+            "1.1.1 Clasificación de los servicios de red"
+          ]
+        }}
+      ]
+    }}
+  ]
+}}
+
 [/INST]"""
 
 

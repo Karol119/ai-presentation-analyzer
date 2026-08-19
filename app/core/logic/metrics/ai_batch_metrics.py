@@ -11,7 +11,7 @@ from app.core.logic.metrics.narrative_thread import _vectorizar, _similitud_cose
 
 def calcular_metricas_ia_lote(diapositivas: List[Dict[str, Any]], temario: List[Dict[str, Any]]) -> Dict[str, Any]:
     if not diapositivas:
-        return {"hss": _hss_vacio(), "nts": _nts_vacio(), "clasificaciones": {}}
+        return {"hss": _hss_vacio(), "nts": _nts_vacio(), "clasificaciones": {},  "temas_presentacion": []}
 
     carga_lote = []
     
@@ -57,17 +57,29 @@ def calcular_metricas_ia_lote(diapositivas: List[Dict[str, Any]], temario: List[
     respuesta = consultar_modelo(prompt)
 
     mapa_resultados_ia = {}
+    temas_presentacion = []
+
     try:
-        match_json = re.search(r'\[\s*\{.*\}\s*\]', respuesta, re.DOTALL)
+        match_json = re.search(r'\{.*\}', respuesta, re.DOTALL)
+
         if match_json:
             json_crudo = match_json.group()
             json_limpio = re.sub(r'[\n\r\t]+', ' ', json_crudo)
-            lista_datos_ia = json.loads(json_limpio, strict=False)
-            
+
+            datos_respuesta_ia = json.loads(json_limpio, strict=False)
+
+            # Resultados individuales de cada diapositiva
+            lista_datos_ia = datos_respuesta_ia.get("diapositivas", [])
+
             for item in lista_datos_ia:
                 mapa_resultados_ia[item.get("slide_number")] = item
+
+            # Cobertura temática de toda la presentación
+            temas_presentacion = datos_respuesta_ia.get("temas_presentacion", [])
+
         else:
-            raise ValueError("No se detectó un arreglo JSON válido en la respuesta.")
+            raise ValueError("No se detectó un objeto JSON válido en la respuesta.")
+
     except Exception as e:
         print(f"[ERROR IA LOTE] Fallo al parsear JSON de la IA: {e}")
 
@@ -155,7 +167,7 @@ def calcular_metricas_ia_lote(diapositivas: List[Dict[str, Any]], temario: List[
         "slides_desconectadas": sum(1 for r in resultados_nts if r["estado"] == "desconectada")
     }
 
-    return {"hss": res_hss, "nts": res_nts, "clasificaciones": clasificaciones}
+    return {"hss": res_hss, "nts": res_nts, "clasificaciones": clasificaciones, "temas_presentacion": temas_presentacion}
 
 def _hss_vacio() -> Dict[str, Any]: 
     return {"resultados": [], "hss_promedio": 0.0}

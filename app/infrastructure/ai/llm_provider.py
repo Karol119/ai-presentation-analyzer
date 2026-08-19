@@ -13,7 +13,7 @@ ruta_env = ruta_raiz / ".env"
 load_dotenv(dotenv_path=ruta_env, override=True)
 
 CLAVE_API_GEMINI = os.getenv("GEMINI_API_KEY", "")
-MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 genai.configure(api_key=CLAVE_API_GEMINI)
 print(f"\n[PROVEEDOR IA] Conectado a la NUBE: Google Gemini — Modelo: '{MODELO_GEMINI}'")
@@ -41,9 +41,9 @@ def _consultar_gemini(prompt: str, temperatura: float) -> str:
         respuesta = modelo.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(
-                temperature=temperatura,  # 0.0 = lo más determinista posible
-                top_p=0.1,               # Considera solo el 10% de masa de probabilidad acumulada
-                top_k=5,                 # Solo toma el token más probable en cada paso
+                temperature=temperatura, # 0.0 = lo más determinista posible
+                # top_p=0.1,               # Considera solo el 10% de masa de probabilidad acumulada
+                # top_k=5,                 # Solo toma el token más probable en cada paso
             ),
             request_options={"retry": None}
         )

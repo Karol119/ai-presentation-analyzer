@@ -1,6 +1,7 @@
 # app/core/controller/analyzer_controller.py
 import concurrent.futures
 from builtins import str
+import json
 from typing import Dict, Any, List, Callable, Optional
 
 from app.core.logic.text_extractor import extraer_datos_pptx
@@ -93,6 +94,13 @@ def analizar_presentacion(ruta_archivo: str, nombre_materia: str, callback_estad
     res_icd, res_wps = res_local["icd"], res_local["wps"]
     res_hss, res_nts = res_ia["hss"], res_ia["nts"]
     datos_ia_lote = res_ia.get("clasificaciones", {})
+    temas_presentacion = res_ia.get("temas_presentacion", [])
+
+    print("\n" + "=" * 70)
+    print("[TEMAS] Cobertura temática detectada por la IA")
+    print("=" * 70)
+    print(json.dumps(temas_presentacion, ensure_ascii=False, indent=2))
+    print("=" * 70 + "\n")
 
     diapositivas_finales = []
     diapositivas_para_enriquecer = []
@@ -206,10 +214,30 @@ def analizar_presentacion(ruta_archivo: str, nombre_materia: str, callback_estad
                 arreglo_gen = datos_ia.get("diapositivas_generadas", [])
                 s["reestructuracion"] = {"diapositivas_generadas": arreglo_gen} if arreglo_gen else None
 
-    return {
-        "total_diapositivas": total_diapositivas_pptx,
-        "score_global_presentacion": datos_puntaje_global,
-        "tiempo_total_exposicion_segundos": tiempo_total_segundos,
-        "tiempo_total_formateado": f"{tiempo_total_segundos // 60}m {tiempo_total_segundos % 60}s",
-        "slides": diapositivas_finales,
+
+
+    resultado_final = {
+    "total_diapositivas": total_diapositivas_pptx,
+    "score_global_presentacion": datos_puntaje_global,
+    "tiempo_total_exposicion_segundos": tiempo_total_segundos,
+    "tiempo_total_formateado": f"{tiempo_total_segundos // 60}m {tiempo_total_segundos % 60}s",
+    "temas_presentacion": temas_presentacion,
+    "slides": diapositivas_finales,
     }
+
+    print("\n" + "=" * 80)
+    print("[JSON FINAL] Resultado completo del análisis")
+    print("=" * 80)
+    print(json.dumps(resultado_final, ensure_ascii=False, indent=4))
+    print("=" * 80 + "\n")
+
+    return resultado_final
+
+    # return {
+    #     "total_diapositivas": total_diapositivas_pptx,
+    #     "score_global_presentacion": datos_puntaje_global,
+    #     "tiempo_total_exposicion_segundos": tiempo_total_segundos,
+    #     "tiempo_total_formateado": f"{tiempo_total_segundos // 60}m {tiempo_total_segundos % 60}s",
+    #     "temas_presentacion": temas_presentacion,
+    #     "slides": diapositivas_finales,
+    # }
