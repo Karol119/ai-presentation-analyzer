@@ -2,9 +2,17 @@
 import os
 import re
 import requests
+from importlib import import_module
 from pathlib import Path
 from dotenv import load_dotenv
-import google.generativeai as genai
+
+try:
+    genai = import_module("google.generativeai")
+except ImportError as e:
+    raise RuntimeError(
+        "Falta la dependencia de Gemini. Instala el paquete "
+        "'google-generativeai' en el entorno activo."
+    ) from e
 
 ruta_actual = Path(__file__).resolve()
 ruta_raiz = ruta_actual.parent.parent.parent.parent
