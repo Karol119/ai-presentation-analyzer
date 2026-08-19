@@ -9,7 +9,7 @@ from app.infrastructure.ai.prompts import PROMPT_EVALUACION_LOTE
 from app.core.logic.metrics.header_structure import _obtener_palabras_clave, _filtrar_nombres_personas, _clasificar_puntaje_hss
 from app.core.logic.metrics.narrative_thread import _vectorizar, _similitud_coseno, _texto_completo, _determinar_estado_por_puntaje
 
-def calcular_metricas_ia_lote(diapositivas: List[Dict[str, Any]]) -> Dict[str, Any]:
+def calcular_metricas_ia_lote(diapositivas: List[Dict[str, Any]], temario: List[Dict[str, Any]]) -> Dict[str, Any]:
     if not diapositivas:
         return {"hss": _hss_vacio(), "nts": _nts_vacio(), "clasificaciones": {}}
 
@@ -40,7 +40,18 @@ def calcular_metricas_ia_lote(diapositivas: List[Dict[str, Any]]) -> Dict[str, A
             }
         })
 
-    prompt = PROMPT_EVALUACION_LOTE.format(batch_data=json.dumps(carga_lote, ensure_ascii=False, indent=2))
+    prompt = PROMPT_EVALUACION_LOTE.format(
+        batch_data=json.dumps(
+            carga_lote,
+            ensure_ascii=False,
+            indent=2
+        ),
+        temario=json.dumps(
+            temario,
+            ensure_ascii=False,
+            indent=2
+        )
+    )
     
     print("[IA LOTE] Evaluando lote en la IA (Clasificación + HSS + NTS)...")
     respuesta = consultar_modelo(prompt)

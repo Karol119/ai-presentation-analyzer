@@ -6,7 +6,8 @@ from app.data.queries import (
     obtener_id_materia,
     obtener_rutas_archivos_materia,
     obtener_presentaciones_por_materia,
-    obtener_temario_materia  # Se añade esta importación desde queries.py
+    obtener_temario_materia,
+    obtener_nombre_materia_por_id
 )
 
 # Persistencia: Solo funciones que alteran el estado (Escritura/Borrado)
@@ -78,3 +79,7 @@ def orquestar_desactivacion_materia(nombre_materia):
 
     except Exception as e:
         return False, f"Error crítico en la orquestación: {str(e)}"
+
+def obtener_nombre_materia_controlador(id_materia):
+    """Obtiene el nombre de una materia mediante su ID."""
+    return obtener_nombre_materia_por_id(id_materia)

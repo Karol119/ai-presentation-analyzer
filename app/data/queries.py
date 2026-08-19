@@ -182,3 +182,21 @@ def obtener_reporte_tiempo_db(id_version):
     res = cursor.fetchone()
     conn.close()
     return res[0] if res else None
+
+def obtener_nombre_materia_por_id(id_materia):
+    """Obtiene el nombre de una materia a partir de su ID."""
+    conn = conectar_db()
+    if not conn:
+        return None
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT unidad_aprendizaje
+        FROM Unidad_de_Aprendizaje
+        WHERE id_unidad_aprendizaje = ?
+    """, (id_materia,))
+
+    res = cursor.fetchone()
+    conn.close()
+
+    return res[0] if res else None

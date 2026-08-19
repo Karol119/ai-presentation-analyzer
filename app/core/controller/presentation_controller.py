@@ -17,6 +17,7 @@ from app.data.persistence import (
 )
 
 from app.core.controller.analyzer_controller import analizar_presentacion
+from app.core.controller.subject_controller import obtener_nombre_materia_controlador
 
 def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
@@ -75,9 +76,14 @@ def orquestar_analisis_ia(ruta_pptx: str, nombre_presentacion: str, id_materia: 
     """
     try:
         if status_cb: status_cb("Iniciando motores de IA...")
-        
+
+        nombre_materia = obtener_nombre_materia_controlador(id_materia)
+
+        if not nombre_materia:
+            return False, "No se encontró la materia asociada a la presentación."
+
         # CAMBIO CLAVE: Se usa 'callback_estado' en lugar de 'status_cb' para coincidir con el controlador
-        resultado_datos = analizar_presentacion(ruta_pptx, callback_estado=status_cb)
+        resultado_datos = analizar_presentacion(ruta_pptx, nombre_materia, callback_estado=status_cb)
 
         # 1. Persistencia en Base de Datos
         id_version = obtener_id_version_actual(nombre_presentacion, id_materia)

@@ -10,6 +10,7 @@ from app.core.logic.metrics.word_count import calcular_wps_presentacion
 from app.core.logic.metrics.ai_restructure import reestructurar_diapositivas_lote
 from app.core.logic.metrics.ai_batch_metrics import calcular_metricas_ia_lote
 from app.core.logic.presentation_score import calcular_puntaje_global, calcular_puntaje_diapositiva
+from app.core.controller.subject_controller import obtener_temario_completo
 
 def _ejecutar_metricas_locales(diapositivas_contenido: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {
@@ -17,10 +18,10 @@ def _ejecutar_metricas_locales(diapositivas_contenido: List[Dict[str, Any]]) -> 
         "wps": calcular_wps_presentacion(diapositivas_contenido)
     }
 
-def _ejecutar_metricas_ia(diapositivas_contenido: List[Dict[str, Any]]) -> Dict[str, Any]:
-    return calcular_metricas_ia_lote(diapositivas_contenido)
+def _ejecutar_metricas_ia(diapositivas_contenido: List[Dict[str, Any]], temario: List[Dict[str, Any]]) -> Dict[str, Any]:
+    return calcular_metricas_ia_lote(diapositivas_contenido, temario)
 
-def analizar_presentacion(ruta_archivo: str, callback_estado: Optional[Callable] = None) -> Dict[str, Any]:
+def analizar_presentacion(ruta_archivo: str, nombre_materia: str, callback_estado: Optional[Callable] = None) -> Dict[str, Any]:
     
     # --- PRE-FLIGHT CHECK (FAIL FAST) ---
     if callback_estado: callback_estado("[SISTEMA] Comprobando estado del motor de Inteligencia Artificial...")
@@ -33,6 +34,42 @@ def analizar_presentacion(ruta_archivo: str, callback_estado: Optional[Callable]
     # --- INICIO DEL PROCESO ---
     if callback_estado: callback_estado("[SISTEMA] Iniciando extracción de datos...")
     datos_extraidos = extraer_datos_pptx(ruta_archivo)
+
+    # ----------------------------------------------------
+
+    print("\n" + "=" * 70)
+    print("[TEMARIO] Temario recuperado de la base de datos")
+    print("=" * 70)
+
+    temario = obtener_temario_completo(nombre_materia)
+
+    print(f"Materia: {nombre_materia}")
+    print(f"Unidades encontradas: {len(temario)}")
+
+    for unidad in temario:
+        print(f"\n{unidad['unidad']}")  
+
+        for tema in unidad["temas"]:
+            print(f"  {tema['tema']}")
+
+            for subtema in tema["subtemas"]:
+                print(f"    - {subtema}")
+
+    print("=" * 70 + "\n")
+
+
+#--------------------------------------------------------------
+
+
+    if callback_estado:
+        callback_estado("[SISTEMA] Recuperando temario de la materia...")
+
+    temario = obtener_temario_completo(nombre_materia)
+
+    if not temario:
+        raise ValueError(
+            f"No se encontró un temario para la materia '{nombre_materia}'."
+        )
     
     total_diapositivas_pptx = datos_extraidos.get("total_slides", 0)
     diapositivas_contenido = datos_extraidos["slides"]
@@ -41,7 +78,7 @@ def analizar_presentacion(ruta_archivo: str, callback_estado: Optional[Callable]
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ejecutor:
         futuro_local = ejecutor.submit(_ejecutar_metricas_locales, diapositivas_contenido)
-        futuro_ia    = ejecutor.submit(_ejecutar_metricas_ia, diapositivas_contenido)
+        futuro_ia = ejecutor.submit(_ejecutar_metricas_ia, diapositivas_contenido, temario)       
         
         try:
             res_local = futuro_local.result()
