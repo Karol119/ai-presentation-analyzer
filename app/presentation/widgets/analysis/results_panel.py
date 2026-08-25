@@ -8,7 +8,8 @@ from app.presentation.views.ui_state import ui
 from app.presentation.widgets.analysis.presentation_panel import set_on_pagina_cambiada
 from app.presentation.views import navigator
 from app.core.controller.subject_controller import obtener_id_materia_controlador
-from app.core.controller.presentation_controller import orquestar_aplicar_mejoras_ia
+from app.core.controller.presentation_controller import orquestar_exportacion_historial
+from app.data.queries import obtener_id_version_actual, obtener_id_y_version_presentacion
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 
 COLOR_GUINDA       = "#6A1B31"
@@ -76,7 +77,7 @@ def _build_footer(parent):
         btn_aplicar.configure(state="disabled")
         lbl_estado.configure(text="Generando archivo PPTX...\nEsto puede tardar unos segundos.")
         
-        # 2. Lógica pesada en hilo secundario (Capa Lógica/OpenXML)
+        # 2. Lógica pesada en hilo secundario delegando al mismo orquestador del historial
         def tarea_pesada():
             try:
                 subject = _widgets["subject"]
@@ -84,7 +85,11 @@ def _build_footer(parent):
                 ruta_pdf = navigator.get_contexto_analisis()["ruta_pdf"]
                 id_materia = obtener_id_materia_controlador(subject)
                 
-                return orquestar_aplicar_mejoras_ia(nombre_pres, id_materia, ruta_pdf)
+                # Como estamos en el análisis, siempre es la versión más reciente
+                id_version = obtener_id_version_actual(nombre_pres, id_materia)
+                _, version_actual = obtener_id_y_version_presentacion(nombre_pres, id_materia)
+                
+                return orquestar_exportacion_historial(id_version, nombre_pres, id_materia, version_actual, ruta_pdf)
             except Exception as e:
                 return False, f"Error crítico: {str(e)}"
 
@@ -93,12 +98,12 @@ def _build_footer(parent):
             exito, mensaje = resultado
             if exito:
                 # Mostramos mensaje de éxito con la ruta y restauramos los botones
-                messagebox.showinfo("Descarga Completada", mensaje)
+                messagebox.showinfo("Exportación Lista", mensaje)
                 btn_aplicar.configure(state="normal")
                 lbl_estado.configure(text="")
             else:
                 # Mostramos error y restauramos botones
-                messagebox.showerror("Error al procesar", mensaje)
+                messagebox.showwarning("Aviso", mensaje)
                 btn_aplicar.configure(state="normal")
                 lbl_estado.configure(text="")
 
