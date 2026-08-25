@@ -3,7 +3,7 @@ import customtkinter as ctk
 from app.presentation.views.ui_state import ui, estado
 from app.data.queries import obtener_historial_presentacion, obtener_id_materia
 from app.presentation.widgets.history.history_recommendations import mostrar_modal_recomendaciones_json
-from app.presentation.widgets.history.history_evaluation import mostrar_modal_evaluacion_json # <-- NUEVA IMPORTACIÓN
+from app.presentation.widgets.history.history_evaluation import mostrar_modal_evaluacion_json
 import os
 
 COLOR_GUINDA       = "#6A1B31"
@@ -27,9 +27,10 @@ def mostrar_vista_historial(subject: str, nombre_presentacion: str):
     header_frame.pack(fill="x")
     header_frame.pack_propagate(False)
 
+    # Título original (el botón se delegó al topbar)
     ctk.CTkLabel(
         header_frame, 
-        text=f"Historial: {nombre_presentacion}",
+        text=f"Historial de Versiones",
         font=ctk.CTkFont(family="Segoe UI", size=22, weight="bold"),
         text_color=COLOR_GUINDA
     ).pack(side="left", padx=40)
@@ -42,7 +43,6 @@ def mostrar_vista_historial(subject: str, nombre_presentacion: str):
     headers_frame = ctk.CTkFrame(main_container, fg_color="transparent", height=45)
     headers_frame.pack(fill="x", padx=30, pady=(25, 10))
     
-    # Nuevos porcentajes para hacer espacio a las 6 columnas (Total = 1.0)
     cols = [
         ("VER", 0.08),
         ("FECHA DE CARGA", 0.20),
@@ -111,12 +111,12 @@ def _crear_fila_version(parent, data, cols_config):
     ctk.CTkLabel(fila, text=status_icon, font=("Segoe UI", 14), text_color=status_color).place(relx=current_x + (cols_config[3][1]/2), rely=0.5, anchor="center")
     current_x += cols_config[3][1]
 
-    # 5. BOTÓN EVALUACIÓN (NUEVO)
+    # 5. BOTÓN EVALUACIÓN
     if analizada and ruta_pdf:
         btn_eval = ctk.CTkButton(
             fila, text="Ver Evaluación",
             width=130, height=32, corner_radius=8,
-            fg_color=COLOR_GUINDA, hover_color="#4D1324",  # Usamos Oro para diferenciar del de recomendaciones
+            fg_color=COLOR_GUINDA, hover_color="#4D1324",
             font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda p=ruta_pdf, v=v_num: mostrar_modal_evaluacion_json(p, v)
         )

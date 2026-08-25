@@ -1,6 +1,7 @@
 # app/core/controller/presentation_controller.py
 import json
 import os
+import tempfile
 from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
 from app.core.logic.text_extractor import contar_diapositivas
@@ -18,6 +19,7 @@ from app.data.persistence import (
 
 from app.core.controller.analyzer_controller import analizar_presentacion
 from app.core.controller.subject_controller import obtener_nombre_materia_controlador
+from app.core.logic.pptx_modifier import aplicar_mejoras_pptx
 
 def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
@@ -180,3 +182,47 @@ def orquestar_obtener_analisis(nombre_presentacion, id_materia):
     if not id_version:
         return None
     return obtener_analisis_desde_db(id_version)
+
+def orquestar_aplicar_mejoras_ia(nombre_presentacion, id_materia, ruta_pdf):
+    """
+    Exporta una versión modificada del PPTX directamente a la carpeta de Descargas
+    sin alterar la base de datos ni crear una versión nueva oficial.
+    """
+    try:
+        # 1. Obtener la versión actual para buscar su análisis
+        id_version = obtener_id_version_actual(nombre_presentacion, id_materia)
+        
+        # 2. Recuperar el análisis de la IA desde la BD
+        json_raw = obtener_analisis_desde_db(id_version)
+        if not json_raw:
+            return False, "No hay análisis previo para aplicar mejoras."
+        
+        datos_analisis = json.loads(json_raw)
+
+        # 3. Deducir la ruta del PPTX original a partir del PDF
+        ruta_pptx_original = ruta_pdf.replace(".pdf", ".pptx")
+        if not os.path.exists(ruta_pptx_original):
+            return False, "No se encontró el archivo PPTX original para modificar."
+
+        # 4. Determinar la ruta de la carpeta "Descargas" del usuario (independiente del SO)
+        ruta_descargas = os.path.join(os.path.expanduser('~'), 'Downloads')
+        
+        # 5. Armar el nombre del archivo de salida
+        nombre_base = os.path.splitext(os.path.basename(ruta_pptx_original))[0]
+        ruta_destino = os.path.join(ruta_descargas, f"{nombre_base}_Optimizada_IA.pptx")
+
+        # Evitar sobreescribir si el usuario descarga el archivo varias veces
+        contador = 1
+        while os.path.exists(ruta_destino):
+            ruta_destino = os.path.join(ruta_descargas, f"{nombre_base}_Optimizada_IA_{contador}.pptx")
+            contador += 1
+
+        # 6. Llamar al cerebro (Capa Lógica) para aplicar la cirugía y guardarlo en Descargas
+        exito_mod, msj_mod = aplicar_mejoras_pptx(ruta_pptx_original, ruta_destino, datos_analisis)
+        if not exito_mod:
+            return False, msj_mod
+
+        return True, f"¡Éxito! La presentación se guardó en tus Descargas:\n\n{ruta_destino}"
+
+    except Exception as e:
+        return False, f"Error en la exportación de mejoras: {str(e)}"
