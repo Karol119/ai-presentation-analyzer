@@ -21,7 +21,7 @@ ruta_env = ruta_raiz / ".env"
 load_dotenv(dotenv_path=ruta_env, override=True)
 
 CLAVE_API_GEMINI = os.getenv("GEMINI_API_KEY", "")
-MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 genai.configure(api_key=CLAVE_API_GEMINI)
 print(f"\n[PROVEEDOR IA] Conectado a la NUBE: Google Gemini — Modelo: '{MODELO_GEMINI}'")
@@ -38,20 +38,45 @@ def verificar_conexion_ia():
         ) from e
 
 
-def consultar_modelo(prompt: str, temperatura: float = 0.0) -> str:
-    """Envía una petición a Gemini con configuración lo más determinista posible."""
-    return _consultar_gemini(prompt, temperatura)
+def consultar_modelo(prompt: str, system_instruction: str = "") -> str:
+    """
+    Envía una petición a Gemini.
+
+    NOTA: A partir de gemini-3.5-flash-lite, los parámetros temperature, top_p
+    y top_k están deprecados y son ignorados por la API. El determinismo se
+    controla mediante system_instruction con reglas explícitas de formato.
+    Fuente: Google AI release notes, julio 2026.
+
+    Args:
+        prompt: El prompt principal con los datos y las instrucciones de tarea.
+        system_instruction: Instrucción de sistema que define el rol y el formato
+                            de respuesta. Se procesa ANTES que el prompt y es
+                            el mecanismo oficial de determinismo en Gemini 3.x.
+    """
+    return _consultar_gemini(prompt, system_instruction)
 
 
-def _consultar_gemini(prompt: str, temperatura: float) -> str:
+def _consultar_gemini(prompt: str, system_instruction: str) -> str:
     try:
-        modelo = genai.GenerativeModel(MODELO_GEMINI)
+        # Si hay system_instruction, se inicializa el modelo con ella.
+        # Gemini la procesa como contexto base antes de leer el prompt,
+        # lo que produce respuestas de formato más consistente entre llamadas.
+        if system_instruction:
+            modelo = genai.GenerativeModel(
+                MODELO_GEMINI,
+                system_instruction=system_instruction
+            )
+        else:
+            modelo = genai.GenerativeModel(MODELO_GEMINI)
+
         respuesta = modelo.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(
-                temperature=temperatura, # 0.0 = lo más determinista posible
-                # top_p=0.1,               # Considera solo el 10% de masa de probabilidad acumulada
-                # top_k=5,                 # Solo toma el token más probable en cada paso
+                # temperature, top_p, top_k: ELIMINADOS.
+                # Están deprecados en gemini-3.5-flash-lite y gemini-3.6-flash+.
+                # La API los acepta sin error pero los ignora completamente.
+                # En versiones futuras devolverán HTTP 400.
+                # El control de determinismo se hace por system_instruction.
             ),
             request_options={"retry": None}
         )
