@@ -1,6 +1,7 @@
 # app/core/controller/presentation_controller.py
 import json
 import os
+import tempfile
 from app.core.logic.file_validator import validar_tamano_archivo
 from app.core.logic.hash_generator import generar_hash_archivo
 from app.core.logic.text_extractor import contar_diapositivas
@@ -18,6 +19,7 @@ from app.data.persistence import (
 
 from app.core.controller.analyzer_controller import analizar_presentacion
 from app.core.controller.subject_controller import obtener_nombre_materia_controlador
+from app.core.logic.pptx_modifier import aplicar_mejoras_pptx
 
 def orquestar_proceso_completo(ruta_pptx, id_materia):
     """
@@ -180,3 +182,60 @@ def orquestar_obtener_analisis(nombre_presentacion, id_materia):
     if not id_version:
         return None
     return obtener_analisis_desde_db(id_version)
+
+
+def orquestar_aplicar_mejoras_ia(nombre_presentacion, id_materia, ruta_pdf):
+    """
+    Delega la exportación al método genérico que construye la ruta en Documentos.
+    (Utilizado por la vista de Análisis, siempre usa la versión más reciente).
+    """
+    id_version = obtener_id_version_actual(nombre_presentacion, id_materia)
+    _, version_actual = obtener_id_y_version_presentacion(nombre_presentacion, id_materia)
+    
+    return orquestar_exportacion_historial(id_version, nombre_presentacion, id_materia, version_actual, ruta_pdf)
+
+
+def orquestar_exportacion_historial(id_version, nombre_presentacion, id_materia, version_num, ruta_pdf):
+    """
+    Exporta una versión ESPECÍFICA a la carpeta de Documentos, 
+    creando la estructura por materia y validando si ya existe.
+    """
+    try:
+        # 1. Recuperar el análisis exacto de esta versión
+        json_raw = obtener_analisis_desde_db(id_version)
+        if not json_raw:
+            return False, "No hay análisis previo para aplicar mejoras a esta versión."
+        
+        datos_analisis = json.loads(json_raw)
+
+        # 2. Determinar la ruta base de Documentos (independiente del SO)
+        ruta_documentos = os.path.join(os.path.expanduser('~'), 'Documents', 'AI Presentation Analyzer')
+        nombre_materia = obtener_nombre_materia_controlador(id_materia)
+        
+        # Crear estructura: Documentos/AI Presentation Analyzer/Nombre_Materia/
+        ruta_carpeta_materia = os.path.join(ruta_documentos, nombre_materia)
+        os.makedirs(ruta_carpeta_materia, exist_ok=True)
+        
+        # 3. Armar el nombre del archivo de salida
+        nombre_base = os.path.splitext(nombre_presentacion)[0]
+        nombre_archivo_destino = f"{nombre_base}_v{version_num}.pptx"
+        ruta_destino = os.path.join(ruta_carpeta_materia, nombre_archivo_destino)
+
+        # 4. Validar si ya existe (Evitar trabajo doble)
+        if os.path.exists(ruta_destino):
+            return True, f"Este archivo ya fue exportado y se encuentra en:\n\n{ruta_destino}"
+
+        # 5. Obtener PPTX original de esta versión
+        ruta_pptx_original = ruta_pdf.replace(".pdf", ".pptx")
+        if not os.path.exists(ruta_pptx_original):
+            return False, "No se encontró el archivo PPTX original para modificar."
+
+        # 6. Llamar al cerebro (Capa Lógica) para aplicar la cirugía
+        exito_mod, msj_mod = aplicar_mejoras_pptx(ruta_pptx_original, ruta_destino, datos_analisis)
+        if not exito_mod:
+            return False, msj_mod
+
+        return True, f"¡Éxito! La presentación se guardó en Documentos:\n\n{ruta_destino}"
+
+    except Exception as e:
+        return False, f"Error en la exportación: {str(e)}"

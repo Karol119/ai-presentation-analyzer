@@ -43,6 +43,9 @@ def ir_a_historial(subject: str, nombre_presentacion: str):
     # Ocultar body principal
     ui["body"].pack_forget()
 
+    # ---> CAMBIO APLICADO: Habilitamos el topbar secundario con el botón de Volver <---
+    set_modo_analisis(f"Historial · {nombre_presentacion}", ir_a_principal)
+
     # Cargar vista dinámicamente
     from app.presentation.views.history_gui import mostrar_vista_historial
     mostrar_vista_historial(subject, nombre_presentacion)

@@ -13,7 +13,7 @@ from app.core.controller.presentation_controller import (
     orquestar_proceso_completo,
     orquestar_eliminacion_presentacion,
     orquestar_analisis_ia,
-    orquestar_actualizacion_presentacion  # <-- Esta es la nueva
+    orquestar_actualizacion_presentacion 
 )
 
 from app.core.controller.subject_controller import (
@@ -227,8 +227,9 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     texto_analisis = "📊   Ver análisis" if ya_analizada else "🔍   Analizar presentación"
     cmd_analisis   = (lambda: _ver_analisis(subject, name, ruta_pdf, toggle_menu)) if ya_analizada else (lambda: _iniciar_analisis(subject, name, ruta_pdf, toggle_menu, comando_actualizar_boton))
 
+    # --- CAMBIO APLICADO: Pasamos la variable ya_analizada al lambda de presentar clase ---
     opciones = [
-        ("🖥   Presentar clase",          "#1E293B", lambda: _presentar_clase_ui(subject, name, ruta_pdf, toggle_menu)),
+        ("🖥   Presentar clase",          "#1E293B", lambda: _presentar_clase_ui(subject, name, ruta_pdf, ya_analizada, toggle_menu)),
         (texto_analisis,                  "#1E293B", cmd_analisis),
         ("🔄   Actualizar presentación",   "#1E293B", lambda: _actualizar_presentacion_ui(subject, name, toggle_menu, comando_actualizar_boton)),
         ("🕓   Ver historial",            "#1E293B", lambda: _ver_historial(subject, name, toggle_menu)),
@@ -256,8 +257,16 @@ def _ver_rendimiento_ui(subject: str, ruta_pdf: str, nombre_presentacion: str, t
     navigator.ir_a_rendimiento(subject, nombre_presentacion, ruta_pdf)
 
 
-def _presentar_clase_ui(subject: str, name: str, ruta_pdf: str, toggle_menu):
-    """Cierra la cara del menú y ordena al navegador cargar el modo presentación."""
+def _presentar_clase_ui(subject: str, name: str, ruta_pdf: str, ya_analizada: bool, toggle_menu):
+    """Cierra la cara del menú y ordena al navegador cargar el modo presentación si ya fue analizada."""
+    if not ya_analizada:
+        mostrar_modal_advertencia(
+            ui["root"], 
+            "Para poder presentar la clase, primero debes ejecutar el Análisis de IA sobre esta versión.", 
+            "Análisis requerido"
+        )
+        return
+        
     toggle_menu(False)
     navigator.ir_a_presentacion(subject, name, ruta_pdf)
 
