@@ -26,6 +26,7 @@ from app.infrastructure.ai.prompts import (
     PROMPT_4_PLAN,      SI_PLAN,
     PROMPT_5_REDACCION, SI_REDACCION,
 )
+from app.core.logic.text_extractor import serializar_bloques_para_prompt
 
 
 # ---------------------------------------------------------------------------
@@ -108,11 +109,13 @@ def _construir_carga_plan(
     """
     carga = []
     for d in diapositivas:
-        contenido_original = (
-            " ".join(d.get("content", []))
-            if "content" in d
-            else ""
-        )
+        # Usar content_blocks[] si está disponible (preserva estructura párrafo/lista).
+        # Fallback a " ".join(content[]) para compatibilidad hacia atrás.
+        content_blocks = d.get("content_blocks")
+        if content_blocks:
+            contenido_original = serializar_bloques_para_prompt(content_blocks)
+        else:
+            contenido_original = " ".join(d.get("content", []))
 
         # Determinar cuáles métricas fallan a partir del feedback
         # (el feedback es None/vacío cuando la métrica está en rango)
@@ -150,11 +153,13 @@ def _construir_carga_redaccion(
     carga = []
     for d in diapositivas:
         num = d["slide_number"]
-        contenido_original = (
-            " ".join(d.get("content", []))
-            if "content" in d
-            else ""
-        )
+        # Usar content_blocks[] si está disponible (preserva estructura párrafo/lista).
+        # Fallback a " ".join(content[]) para compatibilidad hacia atrás.
+        content_blocks = d.get("content_blocks")
+        if content_blocks:
+            contenido_original = serializar_bloques_para_prompt(content_blocks)
+        else:
+            contenido_original = " ".join(d.get("content", []))
 
         plan = mapa_planes.get(num, {})
 

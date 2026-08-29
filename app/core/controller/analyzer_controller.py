@@ -185,6 +185,7 @@ def analizar_presentacion(
             "reestructuracion": None,
             # ── Campos temporales (se extraen con pop() antes de la salida final) ──
             "content":            diapositiva.get("content", []),
+            "content_blocks":     diapositiva.get("content_blocks", []),  # estructura párrafo/lista
             "feedback_combinado": retroalimentacion,
             # ── NUEVOS campos temporales que necesita Prompt 4 y 5 ──────────────
             "titulo_original":  diapositiva.get("title", ""),      # título de la diapositiva
@@ -219,6 +220,7 @@ def analizar_presentacion(
                     "slide_number":             s["slide_number"],
                     # ── Campos que ya existían ───────────────────────────
                     "content":                  s.pop("content"),
+                    "content_blocks":           s.pop("content_blocks"),  # estructura párrafo/lista
                     "requiere_reestructuracion": s["requiere_reestructuracion"],
                     "feedback_a_corregir":       s.pop("feedback_combinado"),
                     # ── Campos nuevos para Prompt 4 y 5 ─────────────────
