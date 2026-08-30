@@ -123,13 +123,14 @@ def _construir_carga_plan(
         metricas_que_fallan = _extraer_metricas_que_fallan(feedback_raw)
 
         entrada = {
-            "slide_number":          d["slide_number"],
-            "titulo":                d.get("titulo", ""),
-            "tipo_retorico":         d.get("tipo_retorico"),
-            "contenido_original":    contenido_original[:1500],
-            "palabras_count":        d.get("palabras_count", 0),
-            "icd_valor":             d.get("icd_valor"),
-            "metricas_que_fallan":   metricas_que_fallan,
+            "slide_number":              d["slide_number"],
+            "titulo":                    d.get("titulo", ""),
+            "tipo_retorico":             d.get("tipo_retorico"),
+            "requiere_reestructuracion": d.get("requiere_reestructuracion", True),
+            "contenido_original":        contenido_original[:1500],
+            "palabras_count":            d.get("palabras_count", 0),
+            "icd_valor":                 d.get("icd_valor"),
+            "metricas_que_fallan":       metricas_que_fallan,
             "feedback_detallado": {
                 "icd": _extraer_segmento_feedback(feedback_raw, "ICD"),
                 "wps": _extraer_segmento_feedback(feedback_raw, "WPS"),

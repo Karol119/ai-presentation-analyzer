@@ -94,8 +94,9 @@ def analizar_presentacion(
     print("[TEMAS] Cobertura temática detectada por la IA")
 
     # --- CONSTRUCCIÓN DEL OBJETO POR DIAPOSITIVA ---
-    diapositivas_finales      = []
-    diapositivas_para_enriquecer = []
+    diapositivas_finales         = []
+    diapositivas_para_enriquecer = []  # todas las de tipo contenido (material de apoyo)
+    diapositivas_para_reestructurar = []  # solo las que requieren_reestructuracion=True
     tiempo_total_segundos     = 0
 
     conteo_diapositivas_validas = 0
@@ -196,6 +197,8 @@ def analizar_presentacion(
 
         diapositivas_finales.append(formato_db_diapositiva)
         diapositivas_para_enriquecer.append(formato_db_diapositiva)
+        if necesita_reestructurar:
+            diapositivas_para_reestructurar.append(formato_db_diapositiva)
 
     # --- SCORE GLOBAL ---
     if callback_estado:
@@ -214,35 +217,68 @@ def analizar_presentacion(
     if diapositivas_para_enriquecer:
         if callback_estado:
             callback_estado("[SISTEMA] Generando Material Didáctico y Reestructurando...")
-        try:
-            mapa_reestructurado = reestructurar_diapositivas_lote([
-                {
-                    "slide_number":             s["slide_number"],
-                    # ── Campos que ya existían ───────────────────────────
-                    "content":                  s.pop("content"),
-                    "content_blocks":           s.pop("content_blocks"),  # estructura párrafo/lista
-                    "requiere_reestructuracion": s["requiere_reestructuracion"],
-                    "feedback_a_corregir":       s.pop("feedback_combinado"),
-                    # ── Campos nuevos para Prompt 4 y 5 ─────────────────
-                    "titulo":                   s.pop("titulo_original"),
-                    "tipo_retorico":            s.pop("tipo_retorico"),
-                    "icd_valor":                s.pop("icd_valor"),
-                    "palabras_count":           s.pop("palabras_count"),
-                }
-                for s in diapositivas_para_enriquecer
-            ])
-        except Exception as e:
-            if callback_estado:
-                callback_estado("[CANCELADO] El enriquecimiento fue interrumpido.")
-            raise e
 
+        # Limpiar campos temporales de diapositivas que NO se reestructuran
+        nums_a_reestructurar = {s["slide_number"] for s in diapositivas_para_reestructurar}
+        for s in diapositivas_para_enriquecer:
+            if s["slide_number"] not in nums_a_reestructurar:
+                s.pop("content", None)
+                s.pop("content_blocks", None)
+                s.pop("feedback_combinado", None)
+                s.pop("titulo_original", None)
+                s.pop("tipo_retorico", None)
+                s.pop("icd_valor", None)
+                s.pop("palabras_count", None)
+
+        # Restructuración: SOLO las que realmente la necesitan
+        mapa_reestructurado: dict = {}
+        if diapositivas_para_reestructurar:
+            try:
+                mapa_reestructurado = reestructurar_diapositivas_lote([
+                    {
+                        "slide_number":              s["slide_number"],
+                        "content":                   s.pop("content"),
+                        "content_blocks":            s.pop("content_blocks"),
+                        "requiere_reestructuracion": s["requiere_reestructuracion"],
+                        "feedback_a_corregir":       s.pop("feedback_combinado"),
+                        "titulo":                    s.pop("titulo_original"),
+                        "tipo_retorico":             s.pop("tipo_retorico"),
+                        "icd_valor":                 s.pop("icd_valor"),
+                        "palabras_count":            s.pop("palabras_count"),
+                    }
+                    for s in diapositivas_para_reestructurar
+                ])
+            except Exception as e:
+                if callback_estado:
+                    callback_estado("[CANCELADO] El enriquecimiento fue interrumpido.")
+                raise e
+
+        # Asignar resultados: preguntas/curiosidades a TODAS, restructuración solo a quien la necesitaba
         for s in diapositivas_finales:
             if not s["omitida"]:
                 datos_ia = mapa_reestructurado.get(s["slide_number"], {})
-                s["preguntas"]       = datos_ia.get("preguntas", [])
-                s["datos_curiosos"]  = datos_ia.get("datos_curiosos", [])
-                arreglo_gen          = datos_ia.get("diapositivas_generadas", [])
-                s["reestructuracion"] = {"diapositivas_generadas": arreglo_gen} if arreglo_gen else None
+                s["preguntas"]      = datos_ia.get("preguntas", [])
+                s["datos_curiosos"] = datos_ia.get("datos_curiosos", [])
+                arreglo_gen = datos_ia.get("diapositivas_generadas", [])
+
+                if not s["requiere_reestructuracion"] or not arreglo_gen:
+                    s["reestructuracion"] = None
+                else:
+                    # Distinguir caso solo_titulo: una sola entrada con contenido_optimizado vacío
+                    es_solo_titulo = (
+                        len(arreglo_gen) == 1
+                        and arreglo_gen[0].get("contenido_optimizado", "") == ""
+                        and arreglo_gen[0].get("titulo_sugerido", "") != ""
+                    )
+                    if es_solo_titulo:
+                        # Solo sugerencia de título: no hay contenido nuevo
+                        s["reestructuracion"] = {
+                            "titulo_sugerido": arreglo_gen[0]["titulo_sugerido"],
+                            "diapositivas_generadas": []
+                        }
+                    else:
+                        s["reestructuracion"] = {"diapositivas_generadas": arreglo_gen}
+
 
     # --- JSON DE SALIDA (contrato invariante) ---
     return {

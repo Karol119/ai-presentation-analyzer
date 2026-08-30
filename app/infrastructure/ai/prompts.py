@@ -18,8 +18,6 @@ JSON DE SALIDA: La estructura del JSON final del sistema NO cambia.
 Estos prompts solo mejoran la calidad del contenido que llena esa estructura.
 """
 
-# En prompts.py, justo antes de los prompts
-
 SI_CLASIFICACION = """Eres un evaluador de presentaciones académicas universitarias.
 Responde SIEMPRE con un arreglo JSON válido siguiendo exactamente el esquema indicado.
 Sin markdown, sin texto fuera del JSON, sin comentarios, sin explicaciones previas.
@@ -53,23 +51,23 @@ Incluye TODAS las diapositivas del lote en el arreglo, incluso las que no necesi
 # de otras diapositivas ni del temario). Se agrupan porque comparten el mismo
 # texto de entrada y tienen carga cognitiva homogénea y baja.
 # =============================================================================
- 
+
 PROMPT_1_CLASIFICACION = """[INST] Eres un evaluador experto en presentaciones académicas universitarias.
- 
+
 Analiza cada diapositiva del lote de forma INDEPENDIENTE y entrega para cada una:
 1. CLASIFICACIÓN del tipo de diapositiva.
 2. TIPO RETÓRICO del contenido.
 3. HSS — Coherencia entre el título y el contenido (escala 1-10).
 4. TIEMPO ESTIMADO de exposición en segundos.
- 
+
 DATOS DEL LOTE:
 {batch_data}
- 
+
 ==========================================
 PASO 1 — CLASIFICACIÓN
 ==========================================
 Asigna UNO de los siguientes tipos evaluando en este orden de prioridad:
- 
+
 1. "portada"           → Primera diapositiva con título de la presentación, autor, institución o curso.
 2. "indice"            → Lista de temas, agenda o tabla de contenidos.
 3. "referencias"       → Bibliografía, fuentes o citas.
@@ -77,30 +75,30 @@ Asigna UNO de los siguientes tipos evaluando en este orden de prioridad:
 5. "visual"            → El peso principal es una imagen, gráfico, diagrama o tabla, con poco texto descriptivo.
 6. "texto_insuficiente"→ El contenido (SIN contar el título) tiene MENOS de 15 palabras y NO encaja en ninguna categoría anterior.
 7. "contenido"         → Texto sustantivo de 15 palabras o más (sin contar el título) que desarrolla un concepto, idea o tema.
- 
+
 Asigna la PRIMERA categoría que coincida según el orden anterior.
- 
+
 ==========================================
 PASO 2 — TIEMPO ESTIMADO
 ==========================================
 - Para tipos "portada", "indice", "cierre", "referencias", "visual", "texto_insuficiente":
   Asigna un valor entero entre 5 y 15 segundos según la densidad visual/textual estimada.
- 
+
 - Para tipo "contenido": aplica exactamente esta fórmula:
     tiempo = round( (palabras_totales / 130) * 60 * 1.20 )
   donde 130 es palabras por minuto y 1.20 es el margen de explicación oral.
   "palabras_totales" incluye título y contenido.
- 
+
 ==========================================
 PASO 3 — HSS (COHERENCIA TÍTULO-CONTENIDO)
 ==========================================
 HSS aplica SOLO al tipo "contenido".
 Para cualquier otro tipo: "hss_score": null, "hss_feedback": ""
- 
+
 Antes de puntuar, lee el campo "hss_diagnostico" que viene en los datos del lote.
 Ese campo ya calculó el solapamiento léxico entre título y contenido.
 Úsalo como evidencia objetiva y combínalo con tu lectura semántica del texto.
- 
+
 Escala de puntuación:
 - 9-10: El título describe con precisión el tema desarrollado en el contenido.
         El solapamiento léxico es alto o el título captura la idea central aunque con otras palabras.
@@ -110,51 +108,51 @@ Escala de puntuación:
         Solapamiento léxico bajo.
 - 1-4:  El título no corresponde al contenido, o la diapositiva no tiene título.
         Solapamiento léxico nulo o casi nulo.
- 
+
 REGLAS DE FEEDBACK para HSS:
 - Si el puntaje es 9 o 10: devuelve "" (cadena vacía).
 - Si el puntaje es menor: describe en máximo 20 palabras qué aspecto del título no corresponde al contenido.
 - Describe lo que se observa en el texto, no juicios sobre valor educativo.
 - Prohibido usar: pedagogía, pedagógico, didáctico, optimiza, optimización,
   aprendizaje significativo, facilita el aprendizaje, mejora la comprensión, ayuda a los estudiantes.
- 
+
 ==========================================
 PASO 4 — TIPO RETÓRICO (SOLO PARA "contenido")
 ==========================================
 Para tipos distintos a "contenido": "tipo_retorico": null
- 
+
 Identifica la función retórica que cumple la diapositiva. Asigna UNO según la PRIMERA coincidencia clara:
- 
+
 1. "introduccion"   → Presenta el tema, contextualiza, anuncia lo que se tratará.
                       Marcadores: "en este tema veremos", "comenzaremos con", "qué es...".
- 
+
 2. "definicion"     → Establece qué es algo. Estructura "X es Y".
                       Marcadores: "se define como", "es", "se entiende por", "consiste en".
- 
+
 3. "explicacion"    → Describe cómo funciona algo, procesos, mecanismos, causa-efecto.
                       Marcadores: "funciona mediante", "ocurre cuando", "se produce porque".
- 
+
 4. "ejemplificacion"→ Ilustra un concepto con casos concretos o aplicaciones reales.
                       Marcadores: "por ejemplo", "un caso es", "se observa en".
- 
+
 5. "comparacion"    → Contrasta dos o más elementos, señala diferencias o similitudes.
                       Marcadores: "a diferencia de", "mientras que", "en contraste".
- 
+
 6. "enumeracion"    → Lista características, tipos, etapas o componentes.
                       Suele estar formada por viñetas o ítems paralelos.
- 
+
 7. "conclusion"     → Cierra una sección, sintetiza puntos vistos, deriva implicaciones.
                       Marcadores: "en resumen", "por tanto", "esto implica".
                       NO confundir con tipo "cierre" del PASO 1 (que es despedida final).
- 
+
 8. "general"        → El contenido no encaja claramente en las anteriores o mezcla varias funciones.
- 
+
 ==========================================
 FORMATO DE RESPUESTA
 ==========================================
 Responde EXCLUSIVAMENTE con un arreglo JSON válido.
 Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
- 
+
 [
   {{
     "slide_number": 1,
@@ -174,8 +172,8 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
   }}
 ]
 [/INST]"""
- 
- 
+
+
 # =============================================================================
 # FASE 1 — PROMPT 2: HILO NARRATIVO (NTS)
 # =============================================================================
@@ -185,73 +183,73 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
 # porque el modelo "no quiere contradecirse" con su propia clasificación.
 # Recibe el lote completo en orden para que el contexto narrativo sea correcto.
 # =============================================================================
- 
+
 PROMPT_2_HILO_NARRATIVO = """[INST] Eres un evaluador experto en coherencia discursiva de presentaciones académicas universitarias.
- 
+
 Tu ÚNICA tarea en este prompt es evaluar el HILO NARRATIVO (NTS) entre diapositivas consecutivas.
 No clasifiques, no evalúes el contenido en sí. Solo evalúa la progresión entre una diapositiva y la anterior.
- 
+
 DATOS DEL LOTE (en orden de presentación):
 {batch_data}
- 
+
 ==========================================
 QUÉ ES EL HILO NARRATIVO (NTS)
 ==========================================
 El NTS mide si la diapositiva actual conecta de forma natural con la diapositiva anterior
 de tipo "contenido". Una presentación con buen hilo narrativo hace que el estudiante
 pueda seguir el razonamiento sin saltos abruptos.
- 
+
 El campo "nts_diagnostico.similitud_coseno" que viene en los datos ya calculó localmente
 la similitud de vocabulario entre diapositivas. Úsalo como evidencia objetiva.
 No lo ignores: un coseno bajo indica vocabularios distintos; uno alto indica continuidad léxica.
 Combínalo con tu lectura semántica del contenido para el puntaje final.
- 
+
 ==========================================
 REGLAS DE EVALUACIÓN NTS
 ==========================================
 - Solo evalúa diapositivas de tipo "contenido". Para cualquier otro tipo:
   "nts_score": null, "nts_feedback": ""
- 
+
 - La PRIMERA diapositiva de tipo "contenido" del lote recibe SIEMPRE nts_score: 10
   porque no tiene diapositiva anterior con qué compararse.
- 
+
 - Para las siguientes diapositivas de tipo "contenido", evalúa respecto a la diapositiva
   INMEDIATAMENTE ANTERIOR de tipo "contenido" (ignora las de otros tipos para la comparación).
- 
+
 Escala de puntuación:
 - 9-10: Continuación clara. La diapositiva retoma o avanza directamente el concepto previo.
         El vocabulario clave del slide anterior reaparece o se expande lógicamente.
         Coseno típico: > 0.15
- 
+
 - 7-8:  Cambio de subtema dentro del mismo eje temático.
         El tema es distinto pero pertenece al mismo bloque conceptual.
         Coseno típico: 0.05 - 0.15
- 
+
 - 5-6:  Salto temático moderado. Hay conexión débil o implícita entre ambas diapositivas.
         Se puede entender la transición pero no es fluida.
         Coseno típico: 0.01 - 0.05
- 
+
 - 1-4:  Ruptura temática. El tema cambia sin transición aparente.
         Los conceptos de ambas diapositivas no guardan relación directa observable.
         Coseno típico: < 0.01 o vocabularios completamente distintos.
- 
+
 ATENCIÓN: El coseno es una guía, no una regla mecánica.
 Si el coseno es bajo pero el contenido semánticamente continúa el tema (por ejemplo,
 un concepto que usa vocabulario nuevo pero sigue el mismo argumento), el puntaje debe
 reflejar tu lectura semántica, no el número del coseno.
- 
+
 REGLAS DE FEEDBACK para NTS:
 - Si el puntaje es 9 o 10: devuelve "" (cadena vacía).
 - Si el puntaje es menor: describe en máximo 20 palabras qué tema o concepto cambia abruptamente.
 - Prohibido usar: pedagogía, pedagógico, didáctico, optimiza, optimización,
   aprendizaje significativo, facilita el aprendizaje, mejora la comprensión, ayuda a los estudiantes.
- 
+
 ==========================================
 FORMATO DE RESPUESTA
 ==========================================
 Responde EXCLUSIVAMENTE con un arreglo JSON válido.
 Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
- 
+
 [
   {{
     "slide_number": 1,
@@ -265,8 +263,8 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
   }}
 ]
 [/INST]"""
- 
- 
+
+
 # =============================================================================
 # FASE 1 — PROMPT 3: COBERTURA DEL TEMARIO
 # =============================================================================
@@ -276,23 +274,23 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
 # la presentación y todo el temario. Mezclarlo con evaluaciones por diapositiva
 # hace que el modelo pierda el hilo global mientras clasifica slides individuales.
 # =============================================================================
- 
+
 PROMPT_3_COBERTURA = """[INST] Eres un evaluador experto en programas académicos universitarios.
- 
+
 Tu ÚNICA tarea es determinar qué partes del temario oficial están realmente presentes
 en el contenido completo de la presentación.
- 
+
 CONTENIDO COMPLETO DE LA PRESENTACIÓN:
 {batch_data}
- 
+
 TEMARIO OFICIAL DE LA MATERIA:
 {temario}
- 
+
 ==========================================
 REGLAS DE EVALUACIÓN
 ==========================================
 Esta evaluación es GLOBAL para toda la presentación, no por diapositiva individual.
- 
+
 1. Considera el contenido completo de TODAS las diapositivas en conjunto.
 2. Solo marca un tema como presente cuando exista evidencia suficiente en el contenido.
    No marques un tema únicamente porque el título de una diapositiva se parezca;
@@ -304,16 +302,16 @@ Esta evaluación es GLOBAL para toda la presentación, no por diapositiva indivi
 7. Si un tema NO tiene subtemas en el temario oficial, no agregues la propiedad "subtemas".
 8. Conserva exactamente los nombres y numeración del temario oficial.
 9. Solo incluye unidades y temas con evidencia real de presencia en la presentación.
- 
+
 ==========================================
 FORMATO DE RESPUESTA
 ==========================================
 Responde EXCLUSIVAMENTE con un objeto JSON válido.
 Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
- 
+
 Si ningún tema tiene evidencia suficiente:
 {{"temas_presentacion": []}}
- 
+
 Si hay temas con evidencia:
 {{
   "temas_presentacion": [
@@ -334,8 +332,8 @@ Si hay temas con evidencia:
   ]
 }}
 [/INST]"""
- 
- 
+
+
 # =============================================================================
 # FASE 2 — PROMPT 4: PLAN DE RESTRUCTURACIÓN
 # =============================================================================
@@ -346,77 +344,92 @@ Si hay temas con evidencia:
 # va a redactar. Con este prompt solo produce un plan estructurado que el
 # Prompt 5 ejecutará con toda la información resuelta de antemano.
 # =============================================================================
- 
+
 PROMPT_4_PLAN = """[INST] Eres un experto en estructura de contenido para presentaciones académicas universitarias.
- 
+
 Tu ÚNICA tarea es analizar cada diapositiva del lote y decidir CÓMO debe restructurarse.
 NO escribas el contenido final todavía. Solo produce el plan de acción.
- 
+
 DATOS DEL LOTE:
 {batch_data}
- 
+
 ==========================================
 CONTEXTO DE LAS MÉTRICAS
 ==========================================
 Las diapositivas que recibes han sido evaluadas con estas 4 métricas:
- 
+
 ICD — Complejidad del Contenido (rango académico correcto: 4.0 a 6.0)
   Mide legibilidad Flesch-Szigriszt + densidad léxica.
   ICD alto (> 6.0): lenguaje demasiado denso, oraciones largas, exceso de sustantivaciones.
   ICD bajo (< 4.0): lenguaje demasiado básico para nivel universitario.
   El campo "icd_valor" te da el número exacto.
- 
+
 WPS — Cantidad de Palabras (máximo: 50 palabras en el cuerpo, sin contar el título)
   Una diapositiva con más de 50 palabras satura al estudiante.
   El campo "palabras_count" te da el conteo exacto.
   Una diapositiva con 50 o menos palabras NO necesita división, incluso si falla otra métrica.
- 
+
 HSS — Coherencia Título-Contenido (correcto: puntaje > 7.0)
   El campo "hss_score" te da el puntaje.
- 
+
 NTS — Hilo Narrativo (correcto: puntaje > 5.0)
   El campo "nts_score" te da el puntaje.
- 
+
 El campo "metricas_que_fallan" lista exactamente cuáles métricas están fuera de rango.
- 
+
 ==========================================
 ÁRBOL DE DECISIÓN PARA EL PLAN
 ==========================================
 Aplica estas reglas EN ORDEN para cada diapositiva:
- 
+
+REGLA 0 — Si "requiere_reestructuracion" es false:
+  → accion: "sin_cambios"
+  → diapositivas_plan: []
+  → Justificación: todas las métricas están en rango. No hay nada que corregir.
+  → IMPORTANTE: aunque el contenido te parezca mejorable, si este campo es false
+    NO debes proponer ninguna acción. Respeta la decisión del sistema de métricas.
+
+REGLA TITULO — Si "requiere_reestructuracion" es true Y "metricas_que_fallan" contiene
+  ÚNICAMENTE "hss" (sin icd ni wps en la lista):
+  → accion: "solo_titulo"
+  → diapositivas_plan: 1 entrada con "titulo_propuesto" que describe el contenido real.
+    El campo "contenido_a_incluir" y "terminos_tecnicos_obligatorios" van vacíos.
+  → Justificación: el cuerpo de la diapositiva está bien. Solo el título necesita
+    ser más descriptivo del contenido que ya existe. No se reescribe el cuerpo.
+
 REGLA A — Si "palabras_count" <= 50:
   → accion: "reescribir_una"
   → diapositivas_plan: 1 entrada
   → Justificación: No hay exceso de contenido. La restructuración solo ajusta lenguaje
     (ICD, HSS) sin dividir. Dividir una diapositiva corta fragmenta innecesariamente.
- 
+
 REGLA B — Si "palabras_count" entre 51 y 100:
   → Evalúa si el contenido aborda UN solo concepto central o DOS conceptos distintos.
   → Si UN concepto: accion: "reescribir_una", diapositivas_plan: 1 entrada.
   → Si DOS conceptos distintos: accion: "dividir", diapositivas_plan: 2 entradas,
     distribuyendo TODA la información entre ambas sin omitir nada.
- 
+
 REGLA C — Si "palabras_count" > 100:
   → Identifica conceptos o subtemas distintos presentes en el contenido.
   → Genera tantas entradas como conceptos, con MÁXIMO 4.
   → Si hay más de 4 subconceptos, agrupa los más relacionados.
   → accion: "dividir", diapositivas_plan: N entradas (2-4).
   → TODA la información del original debe quedar distribuida entre las entradas.
- 
+
 REGLA D — Si solo falla ICD (y palabras_count <= 50):
   → accion: "reescribir_una"
   → diapositivas_plan: 1 entrada
   → El plan debe indicar que solo necesita simplificación de lenguaje, no división.
- 
+
 REGLA E — Si solo falla HSS:
   → accion: "reescribir_una"
   → diapositivas_plan: 1 entrada
   → El plan debe indicar que se necesita un nuevo título más coherente con el contenido.
- 
+
 PRINCIPIO TRANSVERSAL: Dividir es la última opción. Solo divide cuando las palabras
 exceden 50. Nunca dividas para "ahorrar palabras". Nunca elimines información
 para que quepa: si no cabe, añade una entrada más al plan.
- 
+
 ==========================================
 QUÉ DEBE CONTENER CADA ENTRADA DEL PLAN
 ==========================================
@@ -429,16 +442,34 @@ Para cada diapositiva planificada indica:
 - "terminos_tecnicos_obligatorios": lista de términos técnicos, nombres propios o conceptos
   del original que NO pueden omitirse en esa diapositiva porque perderían su significado
   al reemplazarse con sinónimos (ej: "TCP/IP", "Flesch-Szigriszt", "mitocondria").
- 
+
 ==========================================
 FORMATO DE RESPUESTA
 ==========================================
 Responde EXCLUSIVAMENTE con un arreglo JSON válido.
 Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
- 
+
 [
   {{
     "slide_number": 1,
+    "accion": "sin_cambios",
+    "razon": "requiere_reestructuracion es false. Todas las métricas en rango.",
+    "diapositivas_plan": []
+  }},
+  {{
+    "slide_number": 2,
+    "accion": "solo_titulo",
+    "razon": "Solo falla HSS. El cuerpo está bien. El título no describe el contenido con precisión.",
+    "diapositivas_plan": [
+      {{
+        "titulo_propuesto": "Definición e Impacto del Conflicto",
+        "contenido_a_incluir": "",
+        "terminos_tecnicos_obligatorios": []
+      }}
+    ]
+  }},
+  {{
+    "slide_number": 3,
     "accion": "reescribir_una",
     "razon": "ICD alto por oraciones densas. Palabras en rango (38), no requiere división.",
     "diapositivas_plan": [
@@ -450,9 +481,9 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
     ]
   }},
   {{
-    "slide_number": 2,
+    "slide_number": 4,
     "accion": "dividir",
-    "razon": "Palabras: 112. Dos conceptos distintos: modelo OSI y modelo TCP/IP. Se separan en dos diapositivas.",
+    "razon": "Palabras: 112. Dos conceptos distintos: modelo OSI y modelo TCP/IP.",
     "diapositivas_plan": [
       {{
         "titulo_propuesto": "Modelo OSI y sus Capas",
@@ -468,8 +499,8 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
   }}
 ]
 [/INST]"""
- 
- 
+
+
 # =============================================================================
 # FASE 2 — PROMPT 5: REDACCIÓN FINAL Y MATERIAL DE APOYO
 # =============================================================================
@@ -480,15 +511,15 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
 # Preguntas y curiosidades se basan en "contenido_original" (lo que el docente
 # puso originalmente), no en el texto restructurado que se va a generar.
 # =============================================================================
- 
+
 PROMPT_5_REDACCION = """[INST] Eres un experto en redacción técnica para presentaciones académicas universitarias.
- 
+
 Recibes un plan de restructuración ya elaborado. Tu tarea es EJECUTAR ese plan:
 escribir el contenido optimizado de cada diapositiva y generar el material de apoyo.
- 
+
 DATOS DEL LOTE (incluye el plan de restructuración):
 {batch_data}
- 
+
 ==========================================
 PARTE A — MATERIAL DE APOYO (SIEMPRE, para todas las diapositivas)
 ==========================================
@@ -496,59 +527,63 @@ IMPORTANTE: Las preguntas y los datos curiosos se generan A PARTIR DEL CAMPO
 "contenido_original" de cada diapositiva. NO los bases en el texto nuevo que
 vas a escribir en la Parte B. El docente quiere material de apoyo sobre lo que
 él redactó originalmente, no sobre la versión restructurada.
- 
+
 "preguntas": 1 a 3 preguntas de repaso respondibles directamente con el texto
   de "contenido_original".
   - Deben ser específicas, no genéricas ("¿Qué es un protocolo?" es mejor que "¿Qué aprendiste?").
   - No inventes datos que no estén presentes en "contenido_original".
- 
+
 "datos_curiosos": 1 a 3 hechos relevantes derivados de "contenido_original".
   - Pueden ampliar levemente el contexto pero deben estar implícitos en ese texto.
   - No inventes información que contradiga o no tenga base en "contenido_original".
- 
+
 ==========================================
 PARTE B — REDACCIÓN (solo si "accion" != "sin_cambios")
 ==========================================
 Si "accion" es "sin_cambios": "diapositivas_generadas": [] y pasa a la siguiente.
- 
+
+Si "accion" es "solo_titulo": genera exactamente UNA entrada en "diapositivas_generadas"
+con SOLO el campo "titulo_sugerido" tomado del plan. Pon "contenido_optimizado": ""
+y "tipo_retorico_aplicado": null. No reescribas el cuerpo.
+
 Si "accion" es "reescribir_una" o "dividir": ejecuta el plan del campo "diapositivas_plan".
 Genera exactamente las diapositivas indicadas en el plan, en el orden indicado.
- 
+
 ==========================================
 TÉCNICAS PARA REDUCIR COMPLEJIDAD (ICD)
 ==========================================
 Aplica estas técnicas SIEMPRE en la redacción, independientemente de si ICD falla o no.
 El objetivo es un ICD entre 4.0 y 6.0:
- 
+
 1. NO uses estilo telegráfico.
    MAL:  "Componentes bióticos y abióticos interactúan dinámicamente."
    BIEN: "En un ecosistema, los seres vivos se relacionan con los elementos no vivos."
- 
+
 2. Cada oración: entre 10 y 18 palabras.
    Menos de 10 palabras dispara la densidad léxica (ICD sube).
    Más de 18 palabras dificulta la lectura.
- 
+
 3. Usa conectores y palabras función con frecuencia:
    "que", "el cual", "porque", "es decir", "por ejemplo", "entonces",
    "esto significa que", "en otras palabras", "por lo tanto".
- 
+
 4. Cuando uses un término técnico, acompáñalo de una aclaración breve en la misma oración:
    MAL:  "La biodiversidad funcional sostiene la estabilidad."
    BIEN: "La biodiversidad funcional, es decir, la variedad de roles de las especies,
           sostiene la estabilidad del sistema."
- 
+
 5. Prefiere verbos completos sobre sustantivaciones:
    MAL:  "La transferencia de energía sigue principios termodinámicos."
    BIEN: "La energía se transfiere siguiendo las leyes de la termodinámica."
- 
+
 6. Sujeto explícito en cada oración. Evita oraciones encadenadas sin sujeto.
- 
+
 SOBRE LOS TÉRMINOS TÉCNICOS:
 Los términos listados en "terminos_tecnicos_obligatorios" NO pueden reemplazarse
 con sinónimos porque son conceptos propios del dominio académico (nombres de protocolos,
 fórmulas, fenómenos, autores, etc.). Deben aparecer exactamente como están.
 Para reducir ICD alrededor de ellos, añade conectores y aclaraciones, no los sustituyas.
- 
+
 SOBRE LOS LISTADOS:
 Si el contenido_original presenta una lista de elementos (tipos, pasos, componentes,
 características, etapas, etc.), redacta el campo "contenido_optimizado" usando la misma
@@ -561,19 +596,19 @@ Ejemplo de formato correcto:
    - Física: transmite bits por el medio.
    - Enlace de datos: detecta y corrige errores.
    - Red: determina la ruta de los paquetes."
- 
+
 ==========================================
 RESTRICCIONES DE CADA DIAPOSITIVA GENERADA
 ==========================================
- 
+
 LONGITUD — "contenido_optimizado" entre 30 y 50 palabras (sin contar el título):
- 
+
   CÓMO CONTAR: cuenta solo las palabras del valor de "contenido_optimizado".
   El título va en "titulo_sugerido" y NO se cuenta. Los guiones de lista ("- " o "• ")
   NO cuentan como palabras. Cada token separado por espacio sí cuenta.
   Antes de escribir tu respuesta final, cuenta manualmente las palabras del texto
   que generaste. Si el conteo está fuera del rango 30-50, corrígelo antes de responder.
- 
+
   REGLAS DE AJUSTE:
   - Menos de 30 palabras → expande con un ejemplo o una aclaración tomada del
     "contenido_original". No rellenes con frases vacías de significado.
@@ -586,35 +621,35 @@ LONGITUD — "contenido_optimizado" entre 30 y 50 palabras (sin contar el títul
   La regla absoluta es: NUNCA entregues un "contenido_optimizado" con más de 50 palabras.
   Si para respetar el límite tuviste que dividir, eso es correcto. Si tuviste que omitir
   información, eso es un error: añade más diapositivas en lugar de omitir.
- 
+
   ESTRUCTURA (aplica tanto a párrafos como a listados):
   - Para contenido expositivo: mínimo 3 oraciones, máximo 4, con conectores entre ellas.
   - Para contenido enumerativo: una oración introductoria + los ítems de lista.
     (Ver sección SOBRE LOS LISTADOS más arriba.)
- 
+
 CONSERVACIÓN TOTAL DE INFORMACIÓN:
   - TODOS los términos técnicos, definiciones, nombres propios, ejemplos y datos
     del "contenido_original" deben aparecer al menos una vez en el conjunto de
     diapositivas generadas para esa slide.
   - Si dividiste, ningún concepto puede perderse en el proceso.
   - Reestructurar = reescribir, NO resumir. La información completa debe estar presente.
- 
+
 TÍTULO — "titulo_sugerido":
   - Usa el "titulo_propuesto" del plan como base.
   - Ajústalo si al escribir el contenido descubres que describe mejor otro ángulo.
   - Entre 3 y 8 palabras. Prohibido: "Concepto", "Información", "Tema N", "Parte N".
- 
+
 HILO NARRATIVO entre diapositivas generadas:
   - Si generas varias diapositivas para una misma original, ordénalas de modo que
     la idea final de una sea base natural de la siguiente.
   - Prohibido usar conectores artificiales: "Continuando…", "Como mencionamos…",
     "En la siguiente diapositiva…".
- 
+
 TIPO RETÓRICO:
   - "tipo_retorico_aplicado" debe ser el mismo que el "tipo_retorico" del original.
   - Si dividiste una "explicacion" en 3 partes, las 3 son "explicacion".
   - Aplica el registro correspondiente:
- 
+
   "introduccion"    → Ubica al estudiante en contexto amplio, anuncia el alcance.
   "definicion"      → Primera oración con estructura "X es Y, que [propiedad clave]".
                       Oraciones siguientes añaden matices. Términos técnicos intactos.
@@ -628,27 +663,27 @@ TIPO RETÓRICO:
   "conclusion"      → Reformula los puntos del original. No introduzcas conceptos nuevos.
                       Usa: "en síntesis", "por tanto", "esto muestra que".
   "general"/null    → Aplica las reglas estándar sin registro específico.
- 
+
 ==========================================
 VERIFICACIÓN ANTES DE RESPONDER
 ==========================================
 Para cada diapositiva generada, verifica EN ESTE ORDEN:
- 
+
 0. CONTEO MANUAL: Cuenta palabra por palabra el texto de "contenido_optimizado"
    (sin contar el título, sin contar los guiones de lista).
    ¿El resultado está entre 30 y 50? Si no, corrígelo ANTES de continuar.
    Este paso es obligatorio. No lo omitas ni lo estimes a ojo.
- 
+
 1. ORACIONES: ¿Todas las oraciones (o ítems de lista) tienen 18 palabras o menos?
 2. INFORMACIÓN: ¿Todo concepto, término técnico, ejemplo y dato del "contenido_original"
    aparece en el conjunto de diapositivas generadas para ese slide?
 3. TIPO RETÓRICO: ¿La redacción respeta el registro del tipo indicado?
 4. TÍTULO: ¿Describe con precisión el contenido en 3 a 8 palabras?
 5. CONECTORES: ¿Hay al menos 2 conectores o palabras función en el texto?
- 
+
 Si la verificación 2 falla porque para cumplir el límite de 50 palabras tuviste
 que omitir información: añade una diapositiva más al arreglo, NO elimines información.
- 
+
 ==========================================
 LENGUAJE PROHIBIDO
 ==========================================
@@ -656,13 +691,13 @@ No uses en títulos ni en contenido:
 pedagogía, pedagógico, didáctico, optimiza, optimización, aprendizaje significativo,
 facilita el aprendizaje, mejora la comprensión, ayuda a los estudiantes,
 para una mejor enseñanza, enriquece el conocimiento.
- 
+
 ==========================================
 FORMATO DE RESPUESTA
 ==========================================
 Responde EXCLUSIVAMENTE con un arreglo JSON válido.
 Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
- 
+
 [
   {{
     "slide_number": 1,
@@ -703,8 +738,19 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
     "slide_number": 3,
     "preguntas": ["..."],
     "datos_curiosos": ["..."],
+    "diapositivas_generadas": [
+      {{
+        "titulo_sugerido": "Capas del Modelo OSI",
+        "contenido_optimizado": "",
+        "tipo_retorico_aplicado": null
+      }}
+    ]
+  }},
+  {{
+    "slide_number": 4,
+    "preguntas": ["..."],
+    "datos_curiosos": ["..."],
     "diapositivas_generadas": []
   }}
 ]
 [/INST]"""
- 
