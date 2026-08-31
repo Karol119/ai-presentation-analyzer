@@ -240,7 +240,14 @@ reflejar tu lectura semántica, no el número del coseno.
 
 REGLAS DE FEEDBACK para NTS:
 - Si el puntaje es 9 o 10: devuelve "" (cadena vacía).
-- Si el puntaje es menor: describe en máximo 20 palabras qué tema o concepto cambia abruptamente.
+- Si el puntaje es 7 o 8: describe brevemente el cambio de subtema en máximo 15 palabras.
+  Ejemplo: "Cambia del estilo evasivo al estilo complaciente."
+- Si el puntaje es 6 o menor: el feedback debe ser PRESCRIPTIVO. No solo describes el problema,
+  le dices al docente qué concepto o idea podría mencionar brevemente para suavizar la transición.
+  Formato: "Salto abrupto de [tema anterior] a [tema nuevo]. Para conectarlos, podrías mencionar [concepto puente]."
+  Ejemplo: "Salto abrupto de estilos generales a peticiones asertivas. Para conectarlos, podrías mencionar
+  que los estilos se aplican en situaciones concretas como hacer una solicitud."
+  Máximo 35 palabras.
 - Prohibido usar: pedagogía, pedagógico, didáctico, optimiza, optimización,
   aprendizaje significativo, facilita el aprendizaje, mejora la comprensión, ayuda a los estudiantes.
 
@@ -751,6 +758,78 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
     "preguntas": ["..."],
     "datos_curiosos": ["..."],
     "diapositivas_generadas": []
+  }}
+]
+[/INST]"""
+
+
+# =============================================================================
+# FASE 2 — PROMPT 6: PREGUNTAS Y DATOS CURIOSOS (TODAS LAS DE CONTENIDO)
+# =============================================================================
+# Responsabilidad única: generar material de apoyo basado en el contenido
+# original del docente para TODAS las diapositivas de tipo "contenido",
+# independientemente de si necesitan reestructuración o no.
+#
+# Se ejecuta en PARALELO con el Prompt 4 (plan de reestructuración).
+# No depende de ningún otro prompt de la Fase 2.
+#
+# Usa "contenido_original" (lo que el docente escribió), no el contenido
+# restructurado, porque el material de apoyo refleja la planeación original.
+# =============================================================================
+
+SI_MATERIAL_APOYO = """Eres un especialista en diseño de material de estudio para nivel universitario.
+Responde SIEMPRE con un arreglo JSON válido siguiendo exactamente el esquema indicado.
+Sin markdown, sin texto fuera del JSON, sin comentarios, sin explicaciones previas.
+Incluye TODAS las diapositivas del lote en el arreglo."""
+
+PROMPT_6_MATERIAL_APOYO = """[INST] Eres un especialista en diseño de material de estudio universitario.
+
+Tu ÚNICA tarea es generar preguntas de repaso y datos curiosos para cada diapositiva del lote,
+basándote EXCLUSIVAMENTE en el campo "contenido_original" de cada una.
+
+DATOS DEL LOTE:
+{batch_data}
+
+==========================================
+REGLAS DE GENERACIÓN
+==========================================
+
+"preguntas": 1 a 3 preguntas de repaso respondibles directamente con el texto de "contenido_original".
+  - Deben ser específicas y concretas.
+    MAL: "¿Qué aprendiste sobre el tema?"
+    BIEN: "¿Cuál es la diferencia entre el modelo OSI y el modelo TCP/IP?"
+  - No inventes datos que no estén en "contenido_original".
+  - Si el contenido es muy breve (menos de 20 palabras), genera solo 1 pregunta.
+
+"datos_curiosos": 1 a 3 hechos relevantes derivados de "contenido_original".
+  - Pueden ampliar levemente el contexto pero deben estar implícitos en el texto original.
+  - No inventes información que contradiga o no tenga base en "contenido_original".
+  - Si el contenido es muy breve, genera solo 1 dato curioso.
+
+IMPORTANTE: Genera material para TODAS las diapositivas del lote, sin excepción.
+
+==========================================
+FORMATO DE RESPUESTA
+==========================================
+Responde EXCLUSIVAMENTE con un arreglo JSON válido.
+Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
+
+[
+  {{
+    "slide_number": 1,
+    "preguntas": [
+      "¿Cuál es la función principal de un protocolo de red?",
+      "¿Por qué TCP/IP es el protocolo estándar en Internet?"
+    ],
+    "datos_curiosos": [
+      "El modelo TCP/IP fue desarrollado por ARPA en los años 70 para conectar redes militares.",
+      "TCP/IP agrupa las 7 capas del modelo OSI en solo 4 capas funcionales."
+    ]
+  }},
+  {{
+    "slide_number": 2,
+    "preguntas": ["¿Qué caracteriza al estilo de comunicación pasivo?"],
+    "datos_curiosos": ["El estilo pasivo genera a largo plazo resentimiento acumulado en quien lo ejerce."]
   }}
 ]
 [/INST]"""

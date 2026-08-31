@@ -8,7 +8,7 @@ from app.core.logic.text_extractor import extraer_datos_pptx
 from app.core.logic.metrics.icd import calcular_icd_presentacion
 from app.infrastructure.ai.llm_provider import verificar_conexion_ia
 from app.core.logic.metrics.word_count import calcular_wps_presentacion
-from app.core.logic.metrics.ai_restructure import reestructurar_diapositivas_lote
+from app.core.logic.metrics.ai_restructure import reestructurar_diapositivas_lote, generar_material_apoyo_lote
 from app.core.logic.metrics.ai_batch_metrics import calcular_metricas_ia_lote
 from app.core.logic.presentation_score import calcular_puntaje_global, calcular_puntaje_diapositiva
 from app.core.controller.subject_controller import obtener_temario_completo
@@ -230,11 +230,29 @@ def analizar_presentacion(
                 s.pop("icd_valor", None)
                 s.pop("palabras_count", None)
 
-        # Restructuración: SOLO las que realmente la necesitan
+        # Preparar carga para el Prompt 6 (material de apoyo para TODAS)
+        # Necesita contenido original antes de que los pops lo eliminen
+        carga_material = [
+            {
+                "slide_number":   s["slide_number"],
+                "content":        s.get("content", []),
+                "content_blocks": s.get("content_blocks", []),
+                "titulo":         s.get("titulo_original", ""),
+            }
+            for s in diapositivas_para_enriquecer
+        ]
+
+        # Ejecutar en paralelo:
+        #   - Prompt 6: material de apoyo para TODAS las diapositivas de contenido
+        #   - Prompt 4+5: reestructuración para las que la necesitan
+        mapa_material: dict = {}
         mapa_reestructurado: dict = {}
-        if diapositivas_para_reestructurar:
-            try:
-                mapa_reestructurado = reestructurar_diapositivas_lote([
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            futuro_material = pool.submit(generar_material_apoyo_lote, carga_material)
+
+            if diapositivas_para_reestructurar:
+                futuro_reest = pool.submit(reestructurar_diapositivas_lote, [
                     {
                         "slide_number":              s["slide_number"],
                         "content":                   s.pop("content"),
@@ -248,36 +266,47 @@ def analizar_presentacion(
                     }
                     for s in diapositivas_para_reestructurar
                 ])
+            else:
+                futuro_reest = None
+
+            try:
+                mapa_material = futuro_material.result()
+                if callback_estado:
+                    callback_estado("[OK] Material de apoyo generado.")
+                if futuro_reest is not None:
+                    mapa_reestructurado = futuro_reest.result()
+                    if callback_estado:
+                        callback_estado("[OK] Reestructuración completada.")
             except Exception as e:
                 if callback_estado:
                     callback_estado("[CANCELADO] El enriquecimiento fue interrumpido.")
                 raise e
 
-        # Asignar resultados: preguntas/curiosidades a TODAS, restructuración solo a quien la necesitaba
+        # Asignar resultados a cada diapositiva
         for s in diapositivas_finales:
             if not s["omitida"]:
-                datos_ia = mapa_reestructurado.get(s["slide_number"], {})
-                s["preguntas"]      = datos_ia.get("preguntas", [])
-                s["datos_curiosos"] = datos_ia.get("datos_curiosos", [])
-                arreglo_gen = datos_ia.get("diapositivas_generadas", [])
+                # Preguntas y datos curiosos: SIEMPRE, para todas las de contenido
+                material = mapa_material.get(s["slide_number"], {})
+                s["preguntas"]      = material.get("preguntas", [])
+                s["datos_curiosos"] = material.get("datos_curiosos", [])
 
-                if not s["requiere_reestructuracion"] or not arreglo_gen:
-                    s["reestructuracion"] = None
-                else:
-                    # Distinguir caso solo_titulo: una sola entrada con contenido_optimizado vacío
+                # Reestructuración: solo para las que la necesitaban
+                arreglo_gen = mapa_reestructurado.get(s["slide_number"], {}).get("diapositivas_generadas", [])
+                if s["requiere_reestructuracion"] and arreglo_gen:
                     es_solo_titulo = (
                         len(arreglo_gen) == 1
                         and arreglo_gen[0].get("contenido_optimizado", "") == ""
                         and arreglo_gen[0].get("titulo_sugerido", "") != ""
                     )
                     if es_solo_titulo:
-                        # Solo sugerencia de título: no hay contenido nuevo
                         s["reestructuracion"] = {
                             "titulo_sugerido": arreglo_gen[0]["titulo_sugerido"],
                             "diapositivas_generadas": []
                         }
                     else:
                         s["reestructuracion"] = {"diapositivas_generadas": arreglo_gen}
+                else:
+                    s["reestructuracion"] = None
 
 
     # --- JSON DE SALIDA (contrato invariante) ---

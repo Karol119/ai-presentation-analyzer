@@ -23,8 +23,9 @@ from typing import Dict, Any, List
 
 from app.infrastructure.ai.llm_provider import consultar_modelo
 from app.infrastructure.ai.prompts import (
-    PROMPT_4_PLAN,      SI_PLAN,
-    PROMPT_5_REDACCION, SI_REDACCION,
+    PROMPT_4_PLAN,          SI_PLAN,
+    PROMPT_5_REDACCION,     SI_REDACCION,
+    PROMPT_6_MATERIAL_APOYO, SI_MATERIAL_APOYO,
 )
 from app.core.logic.text_extractor import serializar_bloques_para_prompt
 
@@ -223,3 +224,59 @@ def _parsear_arreglo_json(respuesta: str, origen: str) -> List[Dict]:
     except Exception as e:
         print(f"[ERROR {origen}] Fallo al parsear JSON: {e}")
     return []
+
+
+# ---------------------------------------------------------------------------
+# FUNCIÓN PÚBLICA: MATERIAL DE APOYO (TODAS LAS DIAPOSITIVAS DE CONTENIDO)
+# ---------------------------------------------------------------------------
+
+def generar_material_apoyo_lote(
+    diapositivas_contenido: list,
+) -> dict:
+    """
+    Genera preguntas y datos curiosos para TODAS las diapositivas de tipo
+    "contenido", usando el Prompt 6 de forma independiente a la reestructuración.
+
+    Se ejecuta en paralelo con reestructurar_diapositivas_lote() desde el controller.
+
+    Args:
+        diapositivas_contenido: lista de dicts con al menos:
+            slide_number, content[], content_blocks[] (opcional), titulo
+
+    Returns:
+        Dict[int, Dict] mapeando slide_number → {preguntas, datos_curiosos}
+    """
+    if not diapositivas_contenido:
+        return {}
+
+    carga = []
+    for d in diapositivas_contenido:
+        content_blocks = d.get("content_blocks")
+        if content_blocks:
+            from app.core.logic.text_extractor import serializar_bloques_para_prompt
+            contenido_original = serializar_bloques_para_prompt(content_blocks)
+        else:
+            contenido_original = " ".join(d.get("content", []))
+
+        carga.append({
+            "slide_number":       d["slide_number"],
+            "contenido_original": contenido_original[:1200],
+        })
+
+    prompt = PROMPT_6_MATERIAL_APOYO.format(
+        batch_data=__import__("json").dumps(carga, ensure_ascii=False, indent=2)
+    )
+
+    print("[IA MATERIAL] Prompt 6: generando preguntas y datos curiosos para todas las slides...")
+    respuesta = consultar_modelo(prompt, system_instruction=SI_MATERIAL_APOYO)
+    resultados = _parsear_arreglo_json(respuesta, "Prompt 6 (Material de Apoyo)")
+
+    mapa: dict = {}
+    for item in resultados:
+        num = item.get("slide_number")
+        if num is not None:
+            mapa[num] = {
+                "preguntas":     item.get("preguntas", []),
+                "datos_curiosos": item.get("datos_curiosos", []),
+            }
+    return mapa
