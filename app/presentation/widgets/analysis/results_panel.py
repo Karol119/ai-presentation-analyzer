@@ -44,7 +44,6 @@ def build_results_panel(subject: str, nombre_presentacion: str):
     _cargar_datos_json(nombre_presentacion)
     _build_header(panel)
     
-    # Construimos el botón fijo en la parte inferior
     _build_footer(panel)
     
     _widgets["contenido_frame"] = ctk.CTkScrollableFrame(
@@ -64,7 +63,6 @@ def _build_footer(parent):
     lbl_estado.pack(side="top", pady=(0, 5))
 
     def exportar_mejoras():
-        # Verificamos si realmente hay algo que arreglar
         data = _widgets["cached_data"]
         if not data: return
         
@@ -73,11 +71,9 @@ def _build_footer(parent):
             messagebox.showinfo("Aviso", "Esta presentación ya está en un nivel óptimo. No requiere reestructuración.")
             return
 
-        # 1. Bloqueamos la UI para evitar dobles clics
         btn_aplicar.configure(state="disabled")
         lbl_estado.configure(text="Generando archivo PPTX...\nEsto puede tardar unos segundos.")
         
-        # 2. Lógica pesada en hilo secundario delegando al mismo orquestador del historial
         def tarea_pesada():
             try:
                 subject = _widgets["subject"]
@@ -85,7 +81,6 @@ def _build_footer(parent):
                 ruta_pdf = navigator.get_contexto_analisis()["ruta_pdf"]
                 id_materia = obtener_id_materia_controlador(subject)
                 
-                # Como estamos en el análisis, siempre es la versión más reciente
                 id_version = obtener_id_version_actual(nombre_pres, id_materia)
                 _, version_actual = obtener_id_y_version_presentacion(nombre_pres, id_materia)
                 
@@ -93,21 +88,17 @@ def _build_footer(parent):
             except Exception as e:
                 return False, f"Error crítico: {str(e)}"
 
-        # 3. Respuesta a la interfaz
         def al_terminar(resultado):
             exito, mensaje = resultado
             if exito:
-                # Mostramos mensaje de éxito con la ruta y restauramos los botones
                 messagebox.showinfo("Exportación Lista", mensaje)
                 btn_aplicar.configure(state="normal")
                 lbl_estado.configure(text="")
             else:
-                # Mostramos error y restauramos botones
                 messagebox.showwarning("Aviso", mensaje)
                 btn_aplicar.configure(state="normal")
                 lbl_estado.configure(text="")
 
-        # 4. Lanzamos la tarea a través del manejador
         ejecutar_tarea_asincrona(target_task=tarea_pesada, on_finished_callback=al_terminar)
 
     btn_aplicar = ctk.CTkButton(
@@ -178,26 +169,56 @@ def _renderizar_tipo(parent, slide_data):
         ctk.CTkLabel(alerta_box, text="⚠️ Advertencia:\nActualmente el prototipo no es capaz de analizar imágenes.", text_color="#92400E", wraplength=250, font=("Inter", 10, "bold"), justify="center").pack(pady=10, padx=10)
 
 def _renderizar_calificacion(parent, slide_data):
-    score = slide_data.get("score_slide", "N/A")
     zona = slide_data.get("zona_slide", "N/A")
 
     frame = ctk.CTkFrame(parent, fg_color="#F1F5F9", corner_radius=8)
     frame.pack(fill="x", pady=10)
 
-    ctk.CTkLabel(frame, text=f"Score Slide: {score}", font=("Inter", 13, "bold")).pack(side="left", padx=10, pady=8)
-    color_zona = COLOR_ORO if str(zona).lower() != "pobre" else "#EF4444"
-    ctk.CTkLabel(frame, text=str(zona).upper(), font=("Inter", 11, "bold"), text_color=color_zona).pack(side="right", padx=10)
+    ctk.CTkLabel(frame, text="Calificación General:", font=("Inter", 13, "bold")).pack(side="left", padx=10, pady=8)
+    
+    # Asignamos color para la zona de calificación general
+    zona_str = str(zona).upper()
+    color_zona = "#10B981" if "EXCELENTE" in zona_str else COLOR_ORO if "BIEN" in zona_str else "#EF4444"
+    ctk.CTkLabel(frame, text=zona_str, font=("Inter", 11, "bold"), text_color=color_zona).pack(side="right", padx=10)
 
 def _renderizar_metricas(parent, slide_data):
     metricas = slide_data.get("metricas")
     if not metricas: return
 
+    # Diccionario de traducción
+    nombres_amigables = {
+        "wps": "Cantidad de Palabras",
+        "icd": "Complejidad de Lectura",
+        "hss": "Claridad del Encabezado",
+        "nts": "Flujo Narrativo"
+    }
+
     for nombre, info in metricas.items():
         if not info: continue
         m_frame = ctk.CTkFrame(parent, fg_color="transparent")
         m_frame.pack(fill="x", pady=8)
-        header_txt = f"{nombre.upper()}: {info.get('valor', 0)}  |  {info.get('estado', 'N/A')}"
-        ctk.CTkLabel(m_frame, text=header_txt, font=("Inter", 11, "bold"), anchor="w", text_color="#1E293B").pack(fill="x")
+        
+        nombre_mostrar = nombres_amigables.get(nombre.lower(), nombre.upper())
+        estado_mostrar = info.get('estado', 'N/A').upper()
+        
+        # Determinar color de la etiqueta
+        if "EXCELENTE" in estado_mostrar:
+            color_etiqueta = "#10B981"  # Verde
+        elif "BIEN" in estado_mostrar:
+            color_etiqueta = COLOR_ORO  # Amarillo / Oro
+        elif "MEJORAR" in estado_mostrar or "POBRE" in estado_mostrar:
+            color_etiqueta = "#EF4444"  # Rojo
+        else:
+            color_etiqueta = "#64748B"  # Gris por defecto
+
+        # Contenedor para separar nombre a la izquierda y estado a la derecha
+        titulo_frame = ctk.CTkFrame(m_frame, fg_color="transparent")
+        titulo_frame.pack(fill="x")
+
+        ctk.CTkLabel(titulo_frame, text=nombre_mostrar, font=("Inter", 11, "bold"), text_color="#1E293B").pack(side="left")
+        ctk.CTkLabel(titulo_frame, text=estado_mostrar, font=("Inter", 11, "bold"), text_color=color_etiqueta).pack(side="right")
+        
+        # El feedback queda debajo, alineado a la izquierda
         ctk.CTkLabel(m_frame, text=info.get('feedback', ''), font=("Inter", 11), text_color="#64748B", wraplength=260, justify="left").pack(fill="x", pady=(2, 0))
 
 def _renderizar_boton_reestructuracion(parent, slide_data):

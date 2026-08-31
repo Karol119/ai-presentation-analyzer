@@ -1,4 +1,4 @@
-# app/presentation/widgets/history_evaluation.py
+# app/presentation/widgets/history/history_evaluation.py
 import customtkinter as ctk
 import json
 import os
@@ -53,6 +53,14 @@ def mostrar_modal_evaluacion_json(ruta_pdf, version_num):
     )
     scroll.pack(fill="both", expand=True, padx=25, pady=10)
 
+    # Diccionario de traducción para mantener consistencia con results_panel
+    nombres_amigables = {
+        "wps": "Cantidad de Palabras",
+        "icd": "Complejidad de Lectura",
+        "hss": "Claridad del Encabezado",
+        "nts": "Flujo Narrativo"
+    }
+
     # 4. Extraer y mostrar las diapositivas
     slides = datos_ia.get("slides", [])
     
@@ -78,18 +86,20 @@ def mostrar_modal_evaluacion_json(ruta_pdf, version_num):
         f = ctk.CTkFrame(scroll, fg_color="white", border_width=1, border_color="#CBD5E1", corner_radius=8)
         f.pack(fill="x", padx=10, pady=5)
 
-        # Barra de Score y Zona (Igual al results_panel)
-        score = slide.get("score_slide", "N/A")
+        # Barra de Calificación alineada a los extremos
         zona = slide.get("zona_slide", "N/A")
         
         header_frame = ctk.CTkFrame(f, fg_color="#F1F5F9", corner_radius=8)
         header_frame.pack(fill="x", padx=10, pady=10)
 
-        ctk.CTkLabel(header_frame, text=f"Score Slide: {score}", font=("Inter", 13, "bold"), text_color="#1E293B").pack(side="left", padx=10, pady=8)
-        color_zona = COLOR_ORO if str(zona).lower() != "pobre" else "#EF4444"
-        ctk.CTkLabel(header_frame, text=str(zona).upper(), font=("Inter", 11, "bold"), text_color=color_zona).pack(side="right", padx=10)
+        ctk.CTkLabel(header_frame, text="Calificación General:", font=("Inter", 13, "bold"), text_color="#1E293B").pack(side="left", padx=10, pady=8)
+        
+        # Asignamos color para la zona general
+        zona_str = str(zona).upper()
+        color_zona = "#10B981" if "EXCELENTE" in zona_str else COLOR_ORO if "BIEN" in zona_str else "#EF4444"
+        ctk.CTkLabel(header_frame, text=zona_str, font=("Inter", 11, "bold"), text_color=color_zona).pack(side="right", padx=10)
 
-        # Rendimiento de cada métrica
+        # Rendimiento de cada métrica con etiquetas alineadas y colorizadas
         metricas = slide.get("metricas", {})
         for nombre, info in metricas.items():
             if not info: continue
@@ -97,8 +107,25 @@ def mostrar_modal_evaluacion_json(ruta_pdf, version_num):
             m_frame = ctk.CTkFrame(f, fg_color="transparent")
             m_frame.pack(fill="x", padx=15, pady=(5, 8))
 
-            header_txt = f"{nombre.upper()}: {info.get('valor', 0)}  |  {info.get('estado', 'N/A')}"
-            ctk.CTkLabel(m_frame, text=header_txt, font=("Inter", 11, "bold"), anchor="w", text_color="#1E293B").pack(fill="x")
+            nombre_mostrar = nombres_amigables.get(nombre.lower(), nombre.upper())
+            estado_mostrar = info.get('estado', 'N/A').upper()
+            
+            # Determinar color de la etiqueta
+            if "EXCELENTE" in estado_mostrar:
+                color_etiqueta = "#10B981"  # Verde
+            elif "BIEN" in estado_mostrar:
+                color_etiqueta = COLOR_ORO  # Amarillo / Oro
+            elif "MEJORAR" in estado_mostrar or "POBRE" in estado_mostrar:
+                color_etiqueta = "#EF4444"  # Rojo
+            else:
+                color_etiqueta = "#64748B"  # Gris por defecto
+
+            # Contenedor para separar nombre a la izquierda y estado a la derecha
+            titulo_frame = ctk.CTkFrame(m_frame, fg_color="transparent")
+            titulo_frame.pack(fill="x")
+
+            ctk.CTkLabel(titulo_frame, text=nombre_mostrar, font=("Inter", 11, "bold"), text_color="#1E293B").pack(side="left")
+            ctk.CTkLabel(titulo_frame, text=estado_mostrar, font=("Inter", 11, "bold"), text_color=color_etiqueta).pack(side="right")
             
             ctk.CTkLabel(
                 m_frame, text=info.get('feedback', ''), font=("Inter", 11),
