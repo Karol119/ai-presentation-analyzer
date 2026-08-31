@@ -1,4 +1,18 @@
 # app/core/logic/presentation_score.py
+"""
+Cálculo de puntajes globales y por diapositiva.
+
+DECISIÓN DE DISEÑO — NTS como métrica informativa:
+El NTS (hilo narrativo) mide la conexión ENTRE diapositivas, no la calidad
+del contenido DE una diapositiva. Un NTS bajo indica un cambio temático
+abrupto que se resuelve añadiendo una transición, no reescribiendo el cuerpo.
+Por eso NTS NO activa 'necesita_recomendacion'. Su feedback es prescriptivo
+(le dice al docente qué concepto puente podría añadir) pero no dispara
+el flujo de reestructuración de contenido.
+
+Las métricas que sí activan reestructuración son ICD, WPS y HSS,
+porque todas describen problemas del contenido de la diapositiva misma.
+"""
 from typing import Dict, Any, List
 
 PESOS = {
@@ -9,13 +23,19 @@ PESOS = {
 }
 
 _ESCALA_GLOBAL = [
-    (4.0, "deficiente"),
-    (6.0, "regular"),
-    (8.0, "bueno"),
+    (4.0,  "deficiente"),
+    (6.0,  "regular"),
+    (8.0,  "bueno"),
     (10.0, "excelente"),
 ]
 
-def calcular_puntaje_global(prom_icd: float, prom_wps: float, prom_hss: float, prom_nts: float) -> Dict[str, Any]:
+
+def calcular_puntaje_global(
+    prom_icd: float,
+    prom_wps: float,
+    prom_hss: float,
+    prom_nts: float,
+) -> Dict[str, Any]:
     puntajes_metricas = {
         "icd": round(prom_icd, 2),
         "wps": round(prom_wps, 2),
@@ -23,82 +43,104 @@ def calcular_puntaje_global(prom_icd: float, prom_wps: float, prom_hss: float, p
         "nts": round(prom_nts, 2),
     }
 
-    desglose_puntaje = {f"{k}_pond": round(v * PESOS[k], 3) for k, v in puntajes_metricas.items()}
-    puntaje_global = sum(desglose_puntaje.values())
+    desglose = {f"{k}_pond": round(v * PESOS[k], 3) for k, v in puntajes_metricas.items()}
+    puntaje_global = sum(desglose.values())
 
     return {
         "score_global":   round(puntaje_global, 2),
         "zona_global":    _obtener_zona_global(puntaje_global),
         "scores_metrica": puntajes_metricas,
-        "desglose":       desglose_puntaje,
+        "desglose":       desglose,
         "pesos":          PESOS,
     }
 
-def calcular_puntaje_diapositiva(res_icd: Dict[str, Any], res_wps: Dict[str, Any], res_hss: Dict[str, Any], res_nts: Dict[str, Any]) -> Dict[str, Any]:
+
+def calcular_puntaje_diapositiva(
+    res_icd: Dict[str, Any],
+    res_wps: Dict[str, Any],
+    res_hss: Dict[str, Any],
+    res_nts: Dict[str, Any],
+) -> Dict[str, Any]:
     resumen_metricas = {
         "icd": {"valor": 0.0, "estado": "REVISAR"},
         "wps": {"valor": 0.0, "estado": "N/A"},
         "hss": {"valor": 0.0, "estado": "N/A"},
-        "nts": {"valor": 0.0, "estado": "N/A"}
+        "nts": {"valor": 0.0, "estado": "N/A"},
     }
-    
+
+    # Solo ICD, WPS y HSS pueden activar reestructuración.
+    # NTS es informativo: se muestra su estado pero no dispara recomendación.
     aspectos_a_mejorar: List[str] = []
     valores_normalizados = {"icd": 0.0, "wps": 0.0, "hss": 0.0, "nts": 0.0}
 
+    # ── ICD ──────────────────────────────────────────────────────────────────
     if res_icd and res_icd.get("calculable") and res_icd.get("icd") is not None:
         val = res_icd["icd"]
         valores_normalizados["icd"] = _normalizar_icd(val)
         estado = "BIEN" if res_icd.get("zona") == "apropiado" else "MEJORAR"
         resumen_metricas["icd"] = {"valor": val, "estado": estado}
-        if estado == "MEJORAR": aspectos_a_mejorar.append("icd")
+        if estado == "MEJORAR":
+            aspectos_a_mejorar.append("icd")  # ← sí activa reestructuración
 
+    # ── WPS ──────────────────────────────────────────────────────────────────
     if res_wps and res_wps.get("wps_score") is not None:
         val = res_wps["wps_score"]
         valores_normalizados["wps"] = val
         estado = "BIEN" if res_wps.get("zona") == "optima" else "MEJORAR"
         resumen_metricas["wps"] = {"valor": val, "estado": estado}
-        if estado == "MEJORAR": aspectos_a_mejorar.append("wps")
+        if estado == "MEJORAR":
+            aspectos_a_mejorar.append("wps")  # ← sí activa reestructuración
 
+    # ── HSS ──────────────────────────────────────────────────────────────────
     if res_hss and res_hss.get("hss_score") is not None:
         val = res_hss["hss_score"]
         valores_normalizados["hss"] = val
         estado = "BIEN" if val > 7.0 else "MEJORAR"
         resumen_metricas["hss"] = {"valor": val, "estado": estado}
-        if estado == "MEJORAR": aspectos_a_mejorar.append("hss")
+        if estado == "MEJORAR":
+            aspectos_a_mejorar.append("hss")  # ← sí activa reestructuración
 
+    # ── NTS — SOLO INFORMATIVO ───────────────────────────────────────────────
     if res_nts and res_nts.get("nts_score") is not None:
         val = res_nts["nts_score"]
         valores_normalizados["nts"] = val
-        estado = "BIEN" if val > 5.0 else "MEJORAR"
+        # Se calcula y se muestra el estado, pero NO se agrega a aspectos_a_mejorar.
+        # Un NTS bajo indica salto temático entre diapositivas; resolverlo es
+        # responsabilidad del docente (añadir una transición), no del sistema
+        # de reestructuración de contenido.
+        estado = "BIEN" if val > 5.0 else "REVISAR"  # REVISAR en lugar de MEJORAR
         resumen_metricas["nts"] = {"valor": val, "estado": estado}
-        if estado == "MEJORAR": aspectos_a_mejorar.append("nts")
+        # NTS nunca va a aspectos_a_mejorar
 
+    # ── Score total ──────────────────────────────────────────────────────────
     if valores_normalizados:
-        puntos_totales = sum(v * PESOS[k] for k, v in valores_normalizados.items())
-        peso_acumulado = sum(PESOS[k] for k in valores_normalizados.keys())
-        puntaje = puntos_totales / peso_acumulado if peso_acumulado > 0 else 0.0
+        puntos = sum(v * PESOS[k] for k, v in valores_normalizados.items())
+        peso_acum = sum(PESOS[k] for k in valores_normalizados)
+        puntaje = puntos / peso_acum if peso_acum > 0 else 0.0
     else:
         puntaje = 0.0
 
     return {
-        "score_total": round(puntaje, 2),
-        "zona": _obtener_zona_global(puntaje),
-        "estados": resumen_metricas,
-        "valores_normalizados": valores_normalizados,
-        "necesita_recomendacion": len(aspectos_a_mejorar) > 0
+        "score_total":           round(puntaje, 2),
+        "zona":                  _obtener_zona_global(puntaje),
+        "estados":               resumen_metricas,
+        "valores_normalizados":  valores_normalizados,
+        "necesita_recomendacion": len(aspectos_a_mejorar) > 0,
     }
 
+
 def _normalizar_icd(icd: float) -> float:
-    if icd is None: return 0.0 
-    
-    # RANGO SEGURO CON TOLERANCIA (+- 0.5): [3.5 a 6.5]
-    if 3.5 <= icd <= 6.5: return 10.0
-    
-    # Penalización SEVERA fuera del rango de tolerancia
-    if icd < 3.5: return max(0.0, 10.0 - (3.5 - icd) * 5.0)
+    if icd is None:
+        return 0.0
+    if 3.5 <= icd <= 6.5:
+        return 10.0
+    if icd < 3.5:
+        return max(0.0, 10.0 - (3.5 - icd) * 5.0)
     return max(0.0, 10.0 - (icd - 6.5) * 5.0)
+
 
 def _obtener_zona_global(puntaje: float) -> str:
     for limite, etiqueta in _ESCALA_GLOBAL:
-        if puntaje <= limite: return etiqueta
+        if puntaje <= limite:
+            return etiqueta
     return "excelente"
