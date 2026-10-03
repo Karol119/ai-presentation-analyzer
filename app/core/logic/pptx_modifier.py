@@ -1,11 +1,15 @@
 # app/core/logic/pptx_modifier.py
 import os
+import re
+import copy
 import zipfile
 import tempfile
 import shutil
 import xml.etree.ElementTree as ET
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.oxml.ns import qn
+from pptx.text.text import _Paragraph
 
 def aplicar_mejoras_pptx(ruta_original: str, ruta_destino: str, datos_analisis: dict) -> tuple[bool, str]:
     """
@@ -32,7 +36,8 @@ def aplicar_mejoras_pptx(ruta_original: str, ruta_destino: str, datos_analisis: 
                 for sug in sugerencias:
                     lista_contenidos.append({
                         "titulo": sug.get("titulo_sugerido", ""),
-                        "cuerpo": sug.get("contenido_optimizado", "")
+                        "cuerpo": sug.get("contenido_optimizado", ""),
+                        "formato": sug.get("formato", "")
                     })
 
                 # 3. Aplicar la clonación y reemplazo físico en el archivo destino
@@ -256,13 +261,258 @@ def _establecer_texto_preservando_estilo(forma, texto: str):
     if estilo.get("italic") is not None: run.font.italic = estilo["italic"]
     if estilo.get("color_rgb"): run.font.color.rgb = estilo["color_rgb"]
 
-def _actualizar_diapositiva_jerarquica(diapositiva, texto_titulo: str, texto_cuerpo: str):
+def _aplicar_estilo_run(run, estilo: dict):
+    if estilo.get("name"): run.font.name = estilo["name"]
+    if estilo.get("size"): run.font.size = estilo["size"]
+    if estilo.get("bold") is not None: run.font.bold = estilo["bold"]
+    if estilo.get("italic") is not None: run.font.italic = estilo["italic"]
+    if estilo.get("color_rgb"): run.font.color.rgb = estilo["color_rgb"]
+
+
+def _inferir_formato(texto: str) -> str:
+    """Deduce el formato del contenido cuando la IA no lo declaró."""
+    lineas = [l for l in texto.splitlines() if l.strip()]
+    n_vinetas = sum(1 for l in lineas if re.match(r"^\s*[-•]\s+", l))
+    n_numeradas = sum(1 for l in lineas if re.match(r"^\s*\d+[.)]\s+", l))
+    if n_numeradas > 0 and n_numeradas >= n_vinetas:
+        return "numerada"
+    if n_vinetas > 0:
+        return "vinetas"
+    return "parrafo"
+
+
+def _marcar_item(parrafo, formato: str):
+    """Aplica viñeta o numeración real (buChar/buAutoNum) al párrafo."""
+    pPr = parrafo._p.get_or_add_pPr()
+    pPr.set('marL', '228600')
+    pPr.set('indent', '-228600')
+    for tag in ('a:buNone', 'a:buChar', 'a:buAutoNum', 'a:buFont'):
+        for el in pPr.findall(qn(tag)):
+            pPr.remove(el)
+    if formato == "vinetas":
+        pPr.append(pPr.makeelement(qn('a:buFont'), {'typeface': 'Arial'}))
+        pPr.append(pPr.makeelement(qn('a:buChar'), {'char': '•'}))
+    elif formato == "numerada":
+        pPr.append(pPr.makeelement(qn('a:buAutoNum'), {'type': 'arabicPeriod'}))
+
+
+def _activar_autofit(forma):
+    """Activa normAutofit para que PowerPoint reduzca la fuente si hay desbordamiento."""
+    try:
+        bodyPr = forma.text_frame._txBody.find(qn('a:bodyPr'))
+        if bodyPr is None:
+            return
+        for tag in ('a:noAutofit', 'a:spAutoFit', 'a:normAutofit'):
+            for el in bodyPr.findall(qn(tag)):
+                bodyPr.remove(el)
+        bodyPr.append(bodyPr.makeelement(qn('a:normAutofit'), {}))
+        forma.text_frame.word_wrap = True
+    except Exception:
+        pass
+
+
+def _crear_caja_titulo(diapositiva, texto: str):
+    """Crea una caja de título cuando la diapositiva no tiene placeholder de título."""
+    try:
+        prs = diapositiva.part.package.main_document_part.presentation
+        ancho = prs.slide_width
+        alto = prs.slide_height
+    except Exception:
+        ancho, alto = 12192000, 6858000
+
+    from pptx.util import Emu
+    izquierda = Emu(int(ancho * 0.05))
+    arriba = Emu(int(alto * 0.04))
+    caja_ancho = Emu(int(ancho * 0.90))
+    caja_alto = Emu(int(alto * 0.15))
+
+    tb = diapositiva.shapes.add_textbox(izquierda, arriba, caja_ancho, caja_alto)
+    tb.text_frame.word_wrap = True
+    parrafo = tb.text_frame.paragraphs[0]
+    run = parrafo.add_run()
+    from pptx.util import Pt
+    run.text = texto
+    run.font.size = Pt(28)
+    run.font.bold = True
+    return tb
+
+
+def _asegurar_sin_viñeta(parrafo):
+    """Fuerza buNone en párrafos normales (evita viñetas heredadas del layout)."""
+    pPr = parrafo._p.get_or_add_pPr()
+    for tag in ('a:buChar', 'a:buAutoNum'):
+        for el in pPr.findall(qn(tag)):
+            pPr.remove(el)
+    if pPr.find(qn('a:buNone')) is None:
+        pPr.append(pPr.makeelement(qn('a:buNone'), {}))
+
+
+def _insertar_cuerpo_con_formato(forma, texto: str, formato: str = ""):
     """
-    Localiza cajas de texto (ordenadas verticalmente).
-    Reemplaza la primera con el Título, la segunda con el Cuerpo y vacía residuos.
+    Inserta el cuerpo respetando la clasificación de la IA:
+      - "parrafo": cada línea es un párrafo de texto corrido.
+      - "vinetas": oraciones introductorias como párrafo; ítems con viñeta (buChar).
+      - "numerada": oraciones introductorias como párrafo; ítems con numeración
+        automática (buAutoNum), descartando los números literales del texto.
+    """
+    formato = (formato or "").strip().lower()
+    if formato not in ("parrafo", "vinetas", "numerada"):
+        formato = _inferir_formato(texto)
+
+    estilo = _extraer_estilo_fuente(forma)
+    marco = forma.text_frame
+
+    # Clasificar cada línea del contenido
+    bloques = []  # (tipo, texto) — tipo: "parrafo" | "item"
+    for linea in texto.splitlines():
+        limpia = linea.strip()
+        if not limpia:
+            continue
+        es_item = bool(re.match(r"^[-•]\s+", limpia) or re.match(r"^\d+[.)]\s+", limpia))
+        if formato in ("vinetas", "numerada") and es_item:
+            limpia = re.sub(r"^([-•]\s+|\d+[.)]\s+)", "", limpia)
+            bloques.append(("item", limpia))
+        else:
+            bloques.append(("parrafo", limpia))
+
+    if not bloques:
+        return
+
+    # Limpiar el marco: dejar solo el primer párrafo
+    while len(marco.paragraphs) > 1:
+        elem = marco.paragraphs[-1]._p
+        elem.getparent().remove(elem)
+
+    # Crear los párrafos adicionales clonando el primero (hereda estilos del layout)
+    parrafos = [marco.paragraphs[0]]
+    for _ in range(len(bloques) - 1):
+        nuevo = copy.deepcopy(marco.paragraphs[0]._p)
+        for r in nuevo.findall(qn('a:r')):
+            nuevo.remove(r)
+        for br in nuevo.findall(qn('a:br')):
+            nuevo.remove(br)
+        marco.paragraphs[-1]._p.addnext(nuevo)
+        parrafos.append(_Paragraph(nuevo, marco))
+
+    # Volcado con el formato correspondiente
+    for parrafo, (tipo, contenido) in zip(parrafos, bloques):
+        for r in list(parrafo.runs):
+            r._r.getparent().remove(r._r)
+        run = parrafo.add_run()
+        run.text = contenido
+        _aplicar_estilo_run(run, estilo)
+
+        if tipo == "item" and formato in ("vinetas", "numerada"):
+            _marcar_item(parrafo, formato)
+        else:
+            _asegurar_sin_viñeta(parrafo)
+
+
+def _es_grafica(forma) -> bool:
+    """Detecta imágenes, tablas, gráficos y marcos multimedia."""
+    try:
+        return forma.shape_type in (
+            MSO_SHAPE_TYPE.PICTURE,
+            MSO_SHAPE_TYPE.GRAPHIC_FRAME,
+            MSO_SHAPE_TYPE.CHART,
+            MSO_SHAPE_TYPE.MEDIA,
+        )
+    except Exception:
+        return False
+
+
+def _formas_graficas_recursivo(coleccion_formas) -> list:
+    graficas = []
+    for forma in coleccion_formas:
+        if forma.shape_type == MSO_SHAPE_TYPE.GROUP:
+            graficas.extend(_formas_graficas_recursivo(forma.shapes))
+        elif _es_grafica(forma):
+            graficas.append(forma)
+    return graficas
+
+
+def _rectangulos_solapan(a, b) -> bool:
+    return not (
+        a.left + a.width <= b.left or b.left + b.width <= a.left or
+        a.top + a.height <= b.top or b.top + b.height <= a.top
+    )
+
+
+def _reducir_fuente(forma, factor: float = 0.8):
+    """Reduce el tamaño de fuente de todos los runs como último recurso."""
+    if not forma.has_text_frame:
+        return
+    for parrafo in forma.text_frame.paragraphs:
+        for run in parrafo.runs:
+            if run.font.size is not None:
+                run.font.size = int(run.font.size * factor)
+
+
+def _resolver_solape_cuerpo(forma, graficas, alto_slide):
+    """
+    Si el cuerpo se traslapa con una imagen/figura:
+      1. Intenta moverlo debajo de la gráfica.
+      2. Si no cabe, moverlo arriba.
+      3. Si no cabe, ajusta su altura al espacio libre bajo la gráfica.
+      4. Si aún se traslapa, reduce la fuente.
+    """
+    for grafica in graficas:
+        if not _rectangulos_solapan(forma, grafica):
+            continue
+
+        margen = 91440  # 0.1 pulgada
+        debajo = grafica.top + grafica.height + margen
+        if debajo + forma.height <= alto_slide:
+            forma.top = debajo
+            continue
+
+        arriba = grafica.top - forma.height - margen
+        if arriba >= 0:
+            forma.top = arriba
+            continue
+
+        disponible = alto_slide - debajo
+        if disponible > 457200:  # al menos ~0.5"
+            forma.top = debajo
+            forma.height = disponible
+        else:
+            _reducir_fuente(forma)
+
+
+def _localizar_cuerpo(diapositiva, formas_con_contenido):
+    """
+    Prioriza el placeholder de cuerpo real de la diapositiva;
+    si no existe, usa la heurística de la segunda caja más alta.
+    """
+    try:
+        from pptx.enum.shapes import PP_PLACEHOLDER
+        tipos_cuerpo = (
+            PP_PLACEHOLDER.BODY,
+            PP_PLACEHOLDER.OBJECT,
+            PP_PLACEHOLDER.VERTICAL_BODY,
+            PP_PLACEHOLDER.VERTICAL_OBJECT,
+        )
+        for forma in diapositiva.shapes:
+            if not forma.is_placeholder:
+                continue
+            if forma.placeholder_format.type in tipos_cuerpo and forma.has_text_frame:
+                return forma
+    except Exception:
+        pass
+
+    if len(formas_con_contenido) >= 2:
+        return formas_con_contenido[1]
+    return None
+
+
+def _actualizar_diapositiva_jerarquica(diapositiva, texto_titulo: str, texto_cuerpo: str, formato: str = ""):
+    """
+    Escribe el título en el placeholder de título real de la diapositiva
+    (si existe) y el cuerpo en el placeholder de cuerpo correspondiente.
+    Como respaldo, usa la heurística de cajas de texto ordenadas verticalmente.
     """
     todas_las_formas = _obtener_formas_texto_recursivo(diapositiva.shapes)
-    
+
     # Filtrar formas que tengan texto real y ordenarlas de arriba hacia abajo
     formas_con_contenido = [f for f in todas_las_formas if f.text_frame.text.strip()]
     formas_con_contenido.sort(key=lambda f: f.top)
@@ -270,26 +520,63 @@ def _actualizar_diapositiva_jerarquica(diapositiva, texto_titulo: str, texto_cue
     if not formas_con_contenido:
         return
 
-    # Si la diapositiva original tenía al menos 2 cajas (Título y Cuerpo)
-    if len(formas_con_contenido) >= 2:
-        if texto_titulo:
-            _establecer_texto_preservando_estilo(formas_con_contenido[0], texto_titulo)
-        else:
-            formas_con_contenido[0].text_frame.text = ""
+    # --- TÍTULO: placeholder real primero, heurística de respaldo ---
+    forma_titulo = None
+    try:
+        if diapositiva.shapes.title is not None and diapositiva.shapes.title.has_text_frame:
+            forma_titulo = diapositiva.shapes.title
+    except Exception:
+        pass
+    if forma_titulo is None and formas_con_contenido:
+        forma_titulo = formas_con_contenido[0]
 
+    if forma_titulo is None and texto_titulo:
+        # La diapositiva no trae placeholder de título: crear uno nuevo
+        forma_titulo = _crear_caja_titulo(diapositiva, texto_titulo)
+
+    if forma_titulo is not None:
+        if texto_titulo and forma_titulo.text_frame.text.strip() != texto_titulo:
+            _establecer_texto_preservando_estilo(forma_titulo, texto_titulo)
+        elif not texto_titulo:
+            forma_titulo.text_frame.text = ""
+
+    # --- CUERPO: placeholder de cuerpo primero, heurística de respaldo ---
+    forma_cuerpo = _localizar_cuerpo(diapositiva, formas_con_contenido)
+
+    if forma_cuerpo is not None:
         if texto_cuerpo:
-            _establecer_texto_preservando_estilo(formas_con_contenido[1], texto_cuerpo)
+            _insertar_cuerpo_con_formato(forma_cuerpo, texto_cuerpo, formato)
+            _activar_autofit(forma_cuerpo)
         else:
-            formas_con_contenido[1].text_frame.text = ""
+            forma_cuerpo.text_frame.text = ""
 
-        # Limpiar notas o subtítulos sobrantes del diseño original
-        for forma_extra in formas_con_contenido[2:]:
+        # Evitar sobreposición con imágenes/figuras
+        try:
+            alto_slide = diapositiva.part.package.main_document_part.presentation.slide_height
+        except Exception:
+            alto_slide = 6858000
+        graficas = _formas_graficas_recursivo(diapositiva.shapes)
+        if graficas:
+            _resolver_solape_cuerpo(forma_cuerpo, graficas, alto_slide)
+
+    # Limpiar notas o subtítulos sobrantes del diseño original
+    usados = set()
+    for f in (forma_titulo, forma_cuerpo):
+        if f is not None:
+            try:
+                usados.add(f._element)
+            except Exception:
+                pass
+    for forma_extra in formas_con_contenido:
+        if forma_extra._element not in usados:
             forma_extra.text_frame.text = ""
-            
-    # Si la diapositiva original tenía solo 1 gran caja de texto
-    elif len(formas_con_contenido) == 1:
+
+    # Si la diapositiva tenía una sola gran caja y no se usó placeholder,
+    # volcar título + cuerpo juntos con el formato correspondiente.
+    if len(formas_con_contenido) == 1 and forma_cuerpo is None and forma_titulo is not None:
         texto_completo = f"{texto_titulo}\n{texto_cuerpo}".strip() if texto_titulo else texto_cuerpo
-        _establecer_texto_preservando_estilo(formas_con_contenido[0], texto_completo)
+        if texto_completo:
+            _insertar_cuerpo_con_formato(forma_titulo, texto_completo, formato)
 
 def _dividir_y_reemplazar_diapositiva(ruta_pptx: str, num_diapositiva_objetivo: int, lista_contenidos: list):
     """
@@ -313,7 +600,8 @@ def _dividir_y_reemplazar_diapositiva(ruta_pptx: str, num_diapositiva_objetivo: 
         _actualizar_diapositiva_jerarquica(
             diapositiva_actual,
             texto_titulo=contenido.get("titulo", ""),
-            texto_cuerpo=contenido.get("cuerpo", "")
+            texto_cuerpo=contenido.get("cuerpo", ""),
+            formato=contenido.get("formato", "")
         )
 
     # Sobreescribimos el archivo (que ya es el archivo destino temporal)

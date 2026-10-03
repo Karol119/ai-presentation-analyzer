@@ -70,15 +70,15 @@ def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
         if panel.pagina_actual < panel.total_paginas - 1:
             panel.pagina_actual += 1
             renderizar_slide_actual()
-            return True
-        return False
+            return "break" # Evita que el evento se propague a otros widgets
+        return "break"
 
     def retroceder_pagina(event=None):
         if panel.pagina_actual > 0:
             panel.pagina_actual -= 1
             renderizar_slide_actual()
-            return True
-        return False
+            return "break"
+        return "break"
 
     def al_redimensionar(event):
         if event.width > 50 and event.height > 50:
@@ -90,6 +90,15 @@ def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
         if panel.doc:
             panel.doc.close()
             panel.doc = None
+            
+        # Limpieza de eventos globales
+        root = panel.winfo_toplevel()
+        root.unbind("<Left>")
+        root.unbind("<Right>")
+        root.unbind("<space>")
+        root.unbind("<Return>")
+        root.unbind("<Next>")
+        root.unbind("<Prior>")
 
     # Exponer las funciones anexándolas al panel
     panel.renderizar_slide_actual = renderizar_slide_actual
@@ -97,10 +106,28 @@ def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
     panel.retroceder_pagina = retroceder_pagina
     panel.cerrar_documento = cerrar_documento
 
-    # Bindings
+    # Bindings al redimensionar
     panel.bind("<Configure>", al_redimensionar)
-    panel.focus_set()
-    panel.bind("<Left>", retroceder_pagina)
-    panel.bind("<Right>", avanzar_pagina)
+    
+    # BINDINGS GLOBALES (Resistentes a pérdida de foco)
+    root = master.winfo_toplevel()
+    
+    # Limpiamos antes por si hay algún residuo
+    root.unbind("<Left>")
+    root.unbind("<Right>")
+    root.unbind("<space>")
+    root.unbind("<Return>")
+    root.unbind("<Next>")
+    root.unbind("<Prior>")
+    
+    # Flechas y controles retroceder
+    root.bind("<Left>",  retroceder_pagina)
+    root.bind("<Prior>", retroceder_pagina) # Re Pág (Clickers)
+    
+    # Flechas y controles avanzar
+    root.bind("<Right>",  avanzar_pagina)
+    root.bind("<space>",  avanzar_pagina)
+    root.bind("<Return>", avanzar_pagina)
+    root.bind("<Next>",   avanzar_pagina) # Av Pág (Clickers)
 
     return panel

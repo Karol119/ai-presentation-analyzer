@@ -93,7 +93,6 @@ def _obtener_configuracion_clase(root, json_reporte_raw):
         lista_monitores = ["Pantalla 1 (Simulada)"]
 
     combo_monitores = ctk.CTkComboBox(frame_m, values=lista_monitores, state="readonly")
-    # Forzamos a que intente seleccionar el proyector si existe
     if len(lista_monitores) > 1:
         combo_monitores.set(lista_monitores[1])
     else:
@@ -127,12 +126,13 @@ def _obtener_configuracion_clase(root, json_reporte_raw):
             lbl_error.configure(text="Error: Ingresa un número entero válido para el tiempo.")
             return
 
-        # --- NUEVA REGLA: Evitar que proyecte en su propia laptop ---
-        monitor_seleccionado_str = combo_monitores.get()
-        if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
-            lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
-            return
+        # --- VALIDACIÓN COMENTADA PARA PERMITIR PANTALLA PRINCIPAL ---
+        # monitor_seleccionado_str = combo_monitores.get()
+        # if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
+        #     lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
+        #     return
         # ------------------------------------------------------------
+        monitor_seleccionado_str = combo_monitores.get()
 
         resultado["grupo"] = grupo_final
         resultado["tiempo"] = t_val
@@ -183,35 +183,36 @@ def _lanzar_proyeccion(root, ruta_pdf, indice_actual, pos_x, pos_y, ancho, alto)
     if _datos_panel is not None:
         _datos_panel.set_estado_proyeccion(True)
 
-    def verificar_conexion():
-        global _watchdog_id, _ventana_proyeccion
-        
-        if _ventana_proyeccion is None:
-            return
-
-        try:
-            from screeninfo import get_monitors
-            monitores_actuales = get_monitors()
-            
-            if len(monitores_actuales) < 2 and pos_x != 0:
-                print("[ALERTA] Proyector desconectado. Abortando presentación por seguridad.")
-                _ventana_proyeccion.cerrar() 
-                messagebox.showwarning(
-                    "Conexión Perdida", 
-                    "Se ha desconectado el proyector o pantalla secundaria.\nLa presentación se ha detenido por seguridad."
-                )
-                return
-        except Exception:
-            pass
-
-        _watchdog_id = root.after(2000, verificar_conexion)
-
-    if pos_x != 0:
-        _watchdog_id = root.after(2000, verificar_conexion)
+    # --- WATCHDOG DE DESCONEXIÓN COMENTADO PARA EVITAR CIERRES INESPERADOS ---
+    # def verificar_conexion():
+    #     global _watchdog_id, _ventana_proyeccion
+    #     
+    #     if _ventana_proyeccion is None:
+    #         return
+    #
+    #     try:
+    #         from screeninfo import get_monitors
+    #         monitores_actuales = get_monitors()
+    #         
+    #         if len(monitores_actuales) < 2 and pos_x != 0:
+    #             print("[ALERTA] Proyector desconectado. Abortando presentación por seguridad.")
+    #             _ventana_proyeccion.cerrar() 
+    #             messagebox.showwarning(
+    #                 "Conexión Perdida", 
+    #                 "Se ha desconectado el proyector o pantalla secundaria.\nLa presentación se ha detenido por seguridad."
+    #             )
+    #             return
+    #     except Exception:
+    #         pass
+    #
+    #     _watchdog_id = root.after(2000, verificar_conexion)
+    #
+    # if pos_x != 0:
+    #     _watchdog_id = root.after(2000, verificar_conexion)
+    # ------------------------------------------------------------------------
 
 
 def _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pdf, indice_actual):
-    # 1. Traer datos desde BD a través del controlador
     id_materia = obtener_id_materia_controlador(subject)
     json_reporte_raw = orquestar_obtener_reporte_tiempo(nombre_presentacion, id_materia)
 
@@ -231,17 +232,12 @@ def _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pd
         if hasattr(_datos_panel, "sesion_actual_llave"):
             delattr(_datos_panel, "sesion_actual_llave")
 
-    # --- LECTURA DIRECTA DE LA DIAPOSITIVA (JSON BASE 1 EN MEMORIA) ---
     slide_reanudada = indice_actual
     if json_reporte_raw:
         try:
             data = json.loads(json_reporte_raw)
             grupo_data = data.get("grupos", {}).get(grupo_seleccionado, {})
-            
-            # Leemos la diapositiva en base 1 (para humanos)
             slide_guardada = grupo_data.get("ultima_diapositiva", 1)
-            
-            # Le restamos 1 para que el sistema interno no se salte ninguna
             slide_reanudada = max(0, slide_guardada - 1)
         except Exception: pass
         
@@ -280,24 +276,22 @@ def mostrar_vista_presentacion(root, subject: str, nombre_presentacion: str, rut
         if _ventana_proyeccion is not None and _ventana_proyeccion.winfo_exists():
             _ventana_proyeccion.cerrar()
         else:
-            # --- NUEVA REGLA: Bloqueo si no hay proyector ---
-            try:
-                from screeninfo import get_monitors
-                if len(get_monitors()) < 2:
-                    messagebox.showwarning(
-                        "Proyector no detectado", 
-                        "No se puede iniciar la clase.\nDebe conectar un proyector o monitor secundario para presentar."
-                    )
-                    return # Abortamos antes de mostrar la modal
-            except Exception as e:
-                print(f"Error leyendo monitores (librería no disponible): {e}")
-                pass 
-            # ------------------------------------------------
+            # --- VALIDACIÓN DE MONITORES COMENTADA ---
+            # try:
+            #     from screeninfo import get_monitors
+            #     if len(get_monitors()) < 2:
+            #         messagebox.showwarning(
+            #             "Proyector no detectado", 
+            #             "No se puede iniciar la clase.\nDebe conectar un proyector o monitor secundario para presentar."
+            #         )
+            #         return 
+            # except Exception as e:
+            #     print(f"Error leyendo monitores (librería no disponible): {e}")
+            #     pass 
+            # ----------------------------------------
 
-            # Enviamos el subject y nombre de presentacion al orquestador de monitor
             _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pdf, _visor_panel.pagina_actual)
 
-    # Inyectamos "subject" en crear_panel_datos
     _datos_panel = crear_panel_datos(
         master=_contenedor_presentacion,
         subject=subject,

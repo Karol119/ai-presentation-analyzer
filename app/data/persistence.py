@@ -60,25 +60,59 @@ def eliminar_presentacion_completa(nombre_presentacion, id_materia):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            SELECT p.id_presentacion, hv.ruta, hv.ruta_miniatura, hv.ruta_pdf
-            FROM Presentacion p
-            JOIN Historial_de_Versiones hv ON p.id_presentacion = hv.id_presentacion
+            SELECT hv.numero_version, hv.ruta, hv.ruta_miniatura, hv.ruta_pdf
+            FROM Historial_de_Versiones hv
+            JOIN Presentacion p ON hv.id_presentacion = p.id_presentacion
             WHERE p.presentacion = ? AND p.id_unidad_aprendizaje = ?
         """, (nombre_presentacion, id_materia))
-        resultado = cursor.fetchone()
-        if not resultado: return False
-        
-        id_pres, r_pptx, r_thumb, r_pdf = resultado
+        filas = cursor.fetchall()
+        if not filas: return False
 
-        # Jerarquía de borrado: Analisis -> Historial -> Presentacion
+        id_pres = cursor.execute(
+            "SELECT id_presentacion FROM Presentacion WHERE presentacion = ? AND id_unidad_aprendizaje = ?",
+            (nombre_presentacion, id_materia)
+        ).fetchone()[0]
+
+        # Jerarquía de borrado: Analisis -> Subtemas -> Historial -> Presentacion
         cursor.execute("DELETE FROM Analisis WHERE id_version IN (SELECT id_version FROM Historial_de_Versiones WHERE id_presentacion = ?)", (id_pres,))
         cursor.execute("DELETE FROM Presentacion_Subtema WHERE id_presentacion = ?", (id_pres,))
         cursor.execute("DELETE FROM Historial_de_Versiones WHERE id_presentacion = ?", (id_pres,))
         cursor.execute("DELETE FROM Presentacion WHERE id_presentacion = ?", (id_pres,))
 
-        # Limpieza de archivos
-        for r in (r_pptx, r_thumb, r_pdf):
-            if r and os.path.exists(r): os.remove(r)
+        # Limpieza física de TODAS las versiones (pptx, miniaturas, pdf, json)
+        nombre_materia = None
+        for numero_version, r_pptx, r_thumb, r_pdf in filas:
+            for r in (r_pptx, r_thumb, r_pdf):
+                if r and os.path.exists(r): os.remove(r)
+            if r_pdf:
+                carpeta = os.path.dirname(r_pdf)
+                nombre_materia = os.path.basename(carpeta)
+                # JSON de análisis junto al pdf
+                base = os.path.splitext(r_pdf)[0]
+                ruta_json = base + "_analysis.json"
+                if os.path.exists(ruta_json): os.remove(ruta_json)
+                # Algunas versiones guardan el json como <base_pptx>_analysis.json
+                if r_pptx:
+                    ruta_json2 = os.path.splitext(r_pptx)[0] + "_analysis.json"
+                    if os.path.exists(ruta_json2): os.remove(ruta_json2)
+                # PPTX optimizado en Documentos
+                try:
+                    ruta_doc = os.path.join(
+                        os.path.expanduser('~'), 'Documents', 'AI Presentation Analyzer',
+                        nombre_materia,
+                        f"{os.path.splitext(nombre_presentacion)[0]}_v{numero_version}.pptx"
+                    )
+                    if os.path.exists(ruta_doc): os.remove(ruta_doc)
+                except Exception:
+                    pass
+
+        # Si la carpeta de la materia en storage quedó vacía, eliminarla
+        try:
+            carpeta_presentaciones = os.path.dirname(r_pptx) if filas and filas[0][1] else None
+            if carpeta_presentaciones and os.path.isdir(carpeta_presentaciones) and not os.listdir(carpeta_presentaciones):
+                os.rmdir(carpeta_presentaciones)
+        except Exception:
+            pass
 
         conn.commit()
         return True

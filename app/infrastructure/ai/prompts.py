@@ -551,7 +551,7 @@ Si "accion" es "sin_cambios": "diapositivas_generadas": [] y pasa a la siguiente
 
 Si "accion" es "solo_titulo": genera exactamente UNA entrada en "diapositivas_generadas"
 con SOLO el campo "titulo_sugerido" tomado del plan. Pon "contenido_optimizado": ""
-y "tipo_retorico_aplicado": null. No reescribas el cuerpo.
+y "tipo_retorico_aplicado": null y "formato": null. No reescribas el cuerpo.
 
 Si "accion" es "reescribir_una" o "dividir": ejecuta el plan del campo "diapositivas_plan".
 Genera exactamente las diapositivas indicadas en el plan, en el orden indicado.
@@ -603,6 +603,18 @@ Ejemplo de formato correcto:
    - Física: transmite bits por el medio.
    - Enlace de datos: detecta y corrige errores.
    - Red: determina la ruta de los paquetes."
+
+FORMATO ("formato") — OBLIGATORIO en cada diapositiva generada:
+Cada entrada de "diapositivas_generadas" debe incluir el campo "formato"
+describiendo la estructura REAL del "contenido_optimizado" que escribiste:
+  "parrafo"  → el contenido es texto corrido (1 a 4 oraciones), SIN lista.
+  "vinetas"  → el contenido es una lista NO ordenada. Cada ítem va en su propia
+               línea comenzando con "- ". Puede incluir una oración introductoria.
+  "numerada" → el contenido es una secuencia ORDENADA (pasos, etapas, fases).
+               Cada ítem va en su propia línea comenzando con "1.", "2.", ...
+La estructura de "contenido_optimizado" DEBE coincidir exactamente con el
+"formato" declarado. El sistema usará "formato" para insertar el texto en
+la presentación con la estructura visual correcta.
 
 ==========================================
 RESTRICCIONES DE CADA DIAPOSITIVA GENERADA
@@ -720,7 +732,8 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
       {{
         "titulo_sugerido": "Definición de Protocolo de Red",
         "contenido_optimizado": "Un protocolo de red es un conjunto de reglas que permite que dos dispositivos se comuniquen de forma ordenada. Estas reglas definen el formato, la secuencia y el manejo de errores en la transmisión de datos. El protocolo TCP/IP es el estándar que hace posible la comunicación en Internet.",
-        "tipo_retorico_aplicado": "definicion"
+        "tipo_retorico_aplicado": "definicion",
+        "formato": "parrafo"
       }}
     ]
   }},
@@ -737,7 +750,8 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
       {{
         "titulo_sugerido": "Capas del Modelo OSI",
         "contenido_optimizado": "El modelo OSI organiza la comunicación en red en siete capas, cada una con una función específica:\n- Física: transmite bits por el medio.\n- Enlace de datos: detecta y corrige errores.\n- Red: determina la ruta de los paquetes.\n- Transporte: garantiza la entrega completa.",
-        "tipo_retorico_aplicado": "enumeracion"
+        "tipo_retorico_aplicado": "enumeracion",
+        "formato": "vinetas"
       }}
     ]
   }},
@@ -749,7 +763,8 @@ Sin markdown, sin texto adicional, sin comentarios fuera del JSON.
       {{
         "titulo_sugerido": "Capas del Modelo OSI",
         "contenido_optimizado": "",
-        "tipo_retorico_aplicado": null
+        "tipo_retorico_aplicado": null,
+        "formato": null
       }}
     ]
   }},

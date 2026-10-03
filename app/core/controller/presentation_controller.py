@@ -223,7 +223,7 @@ def orquestar_exportacion_historial(id_version, nombre_presentacion, id_materia,
 
         # 4. Validar si ya existe (Evitar trabajo doble)
         if os.path.exists(ruta_destino):
-            return True, f"Este archivo ya fue exportado y se encuentra en:\n\n{ruta_destino}"
+            return True, "La presentación ya había sido generada."
 
         # 5. Obtener PPTX original de esta versión
         ruta_pptx_original = ruta_pdf.replace(".pdf", ".pptx")
@@ -235,7 +235,46 @@ def orquestar_exportacion_historial(id_version, nombre_presentacion, id_materia,
         if not exito_mod:
             return False, msj_mod
 
-        return True, f"¡Éxito! La presentación se guardó en Documentos:\n\n{ruta_destino}"
+        return True, "¡Presentación generada con éxito!"
 
     except Exception as e:
         return False, f"Error en la exportación: {str(e)}"
+
+
+def ruta_archivo_exportado(nombre_presentacion, id_materia, version_num):
+    """Ruta física del PPTX optimizado para una versión, exista o no."""
+    ruta_documentos = os.path.join(os.path.expanduser('~'), 'Documents', 'AI Presentation Analyzer')
+    nombre_materia = obtener_nombre_materia_controlador(id_materia)
+    nombre_base = os.path.splitext(nombre_presentacion)[0]
+    return os.path.join(ruta_documentos, nombre_materia, f"{nombre_base}_v{version_num}.pptx")
+
+
+def abrir_archivo(ruta):
+    """Abre un archivo con la aplicación predeterminada del sistema."""
+    try:
+        if os.name == 'nt':
+            os.startfile(ruta)
+        else:
+            import subprocess
+            subprocess.Popen(['xdg-open', ruta])
+    except Exception as e:
+        print(f"No se pudo abrir el archivo: {e}")
+
+
+def orquestar_abrir_o_generar(id_version, nombre_presentacion, id_materia, version_num, ruta_pdf):
+    """
+    Si el PPTX optimizado ya existe, lo abre.
+    Si no existe, lo genera primero y luego lo abre.
+    """
+    ruta_destino = ruta_archivo_exportado(nombre_presentacion, id_materia, version_num)
+    if os.path.exists(ruta_destino):
+        abrir_archivo(ruta_destino)
+        return True, "Abriendo la presentación generada..."
+
+    exito, mensaje = orquestar_exportacion_historial(
+        id_version, nombre_presentacion, id_materia, version_num, ruta_pdf
+    )
+    if exito:
+        abrir_archivo(ruta_destino)
+        return True, "¡Presentación generada! Se abrirá ahora."
+    return exito, mensaje

@@ -8,7 +8,10 @@ from app.presentation.views.ui_state import ui
 from app.presentation.widgets.analysis.presentation_panel import set_on_pagina_cambiada
 from app.presentation.views import navigator
 from app.core.controller.subject_controller import obtener_id_materia_controlador
-from app.core.controller.presentation_controller import orquestar_exportacion_historial
+from app.core.controller.presentation_controller import (
+    orquestar_abrir_o_generar,
+    ruta_archivo_exportado,
+)
 from app.data.queries import obtener_id_version_actual, obtener_id_y_version_presentacion
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 
@@ -80,19 +83,20 @@ def _build_footer(parent):
                 nombre_pres = _widgets["nombre_pres"]
                 ruta_pdf = navigator.get_contexto_analisis()["ruta_pdf"]
                 id_materia = obtener_id_materia_controlador(subject)
-                
+
                 id_version = obtener_id_version_actual(nombre_pres, id_materia)
                 _, version_actual = obtener_id_y_version_presentacion(nombre_pres, id_materia)
-                
-                return orquestar_exportacion_historial(id_version, nombre_pres, id_materia, version_actual, ruta_pdf)
+
+                return orquestar_abrir_o_generar(id_version, nombre_pres, id_materia, version_actual, ruta_pdf)
             except Exception as e:
                 return False, f"Error crítico: {str(e)}"
 
         def al_terminar(resultado):
             exito, mensaje = resultado
             if exito:
-                messagebox.showinfo("Exportación Lista", mensaje)
-                btn_aplicar.configure(state="normal")
+                if "Abriendo" not in mensaje:
+                    messagebox.showinfo("Presentación lista", mensaje)
+                btn_aplicar.configure(state="normal", text="Abrir presentación")
                 lbl_estado.configure(text="")
             else:
                 messagebox.showwarning("Aviso", mensaje)
@@ -101,9 +105,20 @@ def _build_footer(parent):
 
         ejecutar_tarea_asincrona(target_task=tarea_pesada, on_finished_callback=al_terminar)
 
+    # Etiqueta inicial según existencia del archivo generado
+    texto_btn = "Generar y aplicar cambios"
+    try:
+        _subj = _widgets["subject"]
+        _id_mat = obtener_id_materia_controlador(_subj)
+        _, _v = obtener_id_y_version_presentacion(_widgets["nombre_pres"], _id_mat)
+        if os.path.exists(ruta_archivo_exportado(_widgets["nombre_pres"], _id_mat, _v)):
+            texto_btn = "Abrir presentación"
+    except Exception:
+        pass
+
     btn_aplicar = ctk.CTkButton(
-        footer, 
-        text="📥 Descargar Versión Optimizada", 
+        footer,
+        text=texto_btn,
         fg_color="#10B981", hover_color="#059669", text_color="white",
         font=("Inter", 13, "bold"), height=40, corner_radius=10,
         command=exportar_mejoras
@@ -174,7 +189,7 @@ def _renderizar_calificacion(parent, slide_data):
     frame = ctk.CTkFrame(parent, fg_color="#F1F5F9", corner_radius=8)
     frame.pack(fill="x", pady=10)
 
-    ctk.CTkLabel(frame, text="Calificación General:", font=("Inter", 13, "bold")).pack(side="left", padx=10, pady=8)
+    ctk.CTkLabel(frame, text="Desempeño:", font=("Inter", 13, "bold")).pack(side="left", padx=10, pady=8)
     
     # Asignamos color para la zona de calificación general
     zona_str = str(zona).upper()
@@ -203,11 +218,11 @@ def _renderizar_metricas(parent, slide_data):
         
         # Determinar color de la etiqueta
         if "EXCELENTE" in estado_mostrar:
-            color_etiqueta = "#10B981"  # Verde
+            color_etiqueta = COLOR_ORO   # Verde
         elif "BIEN" in estado_mostrar:
-            color_etiqueta = COLOR_ORO  # Amarillo / Oro
+            color_etiqueta = "#2A9D8F"  # Amarillo / Oro
         elif "MEJORAR" in estado_mostrar or "POBRE" in estado_mostrar:
-            color_etiqueta = "#EF4444"  # Rojo
+            color_etiqueta = "#E76F51"  # Rojo
         else:
             color_etiqueta = "#64748B"  # Gris por defecto
 

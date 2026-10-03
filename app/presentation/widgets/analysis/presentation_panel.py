@@ -151,12 +151,23 @@ def _build_navigation(parent):
     )
     btn_next.pack(side="left", padx=(12, 0))
 
-    # Desenlazar teclas previas para evitar acumulación de binds
+    # --- BINDINGS GLOBALES PARA CONTROLES REMOTOS Y TECLADO ---
+    # Limpiamos binds anteriores por seguridad
     ui["root"].unbind("<Left>")
     ui["root"].unbind("<Right>")
-    # Navegación por teclado
-    ui["root"].bind("<Left>",  lambda e: _pagina_anterior())
-    ui["root"].bind("<Right>", lambda e: _pagina_siguiente())
+    ui["root"].unbind("<space>")
+    ui["root"].unbind("<Return>")
+    ui["root"].unbind("<Next>")  # Av Pág (Estándar de Clickers)
+    ui["root"].unbind("<Prior>") # Re Pág (Estándar de Clickers)
+    
+    # Enlazamos las teclas a la ventana principal
+    ui["root"].bind("<Left>",   lambda e: _pagina_anterior())
+    ui["root"].bind("<Prior>",  lambda e: _pagina_anterior()) # Re Pág
+    
+    ui["root"].bind("<Right>",  lambda e: _pagina_siguiente())
+    ui["root"].bind("<space>",  lambda e: _pagina_siguiente())
+    ui["root"].bind("<Return>", lambda e: _pagina_siguiente())
+    ui["root"].bind("<Next>",   lambda e: _pagina_siguiente()) # Av Pág
 
 
 def _build_error_state(parent, ruta_pdf: str):
@@ -238,7 +249,15 @@ def _pagina_siguiente():
         _mostrar_pagina(_visor["pagina_actual"] + 1)
 
 def cerrar_pdf():
-    """Cierra el PDF activo para liberar el archivo del sistema."""
+    """Cierra el PDF activo para liberar el archivo del sistema y limpia bindings."""
     if _visor["doc"] is not None:
         _visor["doc"].close()
         _visor["doc"] = None
+        
+    # Desvincular teclas globales para no afectar otras vistas
+    ui["root"].unbind("<Left>")
+    ui["root"].unbind("<Right>")
+    ui["root"].unbind("<space>")
+    ui["root"].unbind("<Return>")
+    ui["root"].unbind("<Next>")
+    ui["root"].unbind("<Prior>")

@@ -1,5 +1,6 @@
 # app/core/controller/subject_controller.py
 import os
+import shutil
 from app.data.queries import (
     obtener_todas_las_materias,
     obtener_materias_disponibles,
@@ -62,10 +63,35 @@ def orquestar_desactivacion_materia(nombre_materia):
     try:
         # 1. ACCIÓN FÍSICA: Obtener rutas desde queries y borrar archivos del disco
         archivos = obtener_rutas_archivos_materia(id_materia)
+        carpetas_vistas = set()
         for ruta_pptx, ruta_thumb, ruta_pdf in archivos:
             for ruta in (ruta_pptx, ruta_thumb, ruta_pdf):
                 if ruta and os.path.exists(ruta):
                     os.remove(ruta)
+                if ruta:
+                    carpetas_vistas.add(os.path.dirname(ruta))
+            # JSON de análisis junto al pdf/pptx
+            for base in (ruta_pdf, ruta_pptx):
+                if base:
+                    ruta_json = os.path.splitext(base)[0] + "_analysis.json"
+                    if os.path.exists(ruta_json):
+                        os.remove(ruta_json)
+
+        # Carpeta storage de la materia (si quedó vacía) y carpeta de mejoras en Documentos
+        for carpeta in carpetas_vistas:
+            try:
+                if os.path.isdir(carpeta) and not os.listdir(carpeta):
+                    os.rmdir(carpeta)
+            except Exception:
+                pass
+        try:
+            ruta_docs = os.path.join(
+                os.path.expanduser('~'), 'Documents', 'AI Presentation Analyzer', nombre_materia
+            )
+            if os.path.isdir(ruta_docs):
+                shutil.rmtree(ruta_docs, ignore_errors=True)
+        except Exception:
+            pass
 
         # 2. ACCIÓN EN BD: Limpiar registros (Analisis, Versiones, Presentaciones)
         if not eliminar_datos_materia_cascada(id_materia):

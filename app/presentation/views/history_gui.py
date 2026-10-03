@@ -7,7 +7,10 @@ from app.presentation.views import navigator
 from app.data.queries import obtener_historial_presentacion, obtener_id_materia
 from app.presentation.widgets.history.history_recommendations import mostrar_modal_recomendaciones_json
 from app.presentation.widgets.history.history_evaluation import mostrar_modal_evaluacion_json
-from app.core.controller.presentation_controller import orquestar_exportacion_historial
+from app.core.controller.presentation_controller import (
+    orquestar_abrir_o_generar,
+    ruta_archivo_exportado,
+)
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 
 COLOR_GUINDA       = "#6A1B31"
@@ -31,21 +34,12 @@ def mostrar_vista_historial(subject: str, nombre_presentacion: str):
     header_frame.pack(fill="x")
     header_frame.pack_propagate(False)
 
-    btn_volver = ctk.CTkButton(
-        header_frame, text="← Volver a inicio",
-        width=150, height=40, corner_radius=20,
-        fg_color=COLOR_GUINDA, hover_color="#4D1324", text_color="white",
-        font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
-        command=navigator.ir_a_principal
-    )
-    btn_volver.pack(side="left", padx=(40, 20))
-
     ctk.CTkLabel(
         header_frame, 
         text=f"Historial: {nombre_presentacion}",
         font=ctk.CTkFont(family="Segoe UI", size=22, weight="bold"),
         text_color=COLOR_GUINDA
-    ).pack(side="left")
+    ).pack(side="left", padx=(40, 0))
 
     # --- Contenedor de Tabla ---
     main_container = ctk.CTkFrame(ui["history_body"], fg_color="white", corner_radius=16)
@@ -154,12 +148,16 @@ def _crear_fila_version(parent, data, cols_config, subject, nombre_presentacion)
         ctk.CTkLabel(fila, text="Sin análisis", font=("Segoe UI", 11, "italic"), text_color="#94A3B8").place(relx=current_x + (cols_config[5][1]/2), rely=0.5, anchor="center")
     current_x += cols_config[5][1]
 
-    # 7. EXPORTAR (NUEVA COLUMNA)
+    # 7. GENERAR / ABRIR
     if analizada and ruta_pdf:
+        id_materia = obtener_id_materia(subject)
+        ya_generado = os.path.exists(ruta_archivo_exportado(nombre_presentacion, id_materia, v_num))
         btn_exp = ctk.CTkButton(
-            fila, text="📥 Exportar",
+            fila, text="📂 Abrir" if ya_generado else "⚙️ Generar",
             width=110, height=32, corner_radius=8,
-            fg_color="#10B981", hover_color="#059669", text_color="white",
+            fg_color="#10B981" if ya_generado else COLOR_GUINDA,
+            hover_color="#059669" if ya_generado else "#4D1324",
+            text_color="white",
             font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda: _exportar_version_gui(id_version, nombre_presentacion, subject, v_num, ruta_pdf)
         )
@@ -176,7 +174,7 @@ def _exportar_version_gui(id_version, nombre_presentacion, subject, v_num, ruta_
     id_materia = obtener_id_materia(subject)
 
     def tarea():
-        return orquestar_exportacion_historial(id_version, nombre_presentacion, id_materia, v_num, ruta_pdf)
+        return orquestar_abrir_o_generar(id_version, nombre_presentacion, id_materia, v_num, ruta_pdf)
 
     def al_terminar(resultado):
         estado["bloqueo_ui"] = False

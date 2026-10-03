@@ -11,7 +11,7 @@ El contrato de retorno es idéntico al anterior para no tocar el controller:
       "preguntas":           [...],
       "datos_curiosos":      [...],
       "diapositivas_generadas": [
-        { "titulo_sugerido", "contenido_optimizado", "tipo_retorico_aplicado" }
+        { "titulo_sugerido", "contenido_optimizado", "tipo_retorico_aplicado", "formato" }
       ]
     }
   }
