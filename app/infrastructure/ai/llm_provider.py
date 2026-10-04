@@ -27,6 +27,63 @@ genai.configure(api_key=CLAVE_API_GEMINI)
 print(f"\n[PROVEEDOR IA] Conectado a la NUBE: Google Gemini — Modelo: '{MODELO_GEMINI}'")
 
 
+def actualizar_configuracion_ia(nueva_api_key: str, nuevo_modelo: str) -> None:
+    """
+    Actualiza la API Key y el modelo de Gemini en caliente:
+    - Reconfigura el SDK sin reiniciar la app.
+    - Actualiza las variables de entorno del proceso.
+    - Persiste los valores en el archivo .env (sin borrar el resto).
+    """
+    global CLAVE_API_GEMINI, MODELO_GEMINI
+
+    CLAVE_API_GEMINI = nueva_api_key.strip()
+    MODELO_GEMINI = nuevo_modelo.strip() or "gemini-3.5-flash-lite"
+
+    os.environ["GEMINI_API_KEY"] = CLAVE_API_GEMINI
+    os.environ["GEMINI_MODEL"] = MODELO_GEMINI
+
+    _actualizar_env({
+        "GEMINI_API_KEY": CLAVE_API_GEMINI,
+        "GEMINI_MODEL": MODELO_GEMINI,
+    })
+
+    genai.configure(api_key=CLAVE_API_GEMINI)
+    print(f"[PROVEEDOR IA] Configuración actualizada — Modelo: '{MODELO_GEMINI}'")
+
+
+def _actualizar_env(valores: dict) -> None:
+    """Actualiza (o agrega) claves en el .env preservando comentarios y otras líneas."""
+    try:
+        lineas = ruta_env.read_text(encoding="utf-8").splitlines() if ruta_env.exists() else []
+    except OSError:
+        lineas = []
+
+    vistas = set()
+    nuevas_lineas = []
+    for linea in lineas:
+        reemplazo = None
+        for clave, valor in valores.items():
+            # Coincide con 'CLAVE=...' o '#CLAVE=...'. Solo se reemplaza la
+            # PRIMERA aparición de cada clave para no duplicar líneas activas.
+            if clave not in vistas and re.match(rf"^#?\s*{re.escape(clave)}\s*=", linea):
+                reemplazo = f"{clave}={valor}"
+                vistas.add(clave)
+                break
+        nuevas_lineas.append(reemplazo if reemplazo is not None else linea)
+
+    # Las claves que no estaban en el archivo se agregan al final
+    for clave, valor in valores.items():
+        if clave not in vistas:
+            nuevas_lineas.append(f"{clave}={valor}")
+
+    ruta_env.write_text("\n".join(nuevas_lineas) + "\n", encoding="utf-8")
+
+
+def obtener_configuracion_ia() -> dict:
+    """Devuelve la configuración actual (para precargar el formulario)."""
+    return {"api_key": CLAVE_API_GEMINI, "modelo": MODELO_GEMINI}
+
+
 def verificar_conexion_ia():
     """Verifica la conectividad REAL ANTES de empezar a procesar la presentación."""
     try:

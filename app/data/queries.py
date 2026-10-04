@@ -158,6 +158,27 @@ def obtener_id_y_version_presentacion(nombre_presentacion, id_materia):
         return res[0], res[1]
     return None, 0
 
+def obtener_analisis_materia(id_materia):
+    """Devuelve los JSON de análisis de la versión más reciente de cada presentación."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT a.resultado
+        FROM Analisis a
+        JOIN Historial_de_Versiones hv ON a.id_version = hv.id_version
+        JOIN Presentacion p ON hv.id_presentacion = p.id_presentacion
+        WHERE p.id_unidad_aprendizaje = ?
+        AND hv.numero_version = (
+            SELECT MAX(numero_version)
+            FROM Historial_de_Versiones
+            WHERE id_presentacion = p.id_presentacion
+        )
+    """, (id_materia,))
+    resultados = [fila[0] for fila in cursor.fetchall()]
+    conn.close()
+    return resultados
+
+
 def obtener_historial_presentacion(nombre_presentacion, id_materia):
     """
     Recupera el historial de versiones.

@@ -4,7 +4,7 @@ import json
 import os
 import tkinter.messagebox as messagebox
 
-from app.presentation.views.ui_state import ui
+from app.presentation.views.ui_state import ui, estado
 from app.presentation.widgets.analysis.presentation_panel import set_on_pagina_cambiada
 from app.presentation.views import navigator
 from app.core.controller.subject_controller import obtener_id_materia_controlador
@@ -14,6 +14,7 @@ from app.core.controller.presentation_controller import (
 )
 from app.data.queries import obtener_id_version_actual, obtener_id_y_version_presentacion
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
+from app.presentation.widgets.progreso_modal import ProgresoModal
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_SUAVE = "#FDF2F4"
@@ -66,6 +67,7 @@ def _build_footer(parent):
     lbl_estado.pack(side="top", pady=(0, 5))
 
     def exportar_mejoras():
+        if estado.get("bloqueo_ui"): return
         data = _widgets["cached_data"]
         if not data: return
         
@@ -75,8 +77,8 @@ def _build_footer(parent):
             return
 
         btn_aplicar.configure(state="disabled")
-        lbl_estado.configure(text="Generando archivo PPTX...\nEsto puede tardar unos segundos.")
-        
+        modal = ProgresoModal("Generando archivo PPTX...\nEsto puede tardar unos segundos.")
+
         def tarea_pesada():
             try:
                 subject = _widgets["subject"]
@@ -93,15 +95,15 @@ def _build_footer(parent):
 
         def al_terminar(resultado):
             exito, mensaje = resultado
+            modal.cerrar()
             if exito:
                 if "Abriendo" not in mensaje:
                     messagebox.showinfo("Presentación lista", mensaje)
                 btn_aplicar.configure(state="normal", text="Abrir presentación")
-                lbl_estado.configure(text="")
             else:
                 messagebox.showwarning("Aviso", mensaje)
                 btn_aplicar.configure(state="normal")
-                lbl_estado.configure(text="")
+            lbl_estado.configure(text="")
 
         ejecutar_tarea_asincrona(target_task=tarea_pesada, on_finished_callback=al_terminar)
 

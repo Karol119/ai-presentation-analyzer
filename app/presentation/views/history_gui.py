@@ -12,6 +12,7 @@ from app.core.controller.presentation_controller import (
     ruta_archivo_exportado,
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
+from app.presentation.widgets.progreso_modal import ProgresoModal
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_SUAVE = "#FDF2F4"
@@ -169,18 +170,18 @@ def _crear_fila_version(parent, data, cols_config, subject, nombre_presentacion)
 def _exportar_version_gui(id_version, nombre_presentacion, subject, v_num, ruta_pdf):
     """Lanza la tarea en segundo plano para exportar el archivo a Documentos."""
     if estado.get("bloqueo_ui"): return
-    estado["bloqueo_ui"] = True
 
     id_materia = obtener_id_materia(subject)
+    modal = ProgresoModal("Procesando la presentación...\nEsto puede tardar unos segundos.")
 
     def tarea():
         return orquestar_abrir_o_generar(id_version, nombre_presentacion, id_materia, v_num, ruta_pdf)
 
     def al_terminar(resultado):
-        estado["bloqueo_ui"] = False
+        modal.cerrar()
         exito, mensaje = resultado
         if exito:
-            messagebox.showinfo("Exportación Lista", mensaje)
+            messagebox.showinfo("Presentación lista", mensaje)
         else:
             messagebox.showwarning("Aviso", mensaje)
 

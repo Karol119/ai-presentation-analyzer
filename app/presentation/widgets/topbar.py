@@ -49,9 +49,26 @@ def build_topbar(comando_toggle):
 
     # --- LADO DERECHO: Zona intercambiable según el modo activo ---
 
+    # Botón de configuración (siempre visible, en ambos modos) — extremo derecho
+    ui["config_btn"] = ctk.CTkButton(
+        bar,
+        text="⚙",
+        font=ctk.CTkFont(size=16),
+        fg_color="transparent",
+        hover_color="#F1F5F9",
+        text_color="#64748B",
+        border_width=1,
+        border_color="#E2E8F0",
+        corner_radius=20,
+        height=36,
+        width=44,
+        command=mostrar_modal_configuracion_ia,
+    )
+    ui["config_btn"].pack(side="right", padx=(0, 28), pady=16)
+
     # MODO PRINCIPAL: botón "☰ Contenido"
     _main_frame = ctk.CTkFrame(bar, fg_color="transparent")
-    _main_frame.pack(side="right", padx=28)
+    _main_frame.pack(side="right", padx=(0, 10))
 
     ui["toggle_btn"] = ctk.CTkButton(
         _main_frame,
@@ -98,6 +115,101 @@ def build_topbar(comando_toggle):
 
     # Separador inferior (siempre visible)
     ctk.CTkFrame(ui["root"], height=1, fg_color="#E8ECF2").pack(fill="x")
+
+
+def mostrar_modal_configuracion_ia():
+    """Modal para ingresar la API Key y el modelo de IA."""
+    from app.infrastructure.ai.llm_provider import (
+        actualizar_configuracion_ia,
+        obtener_configuracion_ia,
+    )
+
+    config_actual = obtener_configuracion_ia()
+
+    win = ctk.CTkToplevel(ui["root"])
+    win.title("Configuración de IA")
+    win.geometry("480x380")
+    win.resizable(False, False)
+    win.grab_set()
+    win.configure(fg_color="white")
+    win.after(10, lambda: win.focus_force())
+
+    ctk.CTkFrame(win, fg_color=COLOR_GUINDA, height=6, corner_radius=0).pack(fill="x")
+
+    # Encabezado
+    header = ctk.CTkFrame(win, fg_color="transparent")
+    header.pack(fill="x", padx=28, pady=(20, 4))
+    icon_bg = ctk.CTkFrame(header, fg_color="#FDF2F4", corner_radius=10, width=40, height=40)
+    icon_bg.pack(side="left", padx=(0, 12))
+    icon_bg.pack_propagate(False)
+    ctk.CTkLabel(icon_bg, text="⚙", font=ctk.CTkFont(size=18),
+                 text_color=COLOR_GUINDA).place(relx=0.5, rely=0.5, anchor="center")
+    title_box = ctk.CTkFrame(header, fg_color="transparent")
+    title_box.pack(side="left", fill="x", expand=True)
+    ctk.CTkLabel(title_box, text="Configuración de IA",
+                 font=ctk.CTkFont(family="Segoe UI", size=17, weight="bold"),
+                 text_color=COLOR_GUINDA, anchor="w").pack(fill="x", anchor="w")
+    ctk.CTkLabel(title_box, text="Google Gemini · se guarda en el archivo .env",
+                 font=ctk.CTkFont(size=11), text_color="#64748B",
+                 anchor="w").pack(fill="x", anchor="w")
+
+    # Campo API Key
+    ctk.CTkLabel(win, text="API Key de Gemini",
+                 font=ctk.CTkFont(size=12, weight="bold"),
+                 text_color="#334155").pack(anchor="w", padx=28, pady=(18, 4))
+    entry_key = ctk.CTkEntry(win, show="•", height=36, corner_radius=8,
+                             border_color="#E2E8F0", fg_color="#F8FAFC")
+    entry_key.pack(fill="x", padx=28)
+    entry_key.insert(0, config_actual["api_key"])
+
+    def toggle_key():
+        entry_key.configure(show="" if entry_key.cget("show") == "•" else "•")
+    ctk.CTkButton(win, text="Mostrar / ocultar", command=toggle_key,
+                  fg_color="transparent", text_color="#94A3B8",
+                  hover_color="#F1F5F9", height=24, width=110,
+                  font=ctk.CTkFont(size=10)).pack(anchor="e", padx=28)
+
+    # Campo Modelo
+    ctk.CTkLabel(win, text="Modelo de IA",
+                 font=ctk.CTkFont(size=12, weight="bold"),
+                 text_color="#334155").pack(anchor="w", padx=28, pady=(10, 4))
+    entry_model = ctk.CTkEntry(win, height=36, corner_radius=8,
+                               border_color="#E2E8F0", fg_color="#F8FAFC",
+                               placeholder_text="gemini-3.5-flash-lite")
+    entry_model.pack(fill="x", padx=28)
+    entry_model.insert(0, config_actual["modelo"])
+
+    # Estado del guardado
+    status_lbl = ctk.CTkLabel(win, text="", font=ctk.CTkFont(size=11),
+                              text_color="#64748B")
+    status_lbl.pack(anchor="w", padx=28, pady=(10, 0))
+
+    btn_row = ctk.CTkFrame(win, fg_color="transparent")
+    btn_row.pack(fill="x", padx=28, pady=(14, 0))
+
+    def guardar():
+        api_key = entry_key.get().strip()
+        modelo = entry_model.get().strip()
+        if not api_key:
+            status_lbl.configure(text="⚠ La API Key no puede estar vacía.",
+                                 text_color="#EF4444")
+            return
+        try:
+            actualizar_configuracion_ia(api_key, modelo)
+            status_lbl.configure(text="✔ Configuración guardada correctamente.",
+                                 text_color="#16A34A")
+            win.after(900, win.destroy)
+        except Exception as e:
+            status_lbl.configure(text=f"Error: {e}", text_color="#EF4444")
+
+    ctk.CTkButton(btn_row, text="Cancelar", command=win.destroy,
+                  fg_color="transparent", text_color="#64748B",
+                  border_width=1, border_color="#E2E8F0",
+                  width=130, height=38, corner_radius=10).pack(side="left")
+    ctk.CTkButton(btn_row, text="Guardar", command=guardar,
+                  fg_color=COLOR_GUINDA, hover_color=COLOR_GUINDA_HOVER,
+                  text_color="white", width=160, height=38,
+                  corner_radius=10).pack(side="right")
 
 
 def set_modo_analisis(nombre_presentacion: str, on_back):

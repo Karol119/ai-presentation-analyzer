@@ -1,6 +1,8 @@
 # app/core/controller/subject_controller.py
+import json
 import os
 import shutil
+import unicodedata
 from app.data.queries import (
     obtener_todas_las_materias,
     obtener_materias_disponibles,
@@ -8,7 +10,8 @@ from app.data.queries import (
     obtener_rutas_archivos_materia,
     obtener_presentaciones_por_materia,
     obtener_temario_materia,
-    obtener_nombre_materia_por_id
+    obtener_nombre_materia_por_id,
+    obtener_analisis_materia,
 )
 
 # Persistencia: Solo funciones que alteran el estado (Escritura/Borrado)
@@ -50,6 +53,41 @@ def obtener_temario_completo(nombre_materia):
     Esta es la función que faltaba y causaba el ImportError.
     """
     return obtener_temario_materia(nombre_materia)
+
+def _normalizar(texto: str) -> str:
+    """Normaliza para comparar temas: minúsculas, sin acentos, sin espacios extra."""
+    if not texto:
+        return ""
+    descompuesto = unicodedata.normalize("NFD", texto)
+    sin_acentos = "".join(c for c in descompuesto if unicodedata.category(c) != "Mn")
+    return " ".join(sin_acentos.casefold().split())
+
+
+def obtener_temas_cubiertos(id_materia) -> dict:
+    """
+    Reúne los temas presentes en las presentaciones cargadas (según el campo
+    "temas_presentacion" de sus análisis).
+    Retorna un dict con sets normalizados: {"unidades": set, "temas": set, "subtemas": set}
+    """
+    cubiertos = {"unidades": set(), "temas": set(), "subtemas": set()}
+    if not id_materia:
+        return cubiertos
+
+    for resultado in obtener_analisis_materia(id_materia) or []:
+        try:
+            datos = json.loads(resultado) if isinstance(resultado, str) else resultado
+        except (json.JSONDecodeError, TypeError):
+            continue
+        for unidad in datos.get("temas_presentacion", []) or []:
+            if unidad.get("unidad"):
+                cubiertos["unidades"].add(_normalizar(unidad["unidad"]))
+            for tema in unidad.get("temas", []) or []:
+                if tema.get("tema"):
+                    cubiertos["temas"].add(_normalizar(tema["tema"]))
+                for sub in tema.get("subtemas", []) or []:
+                    cubiertos["subtemas"].add(_normalizar(sub))
+    return cubiertos
+
 
 def orquestar_desactivacion_materia(nombre_materia):
     """

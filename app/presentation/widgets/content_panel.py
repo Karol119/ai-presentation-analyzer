@@ -28,6 +28,7 @@ from app.presentation.widgets.dialogs import (
     mostrar_modal_advertencia
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
+from app.presentation.widgets.right_panel import refresh_right_panel
 from app.presentation.views import navigator
 
 COLOR_GUINDA       = "#6A1B31"
@@ -298,6 +299,7 @@ def _actualizar_presentacion_ui(subject: str, nombre_presentacion: str, toggle_m
             estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
             rebuild_cards(subject, comando_actualizar_boton)
             comando_actualizar_boton()
+            refresh_right_panel(subject)
         else:
             advertir_presentacion_existente(ui["root"], mensaje)
             
@@ -361,6 +363,7 @@ def _iniciar_analisis(subject: str, nombre_presentacion: str, ruta_pdf: str, tog
             estado["subject_files"][subject] = obtener_archivos_materia(id_materia)
             rebuild_cards(subject, comando_actualizar_boton)
             comando_actualizar_boton()
+            refresh_right_panel(subject)
             estado["bloqueo_ui"] = False 
             navigator.ir_a_analisis(subject, nombre_presentacion, ruta_pdf)
         else:
@@ -455,4 +458,5 @@ def _remove_file(subject, name, comando_actualizar_boton):
             estado["subject_files"][subject] = obtener_archivos_materia(id_m)
             rebuild_cards(subject, comando_actualizar_boton)
             comando_actualizar_boton()
+            refresh_right_panel(subject)
     confirmar_eliminacion(name, subject, on_confirm)
