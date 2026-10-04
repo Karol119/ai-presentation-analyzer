@@ -28,6 +28,7 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+ai_analyzer.db
 
 # Archivos de reportes generados (Prototipo 3)
 # Evita subir los PDF de rendimiento exportados por los docentes
