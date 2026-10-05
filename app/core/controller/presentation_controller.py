@@ -54,7 +54,7 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
         if exito_registro:
             return True, f"Registrado con éxito."
         else:
-            return False, "Error al persistir los datos en la base de datos."
+            return False, f"Error al persistir los datos: {id_pres}"
 
     except Exception as e:
         return False, f"Error en el flujo: {str(e)}"

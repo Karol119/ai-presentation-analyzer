@@ -35,7 +35,10 @@ def registrar_presentacion(ruta_origen, hash_unico, num_diapositivas, id_materia
         generar_pdf(ruta_destino, ruta_pdf)
 
         id_presentacion = str(uuid.uuid4())
-        cursor.execute("INSERT INTO Presentacion VALUES (?, ?, ?)", (id_presentacion, id_materia, nombre_archivo))
+        cursor.execute(
+            "INSERT INTO Presentacion (id_presentacion, id_unidad_aprendizaje, presentacion) VALUES (?, ?, ?)",
+            (id_presentacion, id_materia, nombre_archivo),
+        )
 
         id_version = str(uuid.uuid4())
         fecha = datetime.now().strftime("%Y-%m-%d")

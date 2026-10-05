@@ -213,27 +213,6 @@ def analizar_presentacion(
     else:
         datos_puntaje_global = calcular_puntaje_global(0, 0, 0, 0)
 
-    # --- UMBRAL DE SUPRESIÓN DE RETROALIMENTACIÓN ---
-    # Se omiten las sugerencias de reestructuración cuando la cantidad de
-    # diapositivas que requieren mejora es mínima en proporción al total:
-    # si menos del 5% de las diapositivas necesita mejoras, los cambios
-    # serían mínimos y no se generan sugerencias ni botón de aplicar.
-    MAX_PROPORCION_POR_MEJORAR = 0.05
-    total_por_mejorar = len(diapositivas_para_reestructurar)
-    total_diapositivas = len(diapositivas_finales)
-    proporcion = (total_por_mejorar / total_diapositivas) if total_diapositivas else 0.0
-
-    if proporcion < MAX_PROPORCION_POR_MEJORAR:
-        if callback_estado:
-            callback_estado(
-                f"[SISTEMA] Solo {total_por_mejorar} de {total_diapositivas} diapositivas "
-                f"({proporcion:.1%}) requieren mejoras. Se omiten sugerencias."
-            )
-        diapositivas_para_reestructurar.clear()
-        for s in diapositivas_finales:
-            if not s["omitida"]:
-                s["requiere_reestructuracion"] = False
-
     # --- FASE 2: ENRIQUECIMIENTO Y RESTRUCTURACIÓN ---
     if diapositivas_para_enriquecer:
         if callback_estado:
