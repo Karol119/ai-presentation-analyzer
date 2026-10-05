@@ -24,6 +24,7 @@ _visor = {
     "label_imagen": None,
     "label_contador": None,
     "on_pagina_cambiada": None,  # Callback para notificar a results_panel
+    "btn_lock": False,     # Bloqueo anti-multiclic en la navegación
 }
 
 
@@ -240,13 +241,19 @@ def _mostrar_pagina(indice: int):
 
 
 def _pagina_anterior():
+    if _visor.get("btn_lock"): return
     if _visor["pagina_actual"] > 0:
+        _visor["btn_lock"] = True
         _mostrar_pagina(_visor["pagina_actual"] - 1)
+        ui["root"].after(400, lambda: _visor.update(btn_lock=False))
 
 
 def _pagina_siguiente():
+    if _visor.get("btn_lock"): return
     if _visor["pagina_actual"] < _visor["total_paginas"] - 1:
+        _visor["btn_lock"] = True
         _mostrar_pagina(_visor["pagina_actual"] + 1)
+        ui["root"].after(400, lambda: _visor.update(btn_lock=False))
 
 def cerrar_pdf():
     """Cierra el PDF activo para liberar el archivo del sistema y limpia bindings."""

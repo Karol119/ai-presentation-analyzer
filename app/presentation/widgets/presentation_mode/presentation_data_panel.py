@@ -119,6 +119,8 @@ def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: 
             panel.entry_pagina.delete(0, 'end')
             panel.entry_pagina.insert(0, str(panel.indice_slide_actual + 1))
         panel.focus_set()
+        # Evita que el <Return> burbujee al binding global que avanza una diapositiva
+        return "break"
 
     panel.entry_pagina.bind("<Return>", saltar_pagina_cmd)
 
@@ -225,10 +227,10 @@ def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: 
         panel.after(1000, lambda: btn_presentar.configure(state="normal"))
         panel.after(1000, lambda: btn_stop.configure(state="normal"))
 
-    btn_presentar = ctk.CTkButton(grid_box, text="📺 Presentar", height=35, fg_color="#10B981", hover_color="#059669", font=ctk.CTkFont(weight="bold"), command=safe_toggle)
+    btn_presentar = ctk.CTkButton(grid_box, text="📺 Presentar", height=35, fg_color="#6A1B31", hover_color="#4D1324", font=ctk.CTkFont(weight="bold"), command=safe_toggle)
     btn_presentar.grid(row=0, column=0, sticky="nsew", pady=2)
 
-    btn_stop = ctk.CTkButton(grid_box, text="⏹ Detener", height=35, fg_color="#EF4444", hover_color="#DC2626", font=ctk.CTkFont(weight="bold"), command=safe_toggle)
+    btn_stop = ctk.CTkButton(grid_box, text="⏹ Detener", height=35, fg_color="#6A1B31", hover_color="#4D1324", font=ctk.CTkFont(weight="bold"), command=safe_toggle)
 
     def set_estado_proyeccion(activo: bool):
         if activo:

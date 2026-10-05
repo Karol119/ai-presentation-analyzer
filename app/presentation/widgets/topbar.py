@@ -128,7 +128,7 @@ def mostrar_modal_configuracion_ia():
 
     win = ctk.CTkToplevel(ui["root"])
     win.title("Configuración de IA")
-    win.geometry("480x380")
+    win.geometry("480x470")
     win.resizable(False, False)
     win.grab_set()
     win.configure(fg_color="white")
@@ -149,7 +149,7 @@ def mostrar_modal_configuracion_ia():
     ctk.CTkLabel(title_box, text="Configuración de IA",
                  font=ctk.CTkFont(family="Segoe UI", size=17, weight="bold"),
                  text_color=COLOR_GUINDA, anchor="w").pack(fill="x", anchor="w")
-    ctk.CTkLabel(title_box, text="Google Gemini · se guarda en el archivo .env",
+    ctk.CTkLabel(title_box, text="Google Gemini",
                  font=ctk.CTkFont(size=11), text_color="#64748B",
                  anchor="w").pack(fill="x", anchor="w")
 
@@ -165,19 +165,57 @@ def mostrar_modal_configuracion_ia():
     def toggle_key():
         entry_key.configure(show="" if entry_key.cget("show") == "•" else "•")
     ctk.CTkButton(win, text="Mostrar / ocultar", command=toggle_key,
-                  fg_color="transparent", text_color="#94A3B8",
-                  hover_color="#F1F5F9", height=24, width=110,
+                  fg_color="transparent", text_color="#6A1B31",
+                  hover_color="#FDF2F4", height=24, width=110,
                   font=ctk.CTkFont(size=10)).pack(anchor="e", padx=28)
 
-    # Campo Modelo
+    # Campo Modelo (lista de modelos compatibles desde la API)
     ctk.CTkLabel(win, text="Modelo de IA",
                  font=ctk.CTkFont(size=12, weight="bold"),
                  text_color="#334155").pack(anchor="w", padx=28, pady=(10, 4))
-    entry_model = ctk.CTkEntry(win, height=36, corner_radius=8,
-                               border_color="#E2E8F0", fg_color="#F8FAFC",
-                               placeholder_text="gemini-3.5-flash-lite")
-    entry_model.pack(fill="x", padx=28)
-    entry_model.insert(0, config_actual["modelo"])
+
+    model_row = ctk.CTkFrame(win, fg_color="transparent")
+    model_row.pack(fill="x", padx=28)
+
+    combo_model = ctk.CTkComboBox(
+        model_row, height=36, corner_radius=8,
+        border_color="#E2E8F0", fg_color="#F8FAFC",
+        button_color=COLOR_GUINDA, button_hover_color=COLOR_GUINDA_HOVER,
+        dropdown_fg_color="white", dropdown_hover_color="#FDF2F4",
+        values=[config_actual["modelo"]],
+    )
+    combo_model.pack(side="left", fill="x", expand=True)
+    combo_model.set(config_actual["modelo"])
+
+    status_modelos = ctk.CTkLabel(win, text="", font=ctk.CTkFont(size=10),
+                                  text_color="#64748B")
+    status_modelos.pack(anchor="w", padx=28, pady=(2, 0))
+
+    def cargar_modelos():
+        try:
+            from app.infrastructure.ai.llm_provider import listar_modelos_disponibles
+            api_key = entry_key.get().strip() or config_actual["api_key"]
+            modelos = listar_modelos_disponibles(api_key)
+            if modelos:
+                combo_model.configure(values=modelos)
+                if combo_model.get() not in modelos:
+                    combo_model.set(modelos[0])
+                status_modelos.configure(text=f"✔ {len(modelos)} modelos disponibles.",
+                                         text_color="#16A34A")
+            else:
+                status_modelos.configure(text="⚠ No se encontraron modelos compatibles.",
+                                         text_color="#EF4444")
+        except Exception as e:
+            status_modelos.configure(text=f"⚠ No se pudo cargar la lista: {e}",
+                                     text_color="#EF4444")
+
+    ctk.CTkButton(model_row, text="↻ Actualizar", width=110, height=36,
+                  command=cargar_modelos,
+                  fg_color="transparent", text_color="#6A1B31",
+                  hover_color="#FDF2F4", border_width=1, border_color="#E2E8F0").pack(side="left", padx=(8, 0))
+
+    # Cargar la lista al abrir el modal
+    win.after(200, cargar_modelos)
 
     # Estado del guardado
     status_lbl = ctk.CTkLabel(win, text="", font=ctk.CTkFont(size=11),
@@ -189,7 +227,7 @@ def mostrar_modal_configuracion_ia():
 
     def guardar():
         api_key = entry_key.get().strip()
-        modelo = entry_model.get().strip()
+        modelo = combo_model.get().strip()
         if not api_key:
             status_lbl.configure(text="⚠ La API Key no puede estar vacía.",
                                  text_color="#EF4444")

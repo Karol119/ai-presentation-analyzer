@@ -79,6 +79,13 @@ def create_panel(name: str, comando_actualizar_boton):
         text_color="#475569",
     ).pack(side="left")
 
+    ctk.CTkButton(
+        sub_header, text="👁  Ocultas", height=22, width=90,
+        fg_color="transparent", text_color="#6A1B31",
+        hover_color="#F1F5F9", font=ctk.CTkFont(size=11),
+        command=lambda: _abrir_modal_ocultas(name, comando_actualizar_boton),
+    ).pack(side="right")
+
     ctk.CTkFrame(panel, height=1, fg_color="#F1F5F9").pack(fill="x", padx=26, pady=(10, 0))
 
     cards_scroll = ctk.CTkScrollableFrame(
@@ -213,8 +220,8 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
             face_prev.place(relx=0, rely=0, relwidth=1, relheight=1)
             card.configure(border_color="#E2E8F0")
 
-    ctk.CTkButton(face_prev, text="☰   Ver opciones", height=30, fg_color="#F8FAFC", 
-                  text_color="#475569", font=ctk.CTkFont(size=11, weight="bold"),
+    ctk.CTkButton(face_prev, text="☰   Ver opciones", height=30, fg_color="#FDF2F4", 
+                  text_color="#6A1B31", font=ctk.CTkFont(size=11, weight="bold"),
                   command=lambda: toggle_menu(True)).pack(fill="x", padx=12, pady=(0, 12), side="bottom")
 
     menu_header = ctk.CTkFrame(face_menu, fg_color=COLOR_GUINDA, height=42, corner_radius=0)
@@ -249,9 +256,17 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
         toggle_menu(False)
         _remove_file(subject, name, comando_actualizar_boton)
 
-    ctk.CTkButton(face_menu, text="🗑   Eliminar", fg_color="transparent", text_color="#EF4444", 
-                  hover_color="#FEF2F2", font=ctk.CTkFont(size=11, weight="bold"),
-                  anchor="w", command=on_delete).pack(fill="x", padx=6, pady=(4, 8), side="bottom")
+    def on_hide():
+        toggle_menu(False)
+        _hide_file(subject, name, comando_actualizar_boton)
+
+    ctk.CTkButton(face_menu, text="🙈   Ocultar", fg_color="transparent", text_color="#6A1B31",
+                  hover_color="#FDF2F4", font=ctk.CTkFont(size=11, weight="bold"),
+                  anchor="w", command=on_hide).pack(fill="x", padx=6, pady=1)
+
+    ctk.CTkButton(face_menu, text="🗑   Eliminar", fg_color="transparent", text_color="#6A1B31",
+                  hover_color="#FDF2F4", font=ctk.CTkFont(size=11, weight="bold"),
+                  anchor="w", command=on_delete).pack(fill="x", padx=6, pady=(1, 8))
 
     return outer 
 
@@ -341,7 +356,7 @@ def _menu_item(parent, text: str, color: str, command):
         font=ctk.CTkFont(family="Segoe UI", size=11),
         fg_color="transparent",
         hover_color="#F8FAFC",
-        text_color=color,
+        text_color="#6A1B31",
         corner_radius=8,
         height=30,
         anchor="w",
@@ -472,6 +487,82 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
         estado["bloqueo_ui"] = False
 
     ejecutar_tarea_asincrona(target_task=processing_task, on_finished_callback=finalize_ui_update)
+
+
+def _abrir_modal_ocultas(subject, comando_actualizar_boton):
+    """Lista las presentaciones ocultas para poder restaurarlas o eliminarlas."""
+    from app.data.queries import obtener_presentaciones_ocultas_por_materia
+    from app.core.controller.presentation_controller import (
+        orquestar_mostrar_presentacion, orquestar_eliminacion_presentacion,
+    )
+
+    id_m = obtener_id_materia(subject)
+    ocultas = obtener_presentaciones_ocultas_por_materia(id_m)
+
+    win = ctk.CTkToplevel(ui["root"])
+    win.title(f"Presentaciones ocultas · {subject}")
+    win.geometry("420x380")
+    win.grab_set()
+
+    ctk.CTkLabel(win, text="👁  Presentaciones ocultas",
+                 font=ctk.CTkFont(size=15, weight="bold"),
+                 text_color=COLOR_GUINDA).pack(pady=(16, 4))
+
+    scroll = ctk.CTkScrollableFrame(win, fg_color="transparent")
+    scroll.pack(fill="both", expand=True, padx=16, pady=8)
+
+    def refrescar():
+        for w in scroll.winfo_children():
+            w.destroy()
+        lista = obtener_presentaciones_ocultas_por_materia(id_m)
+        if not lista:
+            ctk.CTkLabel(scroll, text="No hay presentaciones ocultas.",
+                         text_color="#64748B").pack(pady=20)
+            return
+        for nombre in lista:
+            fila = ctk.CTkFrame(scroll, fg_color="white", corner_radius=10)
+            fila.pack(fill="x", pady=4)
+            ctk.CTkLabel(fila, text=nombre, wraplength=200, justify="left",
+                         font=ctk.CTkFont(size=12)).pack(side="left", padx=10, pady=10)
+
+            def _restaurar(n=nombre):
+                orquestar_mostrar_presentacion(n, id_m)
+                estado["subject_files"][subject] = obtener_archivos_materia(id_m)
+                rebuild_cards(subject, comando_actualizar_boton)
+                comando_actualizar_boton()
+                refresh_right_panel(subject)
+                refrescar()
+
+            def _eliminar(n=nombre):
+                from app.presentation.views.main_gui import confirmar_eliminacion
+                def _confirmar():
+                    orquestar_eliminacion_presentacion(n, id_m)
+                    estado["subject_files"][subject] = obtener_archivos_materia(id_m)
+                    rebuild_cards(subject, comando_actualizar_boton)
+                    comando_actualizar_boton()
+                    refresh_right_panel(subject)
+                    refrescar()
+                confirmar_eliminacion(n, subject, _confirmar)
+
+            ctk.CTkButton(fila, text="Restaurar", width=80, height=26,
+                          fg_color="#6A1B31", hover_color="#4D1324",
+                          command=_restaurar).pack(side="right", padx=6, pady=8)
+            ctk.CTkButton(fila, text="🗑 Eliminar", width=90, height=26,
+                          fg_color="#6A1B31", hover_color="#4D1324",
+                          command=_eliminar).pack(side="right", padx=6, pady=8)
+
+    refrescar()
+
+
+def _hide_file(subject, name, comando_actualizar_boton):
+    """Oculta la presentación del panel sin borrar nada."""
+    from app.core.controller.presentation_controller import orquestar_ocultar_presentacion
+    id_m = obtener_id_materia(subject)
+    if orquestar_ocultar_presentacion(name, id_m):
+        estado["subject_files"][subject] = obtener_archivos_materia(id_m)
+        rebuild_cards(subject, comando_actualizar_boton)
+        comando_actualizar_boton()
+        refresh_right_panel(subject)
 
 
 def _remove_file(subject, name, comando_actualizar_boton):

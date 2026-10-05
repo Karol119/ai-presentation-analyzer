@@ -121,7 +121,7 @@ def _build_footer(parent):
     btn_aplicar = ctk.CTkButton(
         footer,
         text=texto_btn,
-        fg_color="#10B981", hover_color="#059669", text_color="white",
+        fg_color="#6A1B31", hover_color="#4D1324", text_color="white",
         font=("Inter", 13, "bold"), height=40, corner_radius=10,
         command=exportar_mejoras
     )

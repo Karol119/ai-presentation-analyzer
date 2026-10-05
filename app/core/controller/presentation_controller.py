@@ -66,6 +66,16 @@ def orquestar_eliminacion_presentacion(nombre_presentacion, id_materia):
     """
     return eliminar_presentacion_completa(nombre_presentacion, id_materia)
 
+def orquestar_ocultar_presentacion(nombre_presentacion, id_materia):
+    """Oculta una presentación (borrado lógico) conservando todos sus datos."""
+    from app.data.persistence import actualizar_visibilidad_presentacion
+    return actualizar_visibilidad_presentacion(nombre_presentacion, id_materia, False)
+
+def orquestar_mostrar_presentacion(nombre_presentacion, id_materia):
+    """Vuelve a mostrar una presentación oculta."""
+    from app.data.persistence import actualizar_visibilidad_presentacion
+    return actualizar_visibilidad_presentacion(nombre_presentacion, id_materia, True)
+
 def orquestar_actualizacion_analisis(nombre_presentacion, id_materia):
     """
     Marca una presentación como analizada en la base de datos tras finalizar el proceso.

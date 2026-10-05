@@ -156,8 +156,8 @@ def _crear_fila_version(parent, data, cols_config, subject, nombre_presentacion)
         btn_exp = ctk.CTkButton(
             fila, text="📂 Abrir" if ya_generado else "⚙️ Generar",
             width=110, height=32, corner_radius=8,
-            fg_color="#10B981" if ya_generado else COLOR_GUINDA,
-            hover_color="#059669" if ya_generado else "#4D1324",
+            fg_color=COLOR_GUINDA,
+            hover_color="#4D1324",
             text_color="white",
             font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda: _exportar_version_gui(id_version, nombre_presentacion, subject, v_num, ruta_pdf)

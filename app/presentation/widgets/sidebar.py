@@ -14,7 +14,7 @@ COLOR_ORO          = "#BC955C"
 WRAP_NAME = 135
 
 
-def build_left_sidebar(comando_abrir_modal, comando_seleccionar, comando_eliminar):
+def build_left_sidebar(comando_abrir_modal, comando_seleccionar, comando_eliminar, comando_ocultas=None):
     """
     Construye la barra lateral izquierda que contiene el catálogo de materias activas.
     """
@@ -74,7 +74,23 @@ def build_left_sidebar(comando_abrir_modal, comando_seleccionar, comando_elimina
         height=38,
         command=comando_abrir_modal,
     )
-    add_btn.pack(fill="x", padx=14, pady=(0, 14))
+    add_btn.pack(fill="x", padx=14, pady=(0, 6))
+
+    if comando_ocultas is not None:
+        hidden_btn = ctk.CTkButton(
+            ui["left_sidebar"],
+            text="👁  Materias ocultas",
+            font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+            fg_color="transparent",
+            hover_color=COLOR_GUINDA_SUAVE,
+            text_color=COLOR_GUINDA,
+            border_width=1,
+            border_color="#E2C5CF",
+            corner_radius=10,
+            height=34,
+            command=comando_ocultas,
+        )
+        hidden_btn.pack(fill="x", padx=14, pady=(0, 14))
 
 
 def create_sidebar_item(name, comando_seleccionar, comando_eliminar):

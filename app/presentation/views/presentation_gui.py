@@ -142,7 +142,7 @@ def _obtener_configuracion_clase(root, json_reporte_raw):
         dialogo.grab_release()
         dialogo.destroy()
 
-    ctk.CTkButton(dialogo, text="Iniciar Proyección", fg_color="#10B981", hover_color="#059669", font=ctk.CTkFont(weight="bold"), height=40, command=confirmar).pack(pady=10)
+    ctk.CTkButton(dialogo, text="Iniciar Proyección", fg_color="#6A1B31", hover_color="#4D1324", font=ctk.CTkFont(weight="bold"), height=40, command=confirmar).pack(pady=10)
 
     root.wait_window(dialogo)
     return resultado
@@ -153,7 +153,7 @@ def _lanzar_proyeccion(root, ruta_pdf, indice_actual, pos_x, pos_y, ancho, alto)
     if _ventana_proyeccion is not None:
         _ventana_proyeccion.cerrar()
     
-    root.protocol("WM_DELETE_WINDOW", lambda: print("[BLOQUEADO] Termina la presentación primero."))
+    # Bloqueamos Escape para que no dispare atajos de teclado durante la proyección
     root.bind("<Escape>", lambda e: "break")
     ui["proyeccion_activa"] = True
 
@@ -165,7 +165,6 @@ def _lanzar_proyeccion(root, ruta_pdf, indice_actual, pos_x, pos_y, ancho, alto)
             root.after_cancel(_watchdog_id)
             _watchdog_id = None
         
-        root.protocol("WM_DELETE_WINDOW", "") 
         root.unbind("<Escape>")
         ui["proyeccion_activa"] = False
 

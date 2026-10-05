@@ -84,6 +84,23 @@ def obtener_configuracion_ia() -> dict:
     return {"api_key": CLAVE_API_GEMINI, "modelo": MODELO_GEMINI}
 
 
+def listar_modelos_disponibles(api_key: str = "") -> list:
+    """Devuelve los nombres de los modelos que soportan generateContent."""
+    if api_key:
+        genai.configure(api_key=api_key.strip())
+    nombres = []
+    try:
+        for m in genai.list_models():
+            metodos = getattr(m, "supported_generation_methods", []) or []
+            if "generateContent" in metodos:
+                # m.name viene como 'models/gemini-...'; nos quedamos con el nombre corto
+                nombres.append(m.name.split("/")[-1])
+    finally:
+        # Restaurar la configuración vigente por defecto
+        genai.configure(api_key=CLAVE_API_GEMINI)
+    return sorted(nombres)
+
+
 def verificar_conexion_ia():
     """Verifica la conectividad REAL ANTES de empezar a procesar la presentación."""
     try:

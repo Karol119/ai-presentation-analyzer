@@ -90,7 +90,7 @@ def confirmar_eliminacion_archivo(parent, nombre_archivo, callback_confirmar):
         callback_confirmar()
         win.destroy()
 
-    ctk.CTkButton(btn_row, text="Eliminar", command=proceder, fg_color="#EF4444", hover_color="#DC2626", text_color="white", width=130, height=36, corner_radius=10).pack(side="left", padx=10)
+    ctk.CTkButton(btn_row, text="Eliminar", command=proceder, fg_color="#6A1B31", hover_color="#4D1324", text_color="white", width=130, height=36, corner_radius=10).pack(side="left", padx=10)
     ctk.CTkButton(btn_row, text="Cancelar", command=win.destroy, fg_color="transparent", text_color="#64748B", border_width=1, border_color="#E2E8F0", width=130, height=36, corner_radius=10).pack(side="right", padx=10)
 
 def mostrar_modal_cargando(parent, mensaje="Procesando presentación(es)..."):

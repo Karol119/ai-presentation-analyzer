@@ -13,7 +13,7 @@ Vistas registradas:
   - performance_gui  → pantalla de rendimiento / desviaciones de tiempo (TT2)
 """
 
-from app.presentation.views.ui_state import ui
+from app.presentation.views.ui_state import ui, estado
 from app.presentation.widgets.topbar import set_modo_analisis, set_modo_principal
 
 # Estado interno del navegador extendido para TT2
@@ -130,6 +130,12 @@ def ir_a_principal():
     # Si la proyección está activa, bloqueamos el botón de volver al inicio
     if ui.get("proyeccion_activa", False):
         print("[BLOQUEADO] No puedes regresar al menú mientras estás proyectando.")
+        return
+
+    # Si hay un proceso en curso (cargando, analizando, generando, aplicando),
+    # bloqueamos la navegación para no corromper el estado.
+    if estado.get("bloqueo_ui"):
+        print("[BLOQUEADO] Espera a que termine el proceso actual para volver al inicio.")
         return
     # ---------------------------------------------------
 

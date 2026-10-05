@@ -28,9 +28,20 @@ def obtener_materias_para_agregar():
     """Recupera el catálogo de materias disponibles para activar."""
     return obtener_materias_disponibles()
 
+def obtener_materias_ocultas_controlador():
+    """Recupera solo las materias ocultas (que aún conservan datos)."""
+    from app.data.queries import obtener_materias_ocultas
+    return obtener_materias_ocultas()
+
 def activar_materia(nombre_materia):
-    """Lógica para habilitar una materia en la base de datos."""
-    return actualizar_estado_materia(nombre_materia, True)
+    """Habilita una materia y vuelve a mostrar todas sus presentaciones."""
+    ok = actualizar_estado_materia(nombre_materia, True)
+    if ok:
+        id_materia = obtener_id_materia(nombre_materia)
+        if id_materia:
+            from app.data.persistence import mostrar_todas_presentaciones_materia
+            mostrar_todas_presentaciones_materia(id_materia)
+    return ok
 
 def desactivar_materia(nombre_materia):
     """Lógica para ocultar una materia del panel (borrado lógico)."""
@@ -88,6 +99,14 @@ def obtener_temas_cubiertos(id_materia) -> dict:
                     cubiertos["subtemas"].add(_normalizar(sub))
     return cubiertos
 
+
+def orquestar_ocultar_materia(nombre_materia):
+    """Oculta la materia (activa = 0) conservando TODOS sus archivos, versiones y análisis."""
+    if not nombre_materia:
+        return False, "Nombre de materia vacío."
+    if actualizar_estado_materia(nombre_materia, False):
+        return True, f"Materia '{nombre_materia}' ocultada (tus datos se conservaron)."
+    return False, "No se pudo ocultar la materia."
 
 def orquestar_desactivacion_materia(nombre_materia):
     """
