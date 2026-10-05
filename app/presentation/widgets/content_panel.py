@@ -1,6 +1,7 @@
 # app/presentation/widgets/content_panel.py
 import customtkinter as ctk
 from tkinter import filedialog
+import json
 import os
 from PIL import Image
 from typing import Callable
@@ -13,12 +14,14 @@ from app.core.controller.presentation_controller import (
     orquestar_proceso_completo,
     orquestar_eliminacion_presentacion,
     orquestar_analisis_ia,
-    orquestar_actualizacion_presentacion 
+    orquestar_actualizacion_presentacion,
+    orquestar_obtener_reporte_tiempo
 )
 
 from app.core.controller.subject_controller import (
     obtener_id_materia, 
-    obtener_archivos_materia
+    obtener_archivos_materia,
+    obtener_id_materia_controlador
 )
 
 # Utilidades y Widgets de Presentación (Capa de Presentación)
@@ -253,7 +256,29 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     return outer 
 
 def _ver_rendimiento_ui(subject: str, ruta_pdf: str, nombre_presentacion: str, toggle_menu):
-    """Navega a la vista de análisis de rendimiento y tiempos."""
+    """Navega a la vista de análisis de rendimiento solo si hay sesiones presentadas."""
+    id_materia = obtener_id_materia_controlador(subject)
+    json_raw = orquestar_obtener_reporte_tiempo(nombre_presentacion, id_materia)
+
+    hay_reporte = False
+    if json_raw:
+        try:
+            data = json.loads(json_raw)
+            hay_reporte = any(
+                g.get("historial_sesiones")
+                for g in data.get("grupos", {}).values()
+            )
+        except Exception:
+            pass
+
+    if not hay_reporte:
+        mostrar_modal_advertencia(
+            ui["root"],
+            "Aún no se ha presentado esta clase. Debes presentarla al menos una vez para generar el informe de rendimiento.",
+            "Sin datos de rendimiento"
+        )
+        return
+
     toggle_menu(False)
     navigator.ir_a_rendimiento(subject, nombre_presentacion, ruta_pdf)
 
