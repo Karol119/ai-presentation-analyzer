@@ -24,7 +24,7 @@ class PresentationControls(ctk.CTkFrame):
         self.btn_salir = ctk.CTkButton(
             self, 
             text="🚪 Salir de Clase", 
-            fg_color="#cf6679",       # Tono rojizo/salmón para alertas o salidas
+            fg_color="#6A1B31",       # Tono rojizo/salmón para alertas o salidas
             hover_color="#b05464", 
             width=140,
             command=ir_a_principal   # Llama directo al enrutador para desmontar todo

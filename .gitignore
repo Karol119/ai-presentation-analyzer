@@ -48,3 +48,6 @@ logs/
 
 __pycache__/
 *.pyc
+
+#gemini
+%TEMP%env_backup

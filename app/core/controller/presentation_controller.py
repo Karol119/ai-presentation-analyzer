@@ -54,7 +54,7 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
         if exito_registro:
             return True, f"Registrado con éxito."
         else:
-            return False, "Error al persistir los datos en la base de datos."
+            return False, f"Error al persistir los datos: {id_pres}"
 
     except Exception as e:
         return False, f"Error en el flujo: {str(e)}"
@@ -65,6 +65,16 @@ def orquestar_eliminacion_presentacion(nombre_presentacion, id_materia):
     física y lógicamente una presentación.
     """
     return eliminar_presentacion_completa(nombre_presentacion, id_materia)
+
+def orquestar_ocultar_presentacion(nombre_presentacion, id_materia):
+    """Oculta una presentación (borrado lógico) conservando todos sus datos."""
+    from app.data.persistence import actualizar_visibilidad_presentacion
+    return actualizar_visibilidad_presentacion(nombre_presentacion, id_materia, False)
+
+def orquestar_mostrar_presentacion(nombre_presentacion, id_materia):
+    """Vuelve a mostrar una presentación oculta."""
+    from app.data.persistence import actualizar_visibilidad_presentacion
+    return actualizar_visibilidad_presentacion(nombre_presentacion, id_materia, True)
 
 def orquestar_actualizacion_analisis(nombre_presentacion, id_materia):
     """

@@ -8,8 +8,11 @@ import shutil
 import xml.etree.ElementTree as ET
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.enum.text import MSO_ANCHOR
 from pptx.oxml.ns import qn
 from pptx.text.text import _Paragraph
+from pptx.util import Pt
+from pptx.dml.color import RGBColor
 
 def aplicar_mejoras_pptx(ruta_original: str, ruta_destino: str, datos_analisis: dict) -> tuple[bool, str]:
     """
@@ -18,36 +21,78 @@ def aplicar_mejoras_pptx(ruta_original: str, ruta_destino: str, datos_analisis: 
     en orden inverso para no afectar los índices XML.
     """
     try:
-        # 1. Asegurar directorio y crear una copia exacta de trabajo
-        os.makedirs(os.path.dirname(ruta_destino), exist_ok=True)
-        shutil.copyfile(ruta_original, ruta_destino)
+        # 0. Guardas básicas
+        if os.path.abspath(ruta_destino) == os.path.abspath(ruta_original):
+            return False, "La ruta de destino no puede ser la misma que la original."
+
+        directorio = os.path.dirname(ruta_destino)
+        if directorio:
+            os.makedirs(directorio, exist_ok=True)
 
         diapositivas_datos = datos_analisis.get("slides", [])
+        pendientes = [
+            info for info in diapositivas_datos
+            if info.get("requiere_reestructuracion") and info.get("reestructuracion")
+        ]
 
-        # 2. Recorrer de atrás hacia adelante (¡Clave para no arruinar los índices!)
-        for info_diapositiva in reversed(diapositivas_datos):
-            if info_diapositiva.get("requiere_reestructuracion") and info_diapositiva.get("reestructuracion"):
-                
-                num_diapositiva = info_diapositiva["slide_number"] # Base 1
-                sugerencias = info_diapositiva["reestructuracion"].get("diapositivas_generadas", [])
+        # 1. Sin cambios: simplemente copiar la original
+        if not pendientes:
+            shutil.copyfile(ruta_original, ruta_destino)
+            return True, "No se detectaron cambios recomendados; se copió la presentación original."
 
-                # Empaquetar los textos generados por la IA para el procesador
-                lista_contenidos = []
-                for sug in sugerencias:
-                    lista_contenidos.append({
+        # 2. Trabajar sobre una copia temporal; el destino solo se toca al final
+        ruta_trabajo = ruta_destino + ".tmp"
+        try:
+            shutil.copyfile(ruta_original, ruta_trabajo)
+
+            # 3. Clonar diapositivas (de atrás hacia adelante para no arruinar
+            #    los índices) y registrar dónde inyectar cada contenido.
+            operaciones = []  # lista de [indice_inicio, lista_contenidos]
+            for info in reversed(pendientes):
+                sugerencias = info["reestructuracion"].get("diapositivas_generadas", [])
+                lista_contenidos = [
+                    {
                         "titulo": sug.get("titulo_sugerido", ""),
                         "cuerpo": sug.get("contenido_optimizado", ""),
-                        "formato": sug.get("formato", "")
-                    })
+                        "formato": sug.get("formato", ""),
+                    }
+                    for sug in sugerencias
+                ]
+                if not lista_contenidos:
+                    continue
 
-                # 3. Aplicar la clonación y reemplazo físico en el archivo destino
-                if lista_contenidos:
-                    _dividir_y_reemplazar_diapositiva(ruta_destino, num_diapositiva, lista_contenidos)
+                num = info["slide_number"]  # Base 1
+                _duplicar_diapositivas_en_archivo(ruta_trabajo, num, len(lista_contenidos))
+
+                # Las copias insertadas desplazan lo ya registrado
+                for op in operaciones:
+                    op[0] += len(lista_contenidos) - 1
+                operaciones.append([num - 1, lista_contenidos])
+
+            # 4. Una sola apertura y un solo guardado para toda la inyección
+            presentacion = Presentation(ruta_trabajo)
+            total = len(presentacion.slides)
+            for indice, lista_contenidos in operaciones:
+                for i, contenido in enumerate(lista_contenidos):
+                    if indice + i >= total:
+                        break
+                    _actualizar_diapositiva_jerarquica(
+                        presentacion.slides[indice + i],
+                        texto_titulo=contenido.get("titulo", ""),
+                        texto_cuerpo=contenido.get("cuerpo", ""),
+                        formato=contenido.get("formato", ""),
+                    )
+            presentacion.save(ruta_trabajo)
+
+            # 5. Movimiento atómico: el destino nunca queda a medio escribir
+            os.replace(ruta_trabajo, ruta_destino)
+        finally:
+            if os.path.exists(ruta_trabajo):
+                os.remove(ruta_trabajo)
 
         return True, "Presentación optimizada generada con éxito."
     except Exception as e:
-        print(f"Error al manipular el PPTX (OpenXML): {e}")
-        return False, f"Error al procesar la presentación: {str(e)}"
+        return False, f"Error al procesar la presentación: {e}"
 
 
 # =============================================================================
@@ -281,6 +326,50 @@ def _inferir_formato(texto: str) -> str:
     return "parrafo"
 
 
+def _luminancia_relativa(color_rgb) -> float:
+    """Luminancia perceptual simple (0 = negro, 1 = blanco)."""
+    try:
+        r, g, b = color_rgb[0] / 255, color_rgb[1] / 255, color_rgb[2] / 255
+        return 0.299 * r + 0.587 * g + 0.114 * b
+    except Exception:
+        return 0.5
+
+
+def _color_fondo_diapositiva(diapositiva):
+    """Devuelve el RGB del fondo de la diapositiva o None si no se puede saber."""
+    try:
+        fondo = diapositiva.background
+        color = fondo.fill.fore_color.rgb
+        return color
+    except Exception:
+        return None
+
+
+def _asegurar_contraste(forma, diapositiva):
+    """
+    Si el texto queda con poco contraste contra el fondo (p. ej. texto oscuro
+    sobre fondo oscuro heredado del layout), fuerza blanco u oscuro.
+    """
+    bg = _color_fondo_diapositiva(diapositiva)
+    if bg is None or not forma.has_text_frame:
+        return
+    lum_bg = _luminancia_relativa(bg)
+    for parrafo in forma.text_frame.paragraphs:
+        for run in parrafo.runs:
+            try:
+                color_actual = run.font.color.rgb if run.font.color and run.font.color.type is not None else None
+            except Exception:
+                color_actual = None
+            lum_texto = _luminancia_relativa(color_actual) if color_actual is not None else (0.1 if lum_bg > 0.6 else 0.9)
+            try:
+                if lum_bg < 0.45 and lum_texto < 0.55:
+                    run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+                elif lum_bg > 0.55 and lum_texto > 0.45:
+                    run.font.color.rgb = RGBColor(0x33, 0x33, 0x33)
+            except Exception:
+                pass
+
+
 def _marcar_item(parrafo, formato: str):
     """Aplica viñeta o numeración real (buChar/buAutoNum) al párrafo."""
     pPr = parrafo._p.get_or_add_pPr()
@@ -309,6 +398,51 @@ def _activar_autofit(forma):
         forma.text_frame.word_wrap = True
     except Exception:
         pass
+
+
+def _clonar_placeholder_desde_layout(diapositiva, ph):
+    """Clona un placeholder del layout a nivel XML (copia posición/tamaño)."""
+    import copy as _copy
+    from pptx.util import Pt  # noqa: F401
+    nuevo_elemento = _copy.deepcopy(ph._element)
+    # Limpiar el texto de ejemplo que traiga el layout
+    for nodo_p in nuevo_elemento.findall('.//{http://schemas.openxmlformats.org/drawingml/2006/main}p'):
+        for r in nodo_p.findall('{http://schemas.openxmlformats.org/drawingml/2006/main}r'):
+            nodo_p.remove(r)
+    # Dar un id único al clon (cNvPr/@id) para evitar conflictos en el spTree
+    spTree = diapositiva.shapes._spTree
+    existentes = set()
+    for el in spTree.iter():
+        if el.tag.endswith('}cNvPr') and el.get('id', '').isdigit():
+            existentes.add(int(el.get('id')))
+    nuevo_id = max(existentes, default=1) + 1
+    for el in nuevo_elemento.iter():
+        if el.tag.endswith('}cNvPr'):
+            el.set('id', str(nuevo_id))
+            nuevo_id += 1
+    spTree.append(nuevo_elemento)
+    return diapositiva.shapes[-1]
+
+
+def _asegurar_placeholder_titulo(diapositiva):
+    """
+    Si la diapositiva no tiene placeholder de título, clona el del layout
+    para que el título insertado sea reconocido como título oficial.
+    """
+    try:
+        if diapositiva.shapes.title is not None:
+            return diapositiva.shapes.title
+        from pptx.enum.shapes import PP_PLACEHOLDER
+        ph_titulo = None
+        for ph in diapositiva.slide_layout.placeholders:
+            if ph.placeholder_format.type in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE):
+                ph_titulo = ph
+                break
+        if ph_titulo is None:
+            return None
+        return _clonar_placeholder_desde_layout(diapositiva, ph_titulo)
+    except Exception:
+        return None
 
 
 def _crear_caja_titulo(diapositiva, texto: str):
@@ -402,6 +536,27 @@ def _insertar_cuerpo_con_formato(forma, texto: str, formato: str = ""):
         run.text = contenido
         _aplicar_estilo_run(run, estilo)
 
+        # Espaciado legible: aire entre líneas y entre párrafos
+        try:
+            parrafo.line_spacing = 1.15
+            parrafo.space_after = Pt(6)
+        except Exception:
+            pass
+
+        # Resaltar el concepto clave del ítem (texto antes de ':' o '—')
+        if tipo == "item":
+            for sep in (":", "—", "–"):
+                idx = contenido.find(sep)
+                if 0 < idx <= 50:
+                    run.text = contenido[idx + len(sep):].lstrip()
+                    _aplicar_estilo_run(run, estilo)
+                    clave = parrafo.add_run()
+                    clave.text = contenido[:idx + len(sep)] + " "
+                    _aplicar_estilo_run(clave, estilo)
+                    clave.font.bold = True
+                    parrafo._p.insert(list(parrafo._p).index(run._r), clave._r)
+                    break
+
         if tipo == "item" and formato in ("vinetas", "numerada"):
             _marcar_item(parrafo, formato)
         else:
@@ -431,6 +586,17 @@ def _formas_graficas_recursivo(coleccion_formas) -> list:
     return graficas
 
 
+def _todas_las_formas_recursivo(coleccion_formas) -> list:
+    """Incluye texto, figuras decorativas, tablas e imágenes (todo lo visible)."""
+    formas = []
+    for forma in coleccion_formas:
+        if forma.shape_type == MSO_SHAPE_TYPE.GROUP:
+            formas.extend(_todas_las_formas_recursivo(forma.shapes))
+        else:
+            formas.append(forma)
+    return formas
+
+
 def _rectangulos_solapan(a, b) -> bool:
     return not (
         a.left + a.width <= b.left or b.left + b.width <= a.left or
@@ -438,35 +604,37 @@ def _rectangulos_solapan(a, b) -> bool:
     )
 
 
-def _reducir_fuente(forma, factor: float = 0.8):
-    """Reduce el tamaño de fuente de todos los runs como último recurso."""
+def _reducir_fuente(forma, factor: float = 0.8, minimo_pt: float = 12):
+    """Reduce el tamaño de fuente como último recurso, sin bajar de un mínimo legible."""
     if not forma.has_text_frame:
         return
     for parrafo in forma.text_frame.paragraphs:
         for run in parrafo.runs:
             if run.font.size is not None:
-                run.font.size = int(run.font.size * factor)
+                nuevo = int(run.font.size * factor)
+                minimo = Pt(minimo_pt)
+                run.font.size = max(nuevo, minimo)
 
 
-def _resolver_solape_cuerpo(forma, graficas, alto_slide):
+def _resolver_solape_cuerpo(forma, obstaculos, alto_slide):
     """
-    Si el cuerpo se traslapa con una imagen/figura:
-      1. Intenta moverlo debajo de la gráfica.
+    Si el cuerpo se traslapa con otra figura (imagen, texto, decoración):
+      1. Intenta moverlo debajo de la figura.
       2. Si no cabe, moverlo arriba.
-      3. Si no cabe, ajusta su altura al espacio libre bajo la gráfica.
+      3. Si no cabe, ajusta su altura al espacio libre.
       4. Si aún se traslapa, reduce la fuente.
     """
-    for grafica in graficas:
-        if not _rectangulos_solapan(forma, grafica):
+    for obstaculo in obstaculos:
+        if not _rectangulos_solapan(forma, obstaculo):
             continue
 
         margen = 91440  # 0.1 pulgada
-        debajo = grafica.top + grafica.height + margen
+        debajo = obstaculo.top + obstaculo.height + margen
         if debajo + forma.height <= alto_slide:
             forma.top = debajo
             continue
 
-        arriba = grafica.top - forma.height - margen
+        arriba = obstaculo.top - forma.height - margen
         if arriba >= 0:
             forma.top = arriba
             continue
@@ -517,21 +685,20 @@ def _actualizar_diapositiva_jerarquica(diapositiva, texto_titulo: str, texto_cue
     formas_con_contenido = [f for f in todas_las_formas if f.text_frame.text.strip()]
     formas_con_contenido.sort(key=lambda f: f.top)
 
-    if not formas_con_contenido:
-        return
-
-    # --- TÍTULO: placeholder real primero, heurística de respaldo ---
+    # --- TÍTULO: placeholder real primero, clon del layout, heurística de respaldo ---
     forma_titulo = None
     try:
         if diapositiva.shapes.title is not None and diapositiva.shapes.title.has_text_frame:
             forma_titulo = diapositiva.shapes.title
     except Exception:
         pass
+    if forma_titulo is None:
+        forma_titulo = _asegurar_placeholder_titulo(diapositiva)
     if forma_titulo is None and formas_con_contenido:
         forma_titulo = formas_con_contenido[0]
 
     if forma_titulo is None and texto_titulo:
-        # La diapositiva no trae placeholder de título: crear uno nuevo
+        # Último recurso: crear una caja de texto simple
         forma_titulo = _crear_caja_titulo(diapositiva, texto_titulo)
 
     if forma_titulo is not None:
@@ -539,25 +706,59 @@ def _actualizar_diapositiva_jerarquica(diapositiva, texto_titulo: str, texto_cue
             _establecer_texto_preservando_estilo(forma_titulo, texto_titulo)
         elif not texto_titulo:
             forma_titulo.text_frame.text = ""
+        _asegurar_contraste(forma_titulo, diapositiva)
 
-    # --- CUERPO: placeholder de cuerpo primero, heurística de respaldo ---
+    # --- CUERPO: placeholder de cuerpo primero, clon del layout, heurística ---
     forma_cuerpo = _localizar_cuerpo(diapositiva, formas_con_contenido)
+
+    if forma_cuerpo is None:
+        try:
+            from pptx.enum.shapes import PP_PLACEHOLDER
+            tipos_cuerpo = (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT,
+                            PP_PLACEHOLDER.VERTICAL_BODY, PP_PLACEHOLDER.VERTICAL_OBJECT)
+            for ph in diapositiva.slide_layout.placeholders:
+                if ph.placeholder_format.type in tipos_cuerpo:
+                    forma_cuerpo = _clonar_placeholder_desde_layout(diapositiva, ph)
+                    break
+        except Exception:
+            pass
 
     if forma_cuerpo is not None:
         if texto_cuerpo:
             _insertar_cuerpo_con_formato(forma_cuerpo, texto_cuerpo, formato)
             _activar_autofit(forma_cuerpo)
+            _asegurar_contraste(forma_cuerpo, diapositiva)
+            try:
+                forma_cuerpo.text_frame.vertical_anchor = MSO_ANCHOR.TOP
+            except Exception:
+                pass
         else:
             forma_cuerpo.text_frame.text = ""
 
-        # Evitar sobreposición con imágenes/figuras
+        # Evitar sobreposición con CUALQUIER figura (título, imágenes, texto...)
         try:
             alto_slide = diapositiva.part.package.main_document_part.presentation.slide_height
         except Exception:
             alto_slide = 6858000
-        graficas = _formas_graficas_recursivo(diapositiva.shapes)
-        if graficas:
-            _resolver_solape_cuerpo(forma_cuerpo, graficas, alto_slide)
+        excluir = set()
+        for f in (forma_titulo, forma_cuerpo):
+            if f is not None:
+                try:
+                    excluir.add(f._element)
+                except Exception:
+                    pass
+        obstaculos = []
+        for f in _todas_las_formas_recursivo(diapositiva.shapes):
+            try:
+                if f._element in excluir:
+                    continue
+                if f.width is None or f.height is None:
+                    continue
+                obstaculos.append(f)
+            except Exception:
+                continue
+        if obstaculos:
+            _resolver_solape_cuerpo(forma_cuerpo, obstaculos, alto_slide)
 
     # Limpiar notas o subtítulos sobrantes del diseño original
     usados = set()
@@ -578,31 +779,9 @@ def _actualizar_diapositiva_jerarquica(diapositiva, texto_titulo: str, texto_cue
         if texto_completo:
             _insertar_cuerpo_con_formato(forma_titulo, texto_completo, formato)
 
-def _dividir_y_reemplazar_diapositiva(ruta_pptx: str, num_diapositiva_objetivo: int, lista_contenidos: list):
-    """
-    Orquesta la clonación a nivel de paquete y la inyección jerárquica de texto.
-    Abre y guarda el archivo en la misma ruta provista.
-    """
+def _duplicar_diapositivas_en_archivo(ruta_pptx: str, num_diapositiva_objetivo: int, num_copias: int):
+    """Valida el índice y duplica físicamente la diapositiva en el paquete."""
     total = _obtener_total_diapositivas(ruta_pptx)
     if num_diapositiva_objetivo < 1 or num_diapositiva_objetivo > total:
         raise ValueError(f"Número de diapositiva inválido (1 a {total}).")
-
-    indice_objetivo = num_diapositiva_objetivo - 1
-    num_copias = len(lista_contenidos)
-
-    # 1. Duplicación estricta a nivel XML ZIP
-    _duplicar_diapositiva_en_paquete(ruta_pptx, indice_objetivo, num_copias)
-
-    # 2. Inyección limpia de los textos sugeridos por la IA
-    presentacion = Presentation(ruta_pptx)
-    for i, contenido in enumerate(lista_contenidos):
-        diapositiva_actual = presentacion.slides[indice_objetivo + i]
-        _actualizar_diapositiva_jerarquica(
-            diapositiva_actual,
-            texto_titulo=contenido.get("titulo", ""),
-            texto_cuerpo=contenido.get("cuerpo", ""),
-            formato=contenido.get("formato", "")
-        )
-
-    # Sobreescribimos el archivo (que ya es el archivo destino temporal)
-    presentacion.save(ruta_pptx)
+    _duplicar_diapositiva_en_paquete(ruta_pptx, num_diapositiva_objetivo - 1, num_copias)

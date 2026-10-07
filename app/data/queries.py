@@ -29,6 +29,22 @@ def obtener_materias_disponibles():
     conn.close()
     return materias
 
+def obtener_materias_ocultas():
+    """Devuelve las materias inactivas que todavía conservan datos (verdaderamente ocultas)."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT u.unidad_aprendizaje
+        FROM Unidad_de_Aprendizaje u
+        JOIN Presentacion p ON p.id_unidad_aprendizaje = u.id_unidad_aprendizaje
+        WHERE u.activa = 0
+        GROUP BY u.unidad_aprendizaje
+        ORDER BY u.unidad_aprendizaje
+    """)
+    materias = [fila[0] for fila in cursor.fetchall()]
+    conn.close()
+    return materias
+
 def obtener_id_materia(nombre):
     """Obtiene el ID numérico de una materia por su nombre."""
     conn = conectar_db()
@@ -46,7 +62,8 @@ def obtener_presentaciones_por_materia(id_materia):
         SELECT p.presentacion, hv.ruta, hv.ruta_miniatura, hv.analisis, hv.ruta_pdf
         FROM Presentacion p
         JOIN Historial_de_Versiones hv ON p.id_presentacion = hv.id_presentacion
-        WHERE p.id_unidad_aprendizaje = ? 
+        WHERE p.id_unidad_aprendizaje = ?
+        AND p.visible = 1
         AND hv.numero_version = (
             SELECT MAX(numero_version) 
             FROM Historial_de_Versiones 
@@ -55,6 +72,21 @@ def obtener_presentaciones_por_materia(id_materia):
     """
     cursor.execute(query, (id_materia,))
     resultados = cursor.fetchall()
+    conn.close()
+    return resultados
+
+def obtener_presentaciones_ocultas_por_materia(id_materia):
+    """Recupera únicamente las presentaciones ocultas (visible = 0)."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    query = """
+        SELECT p.presentacion
+        FROM Presentacion p
+        WHERE p.id_unidad_aprendizaje = ? AND p.visible = 0
+        ORDER BY p.presentacion
+    """
+    cursor.execute(query, (id_materia,))
+    resultados = [fila[0] for fila in cursor.fetchall()]
     conn.close()
     return resultados
 
@@ -157,6 +189,27 @@ def obtener_id_y_version_presentacion(nombre_presentacion, id_materia):
     if res and res[0]:
         return res[0], res[1]
     return None, 0
+
+def obtener_analisis_materia(id_materia):
+    """Devuelve los JSON de análisis de la versión más reciente de cada presentación."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT a.resultado
+        FROM Analisis a
+        JOIN Historial_de_Versiones hv ON a.id_version = hv.id_version
+        JOIN Presentacion p ON hv.id_presentacion = p.id_presentacion
+        WHERE p.id_unidad_aprendizaje = ?
+        AND hv.numero_version = (
+            SELECT MAX(numero_version)
+            FROM Historial_de_Versiones
+            WHERE id_presentacion = p.id_presentacion
+        )
+    """, (id_materia,))
+    resultados = [fila[0] for fila in cursor.fetchall()]
+    conn.close()
+    return resultados
+
 
 def obtener_historial_presentacion(nombre_presentacion, id_materia):
     """

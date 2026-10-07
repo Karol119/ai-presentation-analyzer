@@ -35,7 +35,10 @@ def registrar_presentacion(ruta_origen, hash_unico, num_diapositivas, id_materia
         generar_pdf(ruta_destino, ruta_pdf)
 
         id_presentacion = str(uuid.uuid4())
-        cursor.execute("INSERT INTO Presentacion VALUES (?, ?, ?)", (id_presentacion, id_materia, nombre_archivo))
+        cursor.execute(
+            "INSERT INTO Presentacion (id_presentacion, id_unidad_aprendizaje, presentacion) VALUES (?, ?, ?)",
+            (id_presentacion, id_materia, nombre_archivo),
+        )
 
         id_version = str(uuid.uuid4())
         fecha = datetime.now().strftime("%Y-%m-%d")
@@ -161,6 +164,35 @@ def actualizar_estado_materia(nombre_materia, activa):
     try:
         val = 1 if activa else 0
         cursor.execute("UPDATE Unidad_de_Aprendizaje SET activa = ? WHERE unidad_aprendizaje = ?", (val, nombre_materia))
+        conn.commit()
+        return True
+    except:
+        conn.rollback()
+        return False
+    finally: conn.close()
+
+def actualizar_visibilidad_presentacion(nombre_presentacion, id_materia, visible):
+    """Marca una presentación como visible (1) u oculta (0) sin borrar sus datos."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "UPDATE Presentacion SET visible = ? WHERE presentacion = ? AND id_unidad_aprendizaje = ?",
+            (1 if visible else 0, nombre_presentacion, id_materia)
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+    except:
+        conn.rollback()
+        return False
+    finally: conn.close()
+
+def mostrar_todas_presentaciones_materia(id_materia):
+    """Restaura la visibilidad de todas las presentaciones de una materia."""
+    conn = conectar_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE Presentacion SET visible = 1 WHERE id_unidad_aprendizaje = ?", (id_materia,))
         conn.commit()
         return True
     except:

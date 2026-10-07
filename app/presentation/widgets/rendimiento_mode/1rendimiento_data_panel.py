@@ -318,6 +318,8 @@ def crear_panel_rendimiento(master, subject: str, nombre_presentacion: str, ruta
             panel.entry_pagina.delete(0, "end")
             panel.entry_pagina.insert(0, str(panel.indice_slide_actual + 1))
         panel.focus_set()
+        # Evita que el <Return> burbujee al binding global que avanza una diapositiva
+        return "break"
 
     panel.entry_pagina.bind("<Return>", saltar_pagina_cmd)
 

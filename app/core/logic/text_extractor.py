@@ -26,7 +26,7 @@ from typing import List, Dict, Any, Optional
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
-UMBRAL_SUPERIOR_TITULO = 0.25
+UMBRAL_SUPERIOR_TITULO = 0.5
 UMBRAL_SUPERIOR_PIE    = 0.75
 MAX_PALABRAS_TITULO    = 25
 MAX_CARACTERES_TITULO  = 180
