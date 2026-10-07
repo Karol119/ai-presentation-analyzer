@@ -159,8 +159,8 @@ def crear_panel_rendimiento(master, subject: str, nombre_presentacion: str, ruta
     def _t_ref(slide_n):
         return panel.slides_por_num.get(slide_n, {}).get("tiempo_exposicion", 0) or 0
 
-    def _score(slide_n):
-        return panel.slides_por_num.get(slide_n, {}).get("score_slide")
+    def _zona(slide_n):
+        return panel.slides_por_num.get(slide_n, {}).get("zona_slide")
 
     def _real(grupo, slide_n):
         tps = panel.grupos.get(grupo, {}).get("tiempos_por_slide", {}) or {}
@@ -452,12 +452,12 @@ def crear_panel_rendimiento(master, subject: str, nombre_presentacion: str, ruta
 
         # --- Contenido IA (score) ---
         _slabel(scroll_frame, "Contenido IA")
-        sc = _score(slide_n)
-        sc_txt = f"{sc}/10" if sc is not None else "Omitida"
+        zn = _zona(slide_n)
+        sc_txt = zn.capitalize() if zn else "Omitida"
         row_sc = ctk.CTkFrame(scroll_frame, fg_color=BG_SECONDARY, corner_radius=8, height=34)
         row_sc.pack(fill="x")
         row_sc.pack_propagate(False)
-        ctk.CTkLabel(row_sc, text="Score análisis", font=ctk.CTkFont(size=11),
+        ctk.CTkLabel(row_sc, text="Calificación análisis", font=ctk.CTkFont(size=11),
                      text_color=TXT_SECOND).pack(side="left", padx=10)
         ctk.CTkLabel(row_sc, text=sc_txt, font=ctk.CTkFont(size=12, weight="bold"),
                      text_color=COLOR_GUINDA).pack(side="right", padx=10)
