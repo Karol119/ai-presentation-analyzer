@@ -77,9 +77,8 @@ def crear_resumen_rendimiento(master, analisis: dict, grupos: dict, **kwargs):
         sum(_ia(n) for n in range(1, panel.total + 1))
 
     sg = panel.analisis.get("score_global_presentacion", {}) or {}
-    score = sg.get("score_global")
     zona = sg.get("zona_global", "")
-    score_txt = f"{score:.1f}/10" if isinstance(score, (int, float)) else "—"
+    score_txt = zona.capitalize() if zona else "—"
 
     for i in range(5):
         panel.grid_columnconfigure(i, weight=1, uniform="card")
@@ -107,7 +106,7 @@ def crear_resumen_rendimiento(master, analisis: dict, grupos: dict, **kwargs):
         return lbl_val, lbl_sub
 
     # Fijas
-    _card(0, "#2563EB", "Calificación", score_txt, zona.capitalize() if zona else "—")
+    _card(0, "#2563EB", "Calificación", score_txt, "según análisis IA")
     _card(1, "#BC955C", "Tiempo IA", _fmt(ia_total), "recomendado")
     # Dependientes del grupo
     panel._lbl_doc, _ = _card(2, "#0E9AA8", "Planeó docente", "—", "estimado")
