@@ -4,7 +4,10 @@ import tkinter.messagebox as messagebox
 import json
 import os
 from app.presentation.views.ui_state import ui
-from app.core.controller.presentation_controller import orquestar_obtener_reporte_tiempo
+from app.core.controller.presentation_controller import (
+    orquestar_obtener_reporte_tiempo,
+    orquestar_guardado_tiempos,
+)
 from app.core.controller.subject_controller import obtener_id_materia_controlador
 
 _contenedor_presentacion = None
@@ -14,7 +17,7 @@ _ventana_proyeccion = None
 _watchdog_id = None
 
 # --- FORMULARIO MODAL UNIFICADO ---
-def _obtener_configuracion_clase(root, json_reporte_raw):
+def _obtener_configuracion_clase(root, json_reporte_raw, subject, nombre_presentacion):
     resultado = {"grupo": None, "tiempo": 0, "monitor_idx": 0, "cancelado": True}
 
     dialogo = ctk.CTkToplevel(root)
@@ -42,7 +45,26 @@ def _obtener_configuracion_clase(root, json_reporte_raw):
     modo_var = ctk.StringVar(value=modo_inicial)
     
     opciones_combo = grupos_existentes if grupos_existentes else ["Sin grupos previos"]
-    combo_grupos = ctk.CTkComboBox(frame_g, values=opciones_combo, state="readonly")
+    selector_grupo = ctk.CTkFrame(frame_g, fg_color="transparent")
+    selector_grupo.pack(fill="x", pady=5)
+    combo_grupos = ctk.CTkComboBox(
+        selector_grupo, values=opciones_combo, state="readonly"
+    )
+    combo_grupos.pack(side="left", fill="x", expand=True)
+    boton_eliminar_grupo = ctk.CTkButton(
+        selector_grupo,
+        text="🗑",
+        width=34,
+        height=28,
+        fg_color="#FEF2F2",
+        hover_color="#FECACA",
+        text_color="#B91C1C",
+        border_width=1,
+        border_color="#FECACA",
+        corner_radius=6,
+        command=lambda: eliminar_grupo_seleccionado(),
+    )
+    boton_eliminar_grupo.pack(side="left", padx=(8, 0))
     if grupos_existentes:
         combo_grupos.set(grupos_existentes[0])
     
@@ -51,14 +73,56 @@ def _obtener_configuracion_clase(root, json_reporte_raw):
     def on_modo_change(value):
         if value == "Seleccionar":
             entry_nuevo.pack_forget()
-            combo_grupos.pack(fill="x", pady=5)
+            selector_grupo.pack(fill="x", pady=5)
         else:
-            combo_grupos.pack_forget()
+            selector_grupo.pack_forget()
             entry_nuevo.pack(fill="x", pady=5)
 
     seg_btn = ctk.CTkSegmentedButton(frame_g, values=["Seleccionar", "Crear Nuevo"], variable=modo_var, command=on_modo_change)
     seg_btn.pack(fill="x", pady=(5, 10))
     on_modo_change(modo_var.get())
+
+    def eliminar_grupo_seleccionado():
+        grupo = combo_grupos.get()
+        if not grupos_existentes or grupo not in grupos_existentes:
+            lbl_error.configure(text="Selecciona un grupo válido para eliminarlo.")
+            return
+        if not messagebox.askyesno(
+            "Eliminar grupo",
+            f"¿Deseas eliminar el grupo '{grupo}' y su historial de sesiones?",
+            parent=dialogo,
+        ):
+            return
+
+        id_materia = obtener_id_materia_controlador(subject)
+        try:
+            data = json.loads(json_reporte_raw) if json_reporte_raw else {}
+            grupos = data.get("grupos", {})
+            del grupos[grupo]
+            data["grupos"] = grupos
+        except (json.JSONDecodeError, TypeError, KeyError):
+            lbl_error.configure(text="No se pudo preparar la eliminación del grupo.")
+            return
+
+        if not id_materia or not orquestar_guardado_tiempos(
+            nombre_presentacion,
+            id_materia,
+            json.dumps(data, indent=4, ensure_ascii=False),
+        ):
+            lbl_error.configure(text="No se pudo guardar la eliminación del grupo.")
+            return
+
+        grupos_existentes.remove(grupo)
+        opciones_actualizadas = grupos_existentes or ["Sin grupos previos"]
+        combo_grupos.configure(values=opciones_actualizadas)
+        combo_grupos.set(opciones_actualizadas[0])
+        boton_eliminar_grupo.configure(
+            state="normal" if grupos_existentes else "disabled"
+        )
+        if not grupos_existentes:
+            modo_var.set("Crear Nuevo")
+            on_modo_change("Crear Nuevo")
+        lbl_error.configure(text="")
 
     frame_t = ctk.CTkFrame(dialogo, fg_color="transparent")
     frame_t.pack(fill="x", padx=30, pady=10)
@@ -215,7 +279,9 @@ def _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pd
     id_materia = obtener_id_materia_controlador(subject)
     json_reporte_raw = orquestar_obtener_reporte_tiempo(nombre_presentacion, id_materia)
 
-    conf = _obtener_configuracion_clase(root, json_reporte_raw)
+    conf = _obtener_configuracion_clase(
+        root, json_reporte_raw, subject, nombre_presentacion
+    )
     if conf["cancelado"]:
         return
 
