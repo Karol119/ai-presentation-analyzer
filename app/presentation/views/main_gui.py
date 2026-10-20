@@ -140,9 +140,18 @@ def _eliminar_materia(nombre_materia: str):
     btn_row = ctk.CTkFrame(frame, fg_color="transparent")
     btn_row.pack(side="bottom", fill="x", pady=15)
 
+    def _liberar_candado():
+        """Libera el candado de la UI cuando el flujo de borrado se cancela."""
+        estado["bloqueo_ui"] = False
+
     def confirmar_eliminar():
         win.destroy()
-        _ejecutar_borrado_real_materia(nombre_materia)
+        # Segunda confirmación (borrado permanente) antes de ejecutar la eliminación.
+        confirmar_eliminacion_materia(
+            nombre_materia,
+            lambda: _ejecutar_borrado_real_materia(nombre_materia),
+            callback_cancelar=_liberar_candado,
+        )
 
     def confirmar_ocultar():
         win.destroy()
@@ -811,14 +820,31 @@ def confirmar_eliminacion(nombre, subject, callback_confirmar):
         corner_radius=10,
     ).pack(side="right", padx=10)
 
-def confirmar_eliminacion_materia(nombre, callback_confirmar):
-    """Muestra un modal de advertencia institucional para el borrado de la materia."""
+def confirmar_eliminacion_materia(nombre, callback_confirmar, callback_cancelar=None):
+    """
+    Muestra un modal de advertencia institucional para el borrado de la materia.
+
+    Se invoca después de la primera advertencia ("Ocultar o eliminar materia")
+    y antes de ejecutar el borrado definitivo. Si el usuario cancela (botón
+    Cancelar o cierre con la X), se ejecuta `callback_cancelar` — cuando se
+    proporciona — y NO se elimina nada.
+    """
     win = ctk.CTkToplevel(ui["root"])
     win.title("Confirmar eliminación de materia")
     win.geometry("460x320")
     win.grab_set()
     win.configure(fg_color="white")
     win.resizable(False, False)
+    win.after(10, lambda: win.focus_force())
+
+    def cerrar():
+        """Libera el candado de la UI (si aplica) y cierra la ventana."""
+        if callback_cancelar:
+            callback_cancelar()
+        win.destroy()
+
+    # Capturar cierre por la "X" para que el candado de la UI también se libere.
+    win.protocol("WM_DELETE_WINDOW", cerrar)
 
     # Franja de advertencia roja
     ctk.CTkFrame(win, fg_color="#EF4444", height=6, corner_radius=0).pack(fill="x")
@@ -850,8 +876,8 @@ def confirmar_eliminacion_materia(nombre, callback_confirmar):
     btn_row.pack(pady=(0, 20))
 
     def proceder():
-        callback_confirmar()
         win.destroy()
+        callback_confirmar()
 
     ctk.CTkButton(
         btn_row, text="Eliminar todo", command=proceder,
@@ -860,7 +886,7 @@ def confirmar_eliminacion_materia(nombre, callback_confirmar):
     ).pack(side="left", padx=10)
 
     ctk.CTkButton(
-        btn_row, text="Cancelar", command=win.destroy,
+        btn_row, text="Cancelar", command=cerrar,
         fg_color="transparent", text_color="#64748B", border_width=1,
         border_color="#E2E8F0", width=140, height=36, corner_radius=10
     ).pack(side="right", padx=10)
