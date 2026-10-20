@@ -22,6 +22,7 @@ no un párrafo corrido, y lo conserva o restructura respetando ese formato.
 
 import os
 import re
+import zipfile
 from typing import List, Dict, Any, Optional
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
@@ -55,6 +56,75 @@ def contar_diapositivas(ruta_pptx: str) -> int:
     except Exception as e:
         print(f"[text_extractor] Error al contar diapositivas: {e}")
         return 0
+
+
+def validar_pptx_legible(ruta_pptx: str) -> tuple:
+    """
+    Valida que el archivo PPTX pueda abrirse y recorrerse por completo,
+    de la misma forma en que lo harán los motores de análisis.
+
+    Detecta: archivos dañados (descarga incompleta, guardado incorrecto,
+    OneDrive/USB, compatibilidad con WPS/LibreOffice), archivos sin
+    diapositivas y diapositivas con elementos internos ilegibles
+    (imágenes, tablas o shapes dañados).
+
+    Devuelve una tupla (es_legible, estado, num_diapositivas) donde estado:
+      - "ok"     -> El archivo es legible de principio a fin.
+      - "corrupto" -> No se puede abrir como PPTX (zip inválido o no es PowerPoint).
+      - "vacio"    -> Abre pero no tiene diapositivas.
+      - "danado"   -> Abre, pero falla al leer diapositivas/contenido interno.
+    """
+    # 1. Verificar que sea un ZIP válido con la estructura mínima de PowerPoint.
+    try:
+        with zipfile.ZipFile(ruta_pptx) as archivo_zip:
+            nombres = archivo_zip.namelist()
+            if "ppt/presentation.xml" not in nombres:
+                # Existe el zip pero no es un archivo de PowerPoint válido.
+                return False, "corrupto", 0
+    except Exception as e:
+        print(f"[text_extractor] Archivo no es un PPTX válido: {e}")
+        return False, "corrupto", 0
+
+    # 2. Apertura completa con python-pptx (igual que en el análisis).
+    try:
+        presentacion = Presentation(ruta_pptx)
+        diapositivas = list(presentacion.slides)
+    except Exception as e:
+        print(f"[text_extractor] Error al abrir el PPTX: {e}")
+        return False, "corrupto", 0
+
+    # 3. Sin diapositivas.
+    if not diapositivas:
+        return False, "vacio", 0
+
+    # 4. Recorrido profundo (misma lectura que hará el análisis):
+    #    itera cada diapositiva, título, shape, párrafo e imagen para detectar
+    #    elementos dañados ANTES de registrar el archivo.
+    try:
+        for diapositiva in diapositivas:
+            _ = diapositiva.shapes.title  # el análisis lee el placeholder de título
+            for shape in diapositiva.shapes:
+                _ = shape.shape_type
+                if shape.has_text_frame:
+                    for parrafo in shape.text_frame.paragraphs:
+                        _ = parrafo.text
+                # OJO: getattr(type(shape), ...) comprueba que el TIPO exponga
+                # la propiedad 'image' SIN invocarla. En imágenes vinculadas
+                # (no incrustadas) la llamada real levanta ValueError
+                # ("no embedded image"), que es legítimo y no es corrupción.
+                if getattr(type(shape), "image", None) is not None:
+                    try:
+                        _ = shape.image.blob  # Fuerza la lectura de la imagen
+                    except ValueError as e:
+                        # Imagen vinculada/externa: legítima, se tolera.
+                        if "no embedded image" in str(e).lower():
+                            continue
+                        raise
+    except Exception as e:
+        print(f"[text_extractor] Elementos dañados detectados: {e}")
+        return False, "danado", len(diapositivas)
+
+    return True, "ok", len(diapositivas)
 
 
 def extraer_datos_pptx(ruta_pptx: str) -> Dict[str, Any]:

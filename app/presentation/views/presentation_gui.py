@@ -4,6 +4,7 @@ import tkinter.messagebox as messagebox
 import json
 import os
 from app.presentation.views.ui_state import ui
+from app.presentation.widgets.dialogs import autoajustar_modal
 from app.core.controller.presentation_controller import (
     orquestar_obtener_reporte_tiempo,
     orquestar_guardado_tiempos,
@@ -26,6 +27,10 @@ def _obtener_configuracion_clase(root, json_reporte_raw, subject, nombre_present
     dialogo.attributes("-topmost", True)
     dialogo.transient(root)
     dialogo.grab_set()  
+
+    # Auto-ajuste al contenido real (incl. escalado DPI): nunca corta los
+    # botones de la parte inferior del formulario.
+    autoajustar_modal(dialogo, 400, 580)
 
     ctk.CTkLabel(dialogo, text="⚙️ Iniciar Clase", font=ctk.CTkFont(size=20, weight="bold"), text_color="#005088").pack(pady=(20, 10))
 

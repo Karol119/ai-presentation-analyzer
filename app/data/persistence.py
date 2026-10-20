@@ -3,6 +3,7 @@ import sqlite3
 import uuid
 import json
 import os
+import re
 import shutil
 from datetime import datetime
 from app.data.database_manager import conectar_db
@@ -56,8 +57,155 @@ def registrar_presentacion(ruta_origen, hash_unico, num_diapositivas, id_materia
     finally:
         conn.close()
 
+# Sufijos válidos que la app GENERA a partir del nombre de una presentación
+# (base sin extensión): archivos/fisicos propios y derivados de sus versiones.
+_RE_DERIVADOS = re.compile(
+    r"^(_v\d+)*(?:\.pptx|\.pdf|_thumb\.png|_analysis(?:-v2)?\.json)$",
+    re.IGNORECASE,
+)
+
+def _es_derivado_de(nombre_archivo, base):
+    """
+    Indica si `nombre_archivo` es un recurso de la presentación cuyo nombre
+    base (sin extensión) es `base`. Ej.: base 'Examen' reconoce
+    'Examen.pptx', 'Examen.pdf', 'Examen_thumb.png', 'Examen_analysis.json',
+    'Examen_v2_thumb.png', 'Examen_v1_v2_analysis.json'...
+    La comparación es exacta tras el base (los nombres de OTRAS presentaciones
+    que empiecen igual NO cuentan como propios).
+    """
+    if not base:
+        return False
+    nombre_lower = nombre_archivo.lower()
+    base_lower = base.lower()
+    if not nombre_lower.startswith(base_lower):
+        return False
+    cadena = nombre_lower[len(base_lower):]
+    return bool(_RE_DERIVADOS.match(cadena))
+
+
+def _referenciados_y_bases_vivas(conn):
+    """
+    Devuelve (rutas_db, bases_por_materia):
+      - rutas_db: rutas absolutas (normalizadas y en minúsculas) de los
+        archivos físicos guardados en Historial_de_Versiones (pptx, miniatura,
+        pdf) de las versiones VIVAS.
+      - bases_por_materia: {materia: [base_sin_ext, ...]} de las
+        presentaciones registradas (visibles u ocultas) por materia.
+    """
+    cursor = conn.cursor()
+    rutas_db = set()
+    for columna in ("ruta", "ruta_miniatura", "ruta_pdf"):
+        for (r,) in cursor.execute(
+            f"SELECT {columna} FROM Historial_de_Versiones WHERE {columna} IS NOT NULL"
+        ):
+            try:
+                rutas_db.add(os.path.abspath(r).lower())
+            except Exception:
+                pass
+    bases_por_materia = {}
+    filas = cursor.execute("""
+        SELECT u.unidad_aprendizaje, p.presentacion
+        FROM Presentacion p
+        JOIN Unidad_de_Aprendizaje u ON p.id_unidad_aprendizaje = u.id_unidad_aprendizaje
+    """).fetchall()
+    for materia, nombre_presentacion in filas:
+        bases_por_materia.setdefault(materia, []).append(
+            os.path.splitext(nombre_presentacion)[0]
+        )
+    return rutas_db, bases_por_materia
+
+
+def limpiar_huerfanos_presentaciones():
+    """
+    LIMPIEZA DE RECURSOS HUÉRFANOS (archivos de presentaciones que ya NO están
+    registradas en la BD, p. ej. borradas por versiones anteriores de la app
+    que solo eliminaban registros). Recorre:
+
+      - storage/presentaciones/<materia>/  (pptx, pdf, miniatura, json de análisis)
+      - Documentos/AI Presentation Analyzer/<materia>/  (PPTX mejorados)
+    Regla: un archivo se conserva SI (a) su ruta está registrada en la BD, o
+    (b) su nombre es un derivado legítimo de una presentación VIVA de esa
+    misma materia. Todo lo demás es huérfano y se elimina con registro en
+    consola. Devuelve la cantidad de archivos eliminados.
+    """
+    eliminados = []
+    conn = conectar_db()
+    try:
+        rutas_db, bases_por_materia = _referenciados_y_bases_vivas(conn)
+    finally:
+        conn.close()
+
+    raiz_proyecto = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    # --- storage/presentaciones/<materia> ---
+    raiz_storage = os.path.join(raiz_proyecto, "storage", "presentaciones")
+    if os.path.isdir(raiz_storage):
+        for materia in os.listdir(raiz_storage):
+            carpeta = os.path.join(raiz_storage, materia)
+            if not os.path.isdir(carpeta):
+                continue
+            bases_vivas = bases_por_materia.get(materia, [])
+            for archivo in os.listdir(carpeta):
+                ruta = os.path.join(carpeta, archivo)
+                if not os.path.isfile(ruta):
+                    continue
+                if os.path.abspath(ruta).lower() in rutas_db:
+                    continue
+                if any(_es_derivado_de(archivo, b) for b in bases_vivas):
+                    continue
+                try:
+                    os.remove(ruta)
+                    eliminados.append(ruta)
+                    print(f"[huerfanos] Eliminado: {ruta}")
+                except Exception as e:
+                    print(f"[huerfanos] No se pudo eliminar {ruta}: {e}")
+            try:
+                if not os.listdir(carpeta):
+                    os.rmdir(carpeta)
+            except Exception:
+                pass
+
+    # --- Documentos/AI Presentation Analyzer/<materia> (PPTX mejorados) ---
+    ruta_docs = os.path.join(
+        os.path.expanduser('~'), 'Documents', 'AI Presentation Analyzer'
+    )
+    if os.path.isdir(ruta_docs):
+        for materia in os.listdir(ruta_docs):
+            carpeta = os.path.join(ruta_docs, materia)
+            if not os.path.isdir(carpeta):
+                continue
+            bases_vivas = bases_por_materia.get(materia, [])
+            for archivo in os.listdir(carpeta):
+                ruta = os.path.join(carpeta, archivo)
+                if not os.path.isfile(ruta):
+                    continue
+                if any(_es_derivado_de(archivo, b) for b in bases_vivas):
+                    continue
+                try:
+                    os.remove(ruta)
+                    eliminados.append(ruta)
+                    print(f"[huerfanos] Eliminado: {ruta}")
+                except Exception as e:
+                    print(f"[huerfanos] No se pudo eliminar {ruta}: {e}")
+            try:
+                if not os.listdir(carpeta):
+                    os.rmdir(carpeta)
+            except Exception:
+                pass
+
+    return len(eliminados)
+
+
 def eliminar_presentacion_completa(nombre_presentacion, id_materia):
-    """Borra físicamente archivos y lógicamente registros en cascada manual."""
+    """
+    Borra registros en cascada (BD) y luego todos los recursos físicos de la
+    presentación en disco (storage + Documentos).
+
+    Orden deliberado: PRIMERO se hace commit de la BD y DESPUÉS se toca el
+    disco. Así un fallo físico (archivo bloqueado, permisos, OneDrive) nunca
+    deja la BD sin registros ni revierte el borrado del usuario: los archivos
+    restantes quedarán como huérfanos y los limpia el barrido del arranque.
+    """
     conn = conectar_db()
     if not conn: return False
     cursor = conn.cursor()
@@ -81,49 +229,83 @@ def eliminar_presentacion_completa(nombre_presentacion, id_materia):
         cursor.execute("DELETE FROM Presentacion_Subtema WHERE id_presentacion = ?", (id_pres,))
         cursor.execute("DELETE FROM Historial_de_Versiones WHERE id_presentacion = ?", (id_pres,))
         cursor.execute("DELETE FROM Presentacion WHERE id_presentacion = ?", (id_pres,))
-
-        # Limpieza física de TODAS las versiones (pptx, miniaturas, pdf, json)
-        nombre_materia = None
-        for numero_version, r_pptx, r_thumb, r_pdf in filas:
-            for r in (r_pptx, r_thumb, r_pdf):
-                if r and os.path.exists(r): os.remove(r)
-            if r_pdf:
-                carpeta = os.path.dirname(r_pdf)
-                nombre_materia = os.path.basename(carpeta)
-                # JSON de análisis junto al pdf
-                base = os.path.splitext(r_pdf)[0]
-                ruta_json = base + "_analysis.json"
-                if os.path.exists(ruta_json): os.remove(ruta_json)
-                # Algunas versiones guardan el json como <base_pptx>_analysis.json
-                if r_pptx:
-                    ruta_json2 = os.path.splitext(r_pptx)[0] + "_analysis.json"
-                    if os.path.exists(ruta_json2): os.remove(ruta_json2)
-                # PPTX optimizado en Documentos
-                try:
-                    ruta_doc = os.path.join(
-                        os.path.expanduser('~'), 'Documents', 'AI Presentation Analyzer',
-                        nombre_materia,
-                        f"{os.path.splitext(nombre_presentacion)[0]}_v{numero_version}.pptx"
-                    )
-                    if os.path.exists(ruta_doc): os.remove(ruta_doc)
-                except Exception:
-                    pass
-
-        # Si la carpeta de la materia en storage quedó vacía, eliminarla
-        try:
-            carpeta_presentaciones = os.path.dirname(r_pptx) if filas and filas[0][1] else None
-            if carpeta_presentaciones and os.path.isdir(carpeta_presentaciones) and not os.listdir(carpeta_presentaciones):
-                os.rmdir(carpeta_presentaciones)
-        except Exception:
-            pass
-
         conn.commit()
-        return True
-    except:
+
+    except Exception as e:
         conn.rollback()
+        print(f"[borrado] Error al eliminar registros de la BD: {e}")
         return False
     finally:
         conn.close()
+
+    # ================= LIMPIEZA FÍSICA (la BD ya quedó eliminada) ============
+    def _borrar_seguro(ruta, motivo=""):
+        try:
+            if ruta and os.path.exists(ruta):
+                os.remove(ruta)
+                return True
+        except Exception as e:
+            print(f"[borrado] No se pudo eliminar ({motivo}) {ruta}: {e}")
+        return False
+
+    bases_presentacion = set()
+    directorios_version = set()
+    carpeta_presentaciones = None
+    for numero_version, r_pptx, r_thumb, r_pdf in filas:
+        for r in (r_pptx, r_thumb, r_pdf):
+            _borrar_seguro(r, "versión")
+        if r_pdf:
+            carpeta = os.path.dirname(r_pdf)
+            nombre_materia = os.path.basename(carpeta)
+            # JSON de análisis junto al pdf
+            base = os.path.splitext(r_pdf)[0]
+            _borrar_seguro(base + "_analysis.json", "json de análisis")
+            # Algunas versiones guardan el json como <base_pptx>_analysis.json
+            if r_pptx:
+                _borrar_seguro(os.path.splitext(r_pptx)[0] + "_analysis.json", "json de análisis (pptx)")
+            # PPTX optimizado en Documentos
+            try:
+                ruta_doc = os.path.join(
+                    os.path.expanduser('~'), 'Documents', 'AI Presentation Analyzer',
+                    nombre_materia,
+                    f"{os.path.splitext(nombre_presentacion)[0]}_v{numero_version}.pptx"
+                )
+                _borrar_seguro(ruta_doc, "PPTX optimizado en Documentos")
+            except Exception:
+                pass
+        # Recolectar bases y carpetas de ESTA presentación para el barrido
+        # de derivados (abajo): cubre archivos cuyo patrón de nombre derivó
+        # del PPTX/PDF aunque la BD no registrara su ruta concreta.
+        for r in (r_pptx, r_thumb, r_pdf):
+            if not r:
+                continue
+            try:
+                bases_presentacion.add(os.path.splitext(os.path.basename(r))[0])
+                directorios_version.add(os.path.dirname(r))
+                carpeta_presentaciones = os.path.dirname(r)
+            except Exception:
+                pass
+
+    # Barrido de derivados por patrón: cualquier archivo de la carpeta de
+    # la versión que derive del nombre de ESTA presentación se elimina,
+    # aunque la BD no tuviera su ruta (p. ej. generados sin registro).
+    for directorio in directorios_version:
+        if not directorio or not os.path.isdir(directorio):
+            continue
+        for archivo in os.listdir(directorio):
+            if os.path.isdir(os.path.join(directorio, archivo)):
+                continue
+            if any(_es_derivado_de(archivo, b) for b in bases_presentacion):
+                _borrar_seguro(os.path.join(directorio, archivo), "derivado")
+
+    # Si la carpeta de la presentación en storage quedó vacía, eliminarla
+    try:
+        if carpeta_presentaciones and os.path.isdir(carpeta_presentaciones) and not os.listdir(carpeta_presentaciones):
+            os.rmdir(carpeta_presentaciones)
+    except Exception:
+        pass
+
+    return True
 
 def registrar_analisis_completo(id_version, json_string):
     """Persiste el resultado JSON de la IA en la base de datos."""

@@ -1,6 +1,7 @@
 # app/presentation/widgets/topbar.py
 import customtkinter as ctk
 from app.presentation.views.ui_state import estado, ui
+from app.presentation.widgets.dialogs import autoajustar_modal
 
 COLOR_GUINDA       = "#6A1B31"
 COLOR_GUINDA_HOVER = "#4D1324"
@@ -134,6 +135,10 @@ def mostrar_modal_configuracion_ia():
     win.configure(fg_color="white")
     win.after(10, lambda: win.focus_force())
 
+    # Auto-ajuste al contenido real (incl. escalado DPI): los botones inferiores
+    # (Guardar / Cancelar) nunca quedan cortados.
+    autoajustar_modal(win, 480, 470)
+
     ctk.CTkFrame(win, fg_color=COLOR_GUINDA, height=6, corner_radius=0).pack(fill="x")
 
     # Encabezado
@@ -197,8 +202,13 @@ def mostrar_modal_configuracion_ia():
             api_key = entry_key.get().strip() or config_actual["api_key"]
             modelos = listar_modelos_disponibles(api_key)
             if modelos:
+                vigente = combo_model.get().strip()
+                # Mantener el modelo vigente en la lista aunque la API no lo
+                # regrese, para NO cambiarlo de sorpresa al refrescar.
+                if vigente and vigente not in modelos:
+                    modelos.append(vigente)
                 combo_model.configure(values=modelos)
-                if combo_model.get() not in modelos:
+                if not vigente:
                     combo_model.set(modelos[0])
                 status_modelos.configure(text=f"✔ {len(modelos)} modelos disponibles.",
                                          text_color="#16A34A")
@@ -230,6 +240,10 @@ def mostrar_modal_configuracion_ia():
         modelo = combo_model.get().strip()
         if not api_key:
             status_lbl.configure(text="⚠ La API Key no puede estar vacía.",
+                                 text_color="#EF4444")
+            return
+        if not modelo:
+            status_lbl.configure(text="⚠ Debes elegir un modelo de IA.",
                                  text_color="#EF4444")
             return
         try:

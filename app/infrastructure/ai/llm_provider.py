@@ -20,8 +20,49 @@ ruta_env = ruta_raiz / ".env"
 
 load_dotenv(dotenv_path=ruta_env, override=True)
 
-CLAVE_API_GEMINI = os.getenv("GEMINI_API_KEY", "")
-MODELO_GEMINI = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+# Valor de reserva SOLO si el .env no define GEMINI_MODEL. El nombre del
+# modelo que se usa en realidad SIEMPRE proviene del archivo .env
+# (variable GEMINI_MODEL) o de lo que el usuario configure en el panel.
+_MODELO_POR_DEFECTO = "gemini-3.5-flash-lite"
+
+
+def _leer_config_env() -> dict:
+    """
+    Lee DIRECTAMENTE el archivo .env (no las variables del proceso) para que
+    siempre refleje el estado real del archivo:
+      - Toma la PRIMERA línea ACTIVA (sin '#') de cada clave.
+      - Ignora líneas comentadas y duplicados.
+    """
+    try:
+        lineas = ruta_env.read_text(encoding="utf-8").splitlines() if ruta_env.exists() else []
+    except OSError:
+        lineas = []
+
+    api_key = None
+    modelo = None
+    for linea in lineas:
+        if api_key is None:
+            m = re.match(r"^\s*GEMINI_API_KEY\s*=\s*(.*)$", linea)
+            if m:
+                api_key = m.group(1).strip().strip('"').strip("'")
+        if modelo is None:
+            m = re.match(r"^\s*GEMINI_MODEL\s*=\s*(.*)$", linea)
+            if m:
+                modelo = m.group(1).strip().strip('"').strip("'")
+    return {"api_key": api_key or "", "modelo": modelo or ""}
+
+
+def _sincronizar_globales() -> None:
+    """Sincroniza las variables del módulo con el .env (y el proceso)."""
+    global CLAVE_API_GEMINI, MODELO_GEMINI
+    cfg = _leer_config_env()
+    CLAVE_API_GEMINI = cfg["api_key"] or os.getenv("GOOGLE_API_KEY", "")
+    MODELO_GEMINI = cfg["modelo"] or _MODELO_POR_DEFECTO
+    os.environ["GEMINI_API_KEY"] = CLAVE_API_GEMINI
+    os.environ["GEMINI_MODEL"] = MODELO_GEMINI
+
+
+_sincronizar_globales()
 
 genai.configure(api_key=CLAVE_API_GEMINI)
 print(f"\n[PROVEEDOR IA] Conectado a la NUBE: Google Gemini — Modelo: '{MODELO_GEMINI}'")
@@ -32,12 +73,14 @@ def actualizar_configuracion_ia(nueva_api_key: str, nuevo_modelo: str) -> None:
     Actualiza la API Key y el modelo de Gemini en caliente:
     - Reconfigura el SDK sin reiniciar la app.
     - Actualiza las variables de entorno del proceso.
-    - Persiste los valores en el archivo .env (sin borrar el resto).
+    - Persiste los valores en el archivo .env: crea la variable si no existe
+      y si ya existe SOLO actualiza su valor (sin duplicar líneas, sin
+      dejar variantes comentadas viejas).
     """
     global CLAVE_API_GEMINI, MODELO_GEMINI
 
     CLAVE_API_GEMINI = nueva_api_key.strip()
-    MODELO_GEMINI = nuevo_modelo.strip() or "gemini-3.5-flash-lite"
+    MODELO_GEMINI = nuevo_modelo.strip() or _MODELO_POR_DEFECTO
 
     os.environ["GEMINI_API_KEY"] = CLAVE_API_GEMINI
     os.environ["GEMINI_MODEL"] = MODELO_GEMINI
@@ -52,24 +95,42 @@ def actualizar_configuracion_ia(nueva_api_key: str, nuevo_modelo: str) -> None:
 
 
 def _actualizar_env(valores: dict) -> None:
-    """Actualiza (o agrega) claves en el .env preservando comentarios y otras líneas."""
+    """
+    Actualiza (o agrega) claves en el .env preservando comentarios y demás
+    líneas. Reglas por cada clave:
+      - La PRIMERA línea que coincida (activa o comentada) se convierte en la
+        línea activa con el nuevo valor.
+      - Cualquier coincidencia POSTERIOR (duplicado o comentario viejo) se
+        elimina, evitando que el archivo acumule variantes de la misma clave.
+      - Si la clave no existe en el archivo, se agrega al final.
+    """
     try:
         lineas = ruta_env.read_text(encoding="utf-8").splitlines() if ruta_env.exists() else []
     except OSError:
         lineas = []
 
+    patron_claves = {
+        clave: re.compile(rf"^#?\s*{re.escape(clave)}\s*=")
+        for clave in valores
+    }
+
     vistas = set()
     nuevas_lineas = []
     for linea in lineas:
         reemplazo = None
-        for clave, valor in valores.items():
-            # Coincide con 'CLAVE=...' o '#CLAVE=...'. Solo se reemplaza la
-            # PRIMERA aparición de cada clave para no duplicar líneas activas.
-            if clave not in vistas and re.match(rf"^#?\s*{re.escape(clave)}\s*=", linea):
-                reemplazo = f"{clave}={valor}"
+        for clave, patron in patron_claves.items():
+            if clave not in vistas and patron.match(linea):
+                reemplazo = f"{clave}={valores[clave]}"
                 vistas.add(clave)
                 break
-        nuevas_lineas.append(reemplazo if reemplazo is not None else linea)
+        if reemplazo is not None:
+            nuevas_lineas.append(reemplazo)
+            continue
+        # ¿Es una coincidencia POSTERIOR de una clave ya asignada? (duplicado)
+        if any(patron.match(linea) for patron in patron_claves.values()
+               for clave in valores if clave in vistas):
+            continue  # duplicado/comentario viejo → se descarta
+        nuevas_lineas.append(linea)
 
     # Las claves que no estaban en el archivo se agregan al final
     for clave, valor in valores.items():
@@ -80,7 +141,9 @@ def _actualizar_env(valores: dict) -> None:
 
 
 def obtener_configuracion_ia() -> dict:
-    """Devuelve la configuración actual (para precargar el formulario)."""
+    """Devuelve la configuración vigente leyendo el .env (para precargar el
+    formulario con lo que de verdad hay en el archivo)."""
+    _sincronizar_globales()
     return {"api_key": CLAVE_API_GEMINI, "modelo": MODELO_GEMINI}
 
 
@@ -134,6 +197,10 @@ def _consultar_gemini(prompt: str, system_instruction: str) -> str:
 
     for intento in range(max_reintentos):
         try:
+            # Reconfigurar con la clave vigente (idempotente): garantiza que
+            # la petición use SIEMPRE la configuración actual del .env/panel.
+            genai.configure(api_key=CLAVE_API_GEMINI)
+
             # Si hay system_instruction, se inicializa el modelo con ella.
             if system_instruction:
                 modelo = genai.GenerativeModel(
@@ -229,8 +296,9 @@ def _consultar_gemini(prompt: str, system_instruction: str) -> str:
             # ---------------------------------------------------------
             if "API_KEY_INVALID" in error_str or "not valid" in error_str:
                 raise RuntimeError(
-                    "CLAVE INVÁLIDA: La API Key de Gemini es incorrecta. "
-                    "Revisa tu archivo .env."
+                    "CLAVE INVÁLIDA: La API Key de Gemini no es válida. "
+                    "Abre la Configuración de IA (botón ⚙ de la barra superior) "
+                    "e ingresa una API Key válida."
                 ) from e
 
             # ---------------------------------------------------------

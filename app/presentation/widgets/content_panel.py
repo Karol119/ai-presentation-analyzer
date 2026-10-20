@@ -28,7 +28,9 @@ from app.core.controller.subject_controller import (
 from app.presentation.widgets.dialogs import (
     mostrar_modal_cargando, 
     advertir_presentacion_existente,
-    mostrar_modal_advertencia
+    mostrar_modal_advertencia,
+    advertir_archivo_danado,
+    informar_reparacion_pptx
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 from app.presentation.widgets.right_panel import refresh_right_panel
@@ -39,7 +41,7 @@ COLOR_GUINDA_HOVER = "#4D1324"
 COLOR_ORO          = "#BC955C"
 
 CARD_W = 175
-CARD_H = 270
+CARD_H = 292
 
 def build_content_area(comando_actualizar_boton):
     """Construye el contenedor principal y limpia registros previos."""
@@ -233,7 +235,7 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
                   command=lambda: toggle_menu(False)).place(relx=1.0, x=-6, rely=0.5, anchor="e")
 
     items_frame = ctk.CTkFrame(face_menu, fg_color="transparent")
-    items_frame.pack(fill="both", expand=True, padx=6, pady=(8, 4))
+    items_frame.pack(fill="both", expand=True, padx=6, pady=(6, 8))
 
     texto_analisis = "📊   Ver análisis" if ya_analizada else "🔍   Analizar presentación"
     cmd_analisis   = (lambda: _ver_analisis(subject, name, ruta_pdf, toggle_menu)) if ya_analizada else (lambda: _iniciar_analisis(subject, name, ruta_pdf, toggle_menu, comando_actualizar_boton))
@@ -250,7 +252,9 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
     for label, color, cmd in opciones:
         _menu_item(items_frame, label, color, cmd)
 
-    ctk.CTkFrame(face_menu, height=1, fg_color="#F1F5F9").pack(fill="x", padx=10)
+    # Separador dentro del MISMO contenedor de items: así las 7 acciones de
+    # abajo comparten columna y espaciado y ninguna sale de los límites de la tarjeta.
+    ctk.CTkFrame(items_frame, height=1, fg_color="#F1F5F9").pack(fill="x", padx=2, pady=2)
 
     def on_delete():
         toggle_menu(False)
@@ -260,13 +264,12 @@ def _make_file_card(parent, subject: str, name: str, ruta_thumb, ya_analizada: b
         toggle_menu(False)
         _hide_file(subject, name, comando_actualizar_boton)
 
-    ctk.CTkButton(face_menu, text="🙈   Ocultar", fg_color="transparent", text_color="#6A1B31",
-                  hover_color="#FDF2F4", font=ctk.CTkFont(size=11, weight="bold"),
-                  anchor="w", command=on_hide).pack(fill="x", padx=6, pady=1)
-
-    ctk.CTkButton(face_menu, text="🗑   Eliminar", fg_color="transparent", text_color="#6A1B31",
-                  hover_color="#FDF2F4", font=ctk.CTkFont(size=11, weight="bold"),
-                  anchor="w", command=on_delete).pack(fill="x", padx=6, pady=(1, 8))
+    # Ocultar/Eliminar usan el mismo helper: misma altura y espaciado que
+    # el resto de las opciones (solo cambia el hover para distinguirlas).
+    _menu_item(items_frame, "🙈   Ocultar", "#6A1B31", on_hide,
+               hover_color="#FDF2F4", bold=True)
+    _menu_item(items_frame, "🗑   Eliminar", "#6A1B31", on_delete,
+               hover_color="#FDF2F4", bold=True)
 
     return outer 
 
@@ -348,17 +351,21 @@ def _actualizar_presentacion_ui(subject: str, nombre_presentacion: str, toggle_m
     ejecutar_tarea_asincrona(target_task=update_task, on_finished_callback=finalize_update)
 
 
-def _menu_item(parent, text: str, color: str, command):
-    """Crea un botón de opción dentro del menú de la tarjeta."""
+def _menu_item(parent, text: str, color: str, command, hover_color: str = "#F8FAFC", bold: bool = False):
+    """
+    Crea un botón de opción dentro del menú de la tarjeta.
+    Todos los items comparten la misma altura y espaciado para que el menú
+    completo quede visible dentro de la tarjeta sin cortes.
+    """
     ctk.CTkButton(
         parent,
         text=text,
-        font=ctk.CTkFont(family="Segoe UI", size=11),
+        font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold" if bold else "normal"),
         fg_color="transparent",
-        hover_color="#F8FAFC",
-        text_color="#6A1B31",
+        hover_color=hover_color,
+        text_color=color,
         corner_radius=8,
-        height=30,
+        height=28,
         anchor="w",
         command=command,
     ).pack(fill="x", pady=1)
@@ -457,14 +464,35 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
     subject_id = obtener_id_materia(subject)
 
     def processing_task() -> dict:
-        resultados = {"duplicado": None, "pesado": None}
+        nombre = os.path.basename(file_path)
+        resultados = {
+            "duplicado": None, "pesado": None, "danado": None,
+            "reparado": None, "error_carga": None,
+        }
         success, message = orquestar_proceso_completo(file_path, subject_id)
         if not success:
-            nombre = os.path.basename(file_path)
             if "ya ha sido procesada" in message or "hash" in message:
                 resultados["duplicado"] = nombre
             elif "demasiado pesado" in message:
                 resultados["pesado"] = nombre
+            elif ("Archivo dañado" in message
+                  or "no contiene diapositivas" in message):
+                # Archivo corrupto / ilegible / sin diapositivas
+                resultados["danado"] = {"nombre": nombre, "mensaje": message}
+            else:
+                # CUALQUIER otra falla (nombre demasiado largo, problema de
+                # rutas de Windows, error inesperado...) se informa con un
+                # mensaje controlado: nunca más falla en silencio.
+                resultados["error_carga"] = {"nombre": nombre, "mensaje": message}
+        elif "REPARADO::" in message:
+            # La carga terminó en éxito pero el archivo fue reparado autom.:
+            # formato del mensaje: "Registrado con éxito (reparado...). REPARADO::nd::ne"
+            try:
+                _, resto = message.split("REPARADO::", 1)
+                nd, ne = resto.split("::")
+                resultados["reparado"] = {"nombre": nombre, "diap": int(nd), "elem": int(ne)}
+            except Exception:
+                resultados["reparado"] = {"nombre": nombre, "diap": None, "elem": None}
         return resultados
 
     def finalize_ui_update(resultados_procesamiento: dict):
@@ -473,6 +501,9 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
         
         duplicado = resultados_procesamiento["duplicado"]
         pesado = resultados_procesamiento["pesado"]
+        danado = resultados_procesamiento["danado"]
+        reparado = resultados_procesamiento["reparado"]
+        error_carga = resultados_procesamiento.get("error_carga")
         
         if duplicado:
             alert_msg = f"La presentación '{duplicado}' ya se encuentra registrada."
@@ -480,6 +511,22 @@ def _pick_files(subject: str, comando_actualizar_boton: Callable):
         elif pesado:
             alert_msg = f"La presentación '{pesado}' supera el límite de 30MB y no fue cargada."
             mostrar_modal_advertencia(ui["root"], alert_msg, "Límite de tamaño excedido")
+        elif danado:
+            # El archivo está corrupto, incompleto o ilegible: NO se cargó nada
+            # y se explica al usuario con causas y pasos sugeridos.
+            advertir_archivo_danado(ui["root"], danado["nombre"])
+            print(f"[UI] Archivo dañado rechazado: {danado['nombre']} · {danado['mensaje']}")
+        elif error_carga:
+            # Fallas no contempladas (nombre demasiado largo, rutas de Windows,
+            # errores inesperados): mensaje controlado en modal.
+            msg = f"{error_carga['mensaje']}"
+            mostrar_modal_advertencia(
+                ui["root"], msg, f"No se pudo cargar '{error_carga['nombre']}'"
+            )
+            print(f"[UI] Carga rechazada: {error_carga['nombre']} · {error_carga['mensaje']}")
+        elif reparado:
+            # Éxito con reparación automática: qué se hizo y qué puede hacer el usuario
+            informar_reparacion_pptx(ui["root"], reparado)
         
         estado["subject_files"][subject] = obtener_archivos_materia(subject_id)
         rebuild_cards(subject, comando_actualizar_boton)

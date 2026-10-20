@@ -3,6 +3,7 @@ import customtkinter as ctk
 import json
 import os
 from app.presentation.views.ui_state import ui
+from app.presentation.widgets.dialogs import autoajustar_modal
 
 COLOR_GUINDA = "#6A1B31"
 COLOR_ORO    = "#BC955C"
@@ -144,6 +145,9 @@ def _mostrar_alerta(mensaje):
     modal.geometry("450x220")
     modal.grab_set()
     modal.configure(fg_color="white")
+
+    # Auto-ajuste: mensajes largos o DPI con escala nunca cortan el botón 'Aceptar'
+    autoajustar_modal(modal, 450, 220)
     ctk.CTkFrame(modal, fg_color="#EF4444", height=6, corner_radius=0).pack(fill="x")
     ctk.CTkLabel(modal, text=mensaje, font=("Segoe UI", 12), text_color="#1E293B", wraplength=400, justify="center").pack(expand=True, padx=20)
     ctk.CTkButton(modal, text="Aceptar", command=modal.destroy, fg_color=COLOR_GUINDA, width=120).pack(pady=20)

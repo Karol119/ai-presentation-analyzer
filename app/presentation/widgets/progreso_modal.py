@@ -2,6 +2,7 @@
 # Ventana modal bloqueante con barra de progreso para procesos en segundo plano.
 import customtkinter as ctk
 from app.presentation.views.ui_state import ui, estado
+from app.presentation.widgets.dialogs import autoajustar_modal
 
 
 class ProgresoModal:
@@ -37,6 +38,10 @@ class ProgresoModal:
         self._barra = ctk.CTkProgressBar(self._ventana, mode="indeterminate", width=320)
         self._barra.pack(pady=(0, 15))
         self._barra.start()
+
+        # Auto-ajuste al contenido real (incl. escalado DPI): el mensaje largo
+        # o la barra de progreso nunca quedan cortados.
+        autoajustar_modal(self._ventana, 420, 140)
 
         estado["bloqueo_ui"] = True
 

@@ -16,6 +16,7 @@ from app.core.controller.subject_controller import (
     orquestar_desactivacion_materia,
 )
 from app.presentation.views.ui_state import estado, ui
+from app.presentation.widgets.dialogs import autoajustar_modal
 from app.presentation.widgets.topbar import build_topbar
 from app.presentation.widgets.sidebar import build_left_sidebar, refresh_sidebar_styles
 from app.presentation.widgets.content_panel import build_content_area, show_panel
@@ -114,6 +115,9 @@ def _eliminar_materia(nombre_materia: str):
 
     win.grab_set() 
     win.after(10, lambda: win.focus_force())
+    # Auto-ajuste al contenido real (incl. escalado DPI): el botón inferior
+    # (Eliminar todo / Cancelar) nunca queda cortado.
+    autoajustar_modal(win, 430, 300)
 
     frame = ctk.CTkFrame(win, fg_color="white", corner_radius=15)
     frame.pack(fill="both", expand=True, padx=15, pady=15)
@@ -680,6 +684,9 @@ def mostrar_modal_exito(mensaje):
     win.configure(fg_color="white")
     win.resizable(False, False)
 
+    # Auto-ajuste: nunca corta el mensaje ni el botón 'Cerrar' (mensajes largos/DPI)
+    autoajustar_modal(win, 400, 260)
+
     ctk.CTkFrame(win, fg_color=COLOR_ORO, height=6, corner_radius=0).pack(fill="x")
 
     icon_bg = ctk.CTkFrame(win, fg_color="#FDF8F0", corner_radius=40,
@@ -719,6 +726,9 @@ def mostrar_modal_advertencia(mensaje):
     win.configure(fg_color="white")
     win.resizable(False, False)
 
+    # Auto-ajuste: nunca corta el mensaje ni el botón inferior (mensajes largos/DPI)
+    autoajustar_modal(win, 400, 260)
+
     # Franja superior color Oro para advertencias
     ctk.CTkFrame(win, fg_color=COLOR_ORO, height=6, corner_radius=0).pack(fill="x")
 
@@ -755,6 +765,9 @@ def confirmar_eliminacion(nombre, subject, callback_confirmar):
     win.grab_set()
     win.configure(fg_color="white")
     win.resizable(False, False)
+
+    # Auto-ajuste por si el nombre es largo o el DPI escala el contenido
+    autoajustar_modal(win, 460, 300)
 
     ctk.CTkFrame(win, fg_color="#EF4444", height=6, corner_radius=0).pack(fill="x")
 
@@ -836,6 +849,8 @@ def confirmar_eliminacion_materia(nombre, callback_confirmar, callback_cancelar=
     win.configure(fg_color="white")
     win.resizable(False, False)
     win.after(10, lambda: win.focus_force())
+    # Auto-ajuste por si el nombre es largo o el DPI escala el contenido
+    autoajustar_modal(win, 460, 320)
 
     def cerrar():
         """Libera el candado de la UI (si aplica) y cierra la ventana."""
@@ -894,6 +909,17 @@ def confirmar_eliminacion_materia(nombre, callback_confirmar, callback_cancelar=
 
 
 def iniciar_aplicacion():
+    # --- LIMPIEZA DE RECURSOS HUÉRFANOS (borrados anteriores que no tocaban
+    #     el disco). No toca nada de presentaciones vivas: son protegidas por
+    #     su ruta registrada en la BD y por el patrón del nombre base.
+    try:
+        from app.data.persistence import limpiar_huerfanos_presentaciones
+        n_huerfanos = limpiar_huerfanos_presentaciones()
+        if n_huerfanos:
+            print(f"[inicio] Se limpiaron {n_huerfanos} recurso(s) huérfano(s) de presentaciones ya eliminadas.")
+    except Exception as e:
+        print(f"[inicio] No se pudo ejecutar la limpieza de huérfanos: {e}")
+
     ui["root"] = ctk.CTk()
     ui["root"].title("AI Presentation Analyzer · IPN ESCOM")
     ui["root"].geometry("1300x820")

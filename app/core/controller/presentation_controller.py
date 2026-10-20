@@ -2,9 +2,11 @@
 import json
 import os
 import tempfile
-from app.core.logic.file_validator import validar_tamano_archivo
+from app.core.logic.file_validator import validar_tamano_archivo, validar_ruta_destino
 from app.core.logic.hash_generator import generar_hash_archivo
-from app.core.logic.text_extractor import contar_diapositivas
+from app.core.logic.text_extractor import validar_pptx_legible, contar_diapositivas
+from app.core.logic.pptx_repairer import reparar_pptx
+import tempfile
 from app.data.queries import obtener_reporte_tiempo_db
 from app.data.persistence import actualizar_reporte_tiempo_db
 from app.data.queries import obtener_analisis_desde_db
@@ -30,29 +32,87 @@ def orquestar_proceso_completo(ruta_pptx, id_materia):
         es_valido, mensaje_val = validar_tamano_archivo(ruta_pptx, limite_mb=30)
         if not es_valido:
             return False, mensaje_val
-        
-        # 2. Genera hash único
-        hash_unico = generar_hash_archivo(ruta_pptx)
-        
-        # 3. Verifica existencia
+
+        # 1.5 Valida que el NOMBRE quepa en las rutas internas que se generarán
+        #     (storage + sufijos '_thumb.png'/'.pdf'/'_analysis.json'). Windows
+        #     falla si la ruta completa pasa de 260 caracteres: mejor rechazar
+        #     aquí con un mensaje claro que crashear a mitad del proceso.
+        nombre_materia_ruta = obtener_nombre_materia_controlador(id_materia)
+        if nombre_materia_ruta:
+            es_valida_ruta, mensaje_ruta = validar_ruta_destino(ruta_pptx, nombre_materia_ruta)
+            if not es_valida_ruta:
+                return False, mensaje_ruta
+
+        # 2. VALIDACIÓN ROBUSTA: intenta abrir el archivo y recorrer TODO su
+        #    contenido (títulos, diapositivas, shapes, texto e imágenes)
+        #    exactamente como lo hará el análisis. Así un archivo con
+        #    problemas se atrapa aquí y NUNCA en plena sesión de análisis.
+        legible, estado_lectura, num_diapositivas = validar_pptx_legible(ruta_pptx)
+
+        ruta_para_registro = ruta_pptx
+        detalle_reparacion = None
+
+        if not legible:
+            if estado_lectura == "vacio":
+                return False, "El archivo no contiene diapositivas."
+            if estado_lectura == "corrupto":
+                return False, ("Archivo dañado: no se pudo abrir el archivo "
+                               "(puede estar corrupto o incompleto).")
+
+            # estado "danado": el archivo SÍ se abre, pero tiene contenido
+            # ilegible. Se intenta la REPARACIÓN AUTOMÁTICA (como PowerPoint):
+            # se conserva lo legible y se quita lo dañado, guardando un nuevo
+            # archivo. Si tras reparar todo es legible, se registra ÉSTE.
+            nombre_original = os.path.basename(ruta_pptx)
+            os.makedirs(tempfile.gettempdir(), exist_ok=True)
+            ruta_reparada = os.path.join(
+                tempfile.gettempdir(),
+                f"reparado_{os.getpid()}_{nombre_original}"
+            )
+            detalle_reparacion = reparar_pptx(ruta_pptx, ruta_reparada)
+
+            if not detalle_reparacion["exito"]:
+                return False, "Archivo dañado: no se pudo preparar una versión legible."
+
+            legible_rep, estado_rep, num_rep = validar_pptx_legible(ruta_reparada)
+            if not legible_rep:
+                if estado_rep == "vacio":
+                    return False, "Archivo dañado: la reparación dejaría el archivo sin diapositivas legibles."
+                return False, "Archivo dañado: contiene elementos internos que no se pudieron leer."
+
+            ruta_para_registro = ruta_reparada
+            num_diapositivas = num_rep
+
+        # 3. Hash único del archivo que FINALMENTE se registrará (reparado si aplicó)
+        hash_unico = generar_hash_archivo(ruta_para_registro)
+
+        # 4. Verifica existencia (evita duplicados)
         if existe_hash_en_db(hash_unico):
             return False, "Esta presentación ya ha sido procesada anteriormente."
-        
-        # 4. Conteo de diapositivas (Nombre actualizado)
-        num_diapositivas = contar_diapositivas(ruta_pptx)
-        if num_diapositivas == 0:
-            return False, "No se pudo leer el archivo o está vacío."
-        
-        # 5. ALMACENAR EN BASE DE DATOS Y STORAGE
+
+        # 5. ALMACENAR EN BASE DE DATOS Y STORAGE (copy2: el temporal ya no
+        #    se necesita una vez copiado el archivo a storage)
         exito_registro, id_pres = registrar_presentacion(
-            ruta_pptx, 
+            ruta_para_registro, 
             hash_unico, 
             num_diapositivas, 
             id_materia
         )
-        
+
         if exito_registro:
-            return True, f"Registrado con éxito."
+            # Limpieza del temporal reparado (ya está copiado en storage)
+            if ruta_para_registro != ruta_pptx:
+                try:
+                    os.remove(ruta_para_registro)
+                except OSError:
+                    pass
+
+            if detalle_reparacion:
+                d = detalle_reparacion
+                return True, (f"Registrado con éxito (reparado automáticamente). "
+                              f"REPARADO::{d['diapositivas_eliminadas']}"
+                              f"::{d['elementos_eliminados']}")
+            return True, "Registrado con éxito."
         else:
             return False, f"Error al persistir los datos: {id_pres}"
 
@@ -141,6 +201,16 @@ def orquestar_actualizacion_presentacion(ruta_pptx, nombre_presentacion, id_mate
         if not es_valido:
             return False, mensaje_val
         
+        # 1.5 Valida que el NOMBRE quepa en las rutas internas (las nuevas
+        #     versiones añaden sufijo '_v2' al archivo en storage).
+        nombre_materia_ruta = obtener_nombre_materia_controlador(id_materia)
+        if nombre_materia_ruta:
+            es_valida_ruta, mensaje_ruta = validar_ruta_destino(
+                ruta_pptx, nombre_materia_ruta, longitud_extra=4
+            )
+            if not es_valida_ruta:
+                return False, mensaje_ruta
+
         # 2. Genera hash
         hash_unico = generar_hash_archivo(ruta_pptx)
         
@@ -271,11 +341,54 @@ def abrir_archivo(ruta):
         print(f"No se pudo abrir el archivo: {e}")
 
 
+def _necesita_mejoras_segun_datos(datos_analisis) -> bool:
+    """
+    Regla pura (compartida): una versión necesita mejoras si alguna
+    diapositiva de su análisis está marcada con 'requiere_reestructuracion'
+    o trae sugerencias de reestructuración ('reestructuracion.diapositivas_generadas').
+    """
+    if not datos_analisis:
+        return False
+    for s in datos_analisis.get("slides", []):
+        if s.get("requiere_reestructuracion"):
+            return True
+        if (s.get("reestructuracion") or {}).get("diapositivas_generadas"):
+            return True
+    return False
+
+
+def version_necesita_mejoras(id_version) -> bool:
+    """
+    Indica si una versión del historial tiene mejoras pendientes, leyendo su
+    análisis guardado en la BD.
+
+    Es la MISMA regla que usa la vista de Análisis para bloquear la
+    generación («ya está en un nivel óptimo»), centralizada aquí para que
+    el historial la comparta. Sin análisis o sin nada pendiente -> False.
+    """
+    json_raw = obtener_analisis_desde_db(id_version)
+    if not json_raw:
+        return False
+    try:
+        return _necesita_mejoras_segun_datos(json.loads(json_raw))
+    except Exception:
+        return False
+
+
 def orquestar_abrir_o_generar(id_version, nombre_presentacion, id_materia, version_num, ruta_pdf):
     """
-    Si el PPTX optimizado ya existe, lo abre.
-    Si no existe, lo genera primero y luego lo abre.
+    Comportamiento unificado con la vista de Análisis:
+    - Si la versión ya está en un nivel óptimo (sin mejoras pendientes), NO
+      se genera ni se abre el PPTX con cambios: la regla es absoluta,
+      también si el archivo ya existía de una descarga previa.
+    - Si necesita mejoras: lo abre si ya existe; si no, lo genera y abre.
     """
+    if not version_necesita_mejoras(id_version):
+        return False, (
+            "Esta presentación ya está en un nivel óptimo. "
+            "No requiere reestructuración, por lo que no hay cambios que generar."
+        )
+
     ruta_destino = ruta_archivo_exportado(nombre_presentacion, id_materia, version_num)
     if os.path.exists(ruta_destino):
         abrir_archivo(ruta_destino)

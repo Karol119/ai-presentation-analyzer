@@ -10,6 +10,7 @@ from app.presentation.widgets.history.history_evaluation import mostrar_modal_ev
 from app.core.controller.presentation_controller import (
     orquestar_abrir_o_generar,
     ruta_archivo_exportado,
+    version_necesita_mejoras,
 )
 from app.presentation.utils.thread_manager import ejecutar_tarea_asincrona
 from app.presentation.widgets.progreso_modal import ProgresoModal
@@ -150,19 +151,31 @@ def _crear_fila_version(parent, data, cols_config, subject, nombre_presentacion)
     current_x += cols_config[5][1]
 
     # 7. GENERAR / ABRIR
+    #    Bloqueo coherente con el Análisis: si la versión ya está en un nivel
+    #    óptimo (sin mejoras pendientes) NO se genera/descarga ni se abre el
+    #    PPTX mejorado desde el historial, aunque exista de una descarga
+    #    previa; la fila muestra '✔ Óptima' sin botón.
     if analizada and ruta_pdf:
         id_materia = obtener_id_materia(subject)
-        ya_generado = os.path.exists(ruta_archivo_exportado(nombre_presentacion, id_materia, v_num))
-        btn_exp = ctk.CTkButton(
-            fila, text="📂 Abrir" if ya_generado else "⚙️ Generar",
-            width=110, height=32, corner_radius=8,
-            fg_color=COLOR_GUINDA,
-            hover_color="#4D1324",
-            text_color="white",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            command=lambda: _exportar_version_gui(id_version, nombre_presentacion, subject, v_num, ruta_pdf)
-        )
-        btn_exp.place(relx=current_x + (cols_config[6][1]/2), rely=0.5, anchor="center")
+        if not version_necesita_mejoras(id_version):
+            ctk.CTkLabel(
+                fila, text="✔ Óptima",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                text_color="#10B981"
+            ).place(relx=current_x + (cols_config[6][1]/2), rely=0.5, anchor="center")
+            current_x += cols_config[6][1]
+        else:
+            ya_generado = os.path.exists(ruta_archivo_exportado(nombre_presentacion, id_materia, v_num))
+            btn_exp = ctk.CTkButton(
+                fila, text="📂 Abrir" if ya_generado else "⚙️ Generar",
+                width=110, height=32, corner_radius=8,
+                fg_color=COLOR_GUINDA,
+                hover_color="#4D1324",
+                text_color="white",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                command=lambda: _exportar_version_gui(id_version, nombre_presentacion, subject, v_num, ruta_pdf)
+            )
+            btn_exp.place(relx=current_x + (cols_config[6][1]/2), rely=0.5, anchor="center")
     else:
         ctk.CTkLabel(fila, text="---", font=("Segoe UI", 11, "italic"), text_color="#94A3B8").place(relx=current_x + (cols_config[6][1]/2), rely=0.5, anchor="center")
 
