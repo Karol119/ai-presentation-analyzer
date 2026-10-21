@@ -424,7 +424,7 @@ def mostrar_modal_cargando(parent, mensaje="Procesando presentación(es)..."):
 
     return win
 
-def mostrar_modal_advertencia(parent, mensaje, titulo="Atención"):
+def mostrar_modal_advertencia(parent, mensaje, titulo="Atención", texto_boton="Entendido"):
     """Muestra un modal genérico para advertencias (ej. Errores de IA o red)."""
     win = ctk.CTkToplevel(parent)
     win.title(titulo)
@@ -456,7 +456,7 @@ def mostrar_modal_advertencia(parent, mensaje, titulo="Atención"):
 
     ctk.CTkButton(
         win,
-        text="Entendido",
+        text=texto_boton,
         command=win.destroy,
         fg_color=COLOR_GUINDA,
         hover_color=COLOR_GUINDA_HOVER,

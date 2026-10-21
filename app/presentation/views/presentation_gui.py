@@ -195,13 +195,10 @@ def _obtener_configuracion_clase(root, json_reporte_raw, subject, nombre_present
             lbl_error.configure(text="Error: Ingresa un número entero válido para el tiempo.")
             return
 
-        # --- VALIDACIÓN COMENTADA PARA PERMITIR PANTALLA PRINCIPAL ---
-        # monitor_seleccionado_str = combo_monitores.get()
-        # if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
-        #     lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
-        #     return
-        # ------------------------------------------------------------
         monitor_seleccionado_str = combo_monitores.get()
+        if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
+            lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
+            return
 
         resultado["grupo"] = grupo_final
         resultado["tiempo"] = t_val
@@ -251,32 +248,67 @@ def _lanzar_proyeccion(root, ruta_pdf, indice_actual, pos_x, pos_y, ancho, alto)
     if _datos_panel is not None:
         _datos_panel.set_estado_proyeccion(True)
 
-    # --- WATCHDOG DE DESCONEXIÓN COMENTADO PARA EVITAR CIERRES INESPERADOS ---
-    # def verificar_conexion():
-    #     global _watchdog_id, _ventana_proyeccion
-    #     
-    #     if _ventana_proyeccion is None:
-    #         return
-    #
-    #     try:
-    #         from screeninfo import get_monitors
-    #         monitores_actuales = get_monitors()
-    #         
-    #         if len(monitores_actuales) < 2 and pos_x != 0:
-    #             print("[ALERTA] Proyector desconectado. Abortando presentación por seguridad.")
-    #             _ventana_proyeccion.cerrar() 
-    #             messagebox.showwarning(
-    #                 "Conexión Perdida", 
-    #                 "Se ha desconectado el proyector o pantalla secundaria.\nLa presentación se ha detenido por seguridad."
-    #             )
-    #             return
-    #     except Exception:
-    #         pass
-    #
-    #     _watchdog_id = root.after(2000, verificar_conexion)
-    #
-    # if pos_x != 0:
-    #     _watchdog_id = root.after(2000, verificar_conexion)
+    # --- WATCHDOG DE DESCONEXIÓN ---
+    # Registra los monitores presentes al arrancar la proyección y, cada 2 s,
+    # verifica que sigan conectados. Reacciona sin importar la posición del
+    # proyector (izquierda, derecha, arriba...): se detiene la clase si se
+    # retira alguna de las pantallas registradas al inicio o si desaparece el
+    # monitor donde se proyecta.
+    try:
+        from screeninfo import get_monitors
+        monitores_al_arrancar = get_monitors()
+    except Exception:
+        monitores_al_arrancar = []
+
+    cantidad_al_arrancar = len(monitores_al_arrancar)
+    detecciones_seguidas = 0
+
+    def verificar_conexion():
+        global _watchdog_id, _ventana_proyeccion
+        nonlocal detecciones_seguidas
+
+        if _ventana_proyeccion is None:
+            return
+
+        try:
+            from screeninfo import get_monitors
+
+            monitores_actuales = get_monitors()
+            geometrias_actuales = [
+                (m.x, m.y, m.width, m.height) for m in monitores_actuales
+            ]
+
+            # Se retiró alguna de las pantallas conectadas al arrancar,
+            # o el monitor de destino ya no reporta la geometría de inicio.
+            detecto_caida = (
+                cantidad_al_arrancar > 1
+                and (
+                    len(monitores_actuales) < cantidad_al_arrancar
+                    or (pos_x, pos_y, ancho, alto) not in geometrias_actuales
+                )
+            )
+
+            # Exigimos 2 lecturas consecutivas para no abortar por una
+            # enumeración falsa de la librería.
+            if detecto_caida:
+                detecciones_seguidas += 1
+            else:
+                detecciones_seguidas = 0
+
+            if detecto_caida and detecciones_seguidas >= 2:
+                print("[ALERTA] Proyector desconectado. Abortando presentación por seguridad.")
+                _ventana_proyeccion.cerrar()
+                messagebox.showwarning(
+                    "Conexión Perdida",
+                    "Se ha desconectado el proyector o pantalla secundaria.\nLa presentación se ha detenido por seguridad."
+                )
+                return
+        except Exception:
+            detecciones_seguidas = 0
+
+        _watchdog_id = root.after(2000, verificar_conexion)
+
+    _watchdog_id = root.after(2000, verificar_conexion)
     # ------------------------------------------------------------------------
 
 
@@ -346,19 +378,17 @@ def mostrar_vista_presentacion(root, subject: str, nombre_presentacion: str, rut
         if _ventana_proyeccion is not None and _ventana_proyeccion.winfo_exists():
             _ventana_proyeccion.cerrar()
         else:
-            # --- VALIDACIÓN DE MONITORES COMENTADA ---
-            # try:
-            #     from screeninfo import get_monitors
-            #     if len(get_monitors()) < 2:
-            #         messagebox.showwarning(
-            #             "Proyector no detectado", 
-            #             "No se puede iniciar la clase.\nDebe conectar un proyector o monitor secundario para presentar."
-            #         )
-            #         return 
-            # except Exception as e:
-            #     print(f"Error leyendo monitores (librería no disponible): {e}")
-            #     pass 
-            # ----------------------------------------
+            try:
+                from screeninfo import get_monitors
+                if len(get_monitors()) < 2:
+                    messagebox.showwarning(
+                        "Proyector no detectado",
+                        "No se puede iniciar la clase.\nDebe conectar un proyector o monitor secundario para presentar."
+                    )
+                    return
+            except Exception as e:
+                print(f"Error leyendo monitores (librería no disponible): {e}")
+                pass
 
             _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pdf, _visor_panel.pagina_actual)
 

@@ -130,6 +130,15 @@ def ir_a_principal():
     # Si la proyección está activa, bloqueamos el botón de volver al inicio
     if ui.get("proyeccion_activa", False):
         print("[BLOQUEADO] No puedes regresar al menú mientras estás proyectando.")
+        # El aviso se presenta únicamente en la vista del docente; la
+        # proyección continúa sin interrupción en el dispositivo de salida.
+        from app.presentation.widgets.dialogs import mostrar_modal_advertencia
+        mostrar_modal_advertencia(
+            ui["root"],
+            "No puedes regresar al menú mientras estás proyectando.",
+            titulo="Proyección activa",
+            texto_boton="Aceptar",
+        )
         return
 
     # Si hay un proceso en curso (cargando, analizando, generando, aplicando),

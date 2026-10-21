@@ -16,7 +16,7 @@ from app.core.controller.subject_controller import (
     orquestar_desactivacion_materia,
 )
 from app.presentation.views.ui_state import estado, ui
-from app.presentation.widgets.dialogs import autoajustar_modal
+from app.presentation.widgets.dialogs import mostrar_modal_advertencia, autoajustar_modal
 from app.presentation.widgets.topbar import build_topbar
 from app.presentation.widgets.sidebar import build_left_sidebar, refresh_sidebar_styles
 from app.presentation.widgets.content_panel import build_content_area, show_panel
@@ -955,6 +955,14 @@ def iniciar_aplicacion():
             return
         if ui.get("proyeccion_activa", False):
             print("[BLOQUEADO] Termina la presentación primero.")
+            # El aviso se presenta únicamente en la vista del docente; la
+            # proyección continúa sin interrupción en el dispositivo de salida.
+            mostrar_modal_advertencia(
+                ui["root"],
+                "No puedes cerrar la aplicación mientras estás proyectando.",
+                titulo="Proyección activa",
+                texto_boton="Aceptar",
+            )
             return
         ui["root"].destroy()
 
