@@ -1,0 +1,33 @@
+[17:24:44] Carpeta de evidencias: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\presentacion_20261020_172444
+[17:24:44] Modo: HEADLESS (sin ventanas)
+[17:24:44] ==============================================================================
+[17:24:44] Materia: Administración de Servicios en Red
+[17:24:44] Grupo escolar: 7CM5
+[17:24:44] Presentaciones a proyectar: 5
+[17:24:44] Tiempos de clase asignados (se alternan igual / menor / mayor):
+[17:24:44]   1. 10 - OSPF_Presentacion 1.pptx | 47 diapositivas | JSON 31:24 | docente 31 min (igual)
+[17:24:44]   2. 12 - EIGRP.pptx | 85 diapositivas | JSON 32:15 | docente 31 min (menor)
+[17:24:44]   3. 16 - DHCP.pptx | 26 diapositivas | JSON 14:24 | docente 15 min (mayor)
+[17:24:44]   4. 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx | 27 diapositivas | JSON 08:16 | docente 8 min (igual)
+[17:24:44]   5. 20 - SNMP completo.pptx | 30 diapositivas | JSON 13:45 | docente 13 min (menor)
+[17:24:44] ==============================================================================
+[17:24:44] Lanzado 1/5: 10 - OSPF_Presentacion 1.pptx | docente 31 min (igual) | PID 29980
+[17:24:59]   10 - OSPF_Presentacion 1.pptx: presentada=true y proyección iniciada. Siguiente…
+[17:24:59] Lanzado 2/5: 12 - EIGRP.pptx | docente 31 min (menor) | PID 2256
+[17:25:15]   12 - EIGRP.pptx: presentada=true y proyección iniciada. Siguiente…
+[17:25:15] Lanzado 3/5: 16 - DHCP.pptx | docente 15 min (mayor) | PID 1784
+[17:25:29]   16 - DHCP.pptx: presentada=true y proyección iniciada. Siguiente…
+[17:25:29] Lanzado 4/5: 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx | docente 8 min (igual) | PID 23076
+[17:25:44]   19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx: presentada=true y proyección iniciada. Siguiente…
+[17:25:44] Lanzado 5/5: 20 - SNMP completo.pptx | docente 13 min (menor) | PID 5056
+[17:25:58]   20 - SNMP completo.pptx: presentada=true y proyección iniciada. Siguiente…
+[17:57:35] ==============================================================================
+[17:57:35] RESUMEN FINAL (MODO PARALELO)
+[17:57:35]   10 - OSPF_Presentacion 1.pptx | 47 diapositivas | JSON 1884s | docente 31 min (igual) | duración 1885.7s | presentada=True | reporte=True | OK
+[17:57:35]   12 - EIGRP.pptx | 85 diapositivas | JSON 1935s | docente 31 min (menor) | duración 1936.7s | presentada=True | reporte=True | OK
+[17:57:35]   16 - DHCP.pptx | 26 diapositivas | JSON 864s | docente 15 min (mayor) | duración 865.7s | presentada=True | reporte=True | OK
+[17:57:35]   19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx | 27 diapositivas | JSON 496s | docente 8 min (igual) | duración 497.7s | presentada=True | reporte=True | OK
+[17:57:35]   20 - SNMP completo.pptx | 30 diapositivas | JSON 825s | docente 13 min (menor) | duración 826.7s | presentada=True | reporte=True | OK
+[17:57:35] Tiempo total de pared: 1971.2s (32.9 min)
+[17:57:35] Correctas: 5 | Fallos: 0
+[17:57:35] Resumen guardado en: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\presentacion_20261020_172444\resumen.txt

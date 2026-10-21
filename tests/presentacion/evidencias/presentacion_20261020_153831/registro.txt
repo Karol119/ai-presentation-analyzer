@@ -1,0 +1,149 @@
+[15:38:31] Carpeta de evidencias: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\presentacion_20261020_153831
+[15:38:31] ==============================================================================
+[15:38:31] Materia: Sistemas distribuidos
+[15:38:31] Grupo escolar: 7CM1
+[15:38:31] Presentaciones a proyectar: 5
+[15:38:31] Tiempos de clase asignados (se alternan igual / menor / mayor):
+[15:38:31]   1. Algoritmos de Concurrencia.pptx | 18 diapositivas | JSON 06:22 | docente 6 min (igual)
+[15:38:31]   2. AlgoritmosDeSincronización.pptx | 15 diapositivas | JSON 05:57 | docente 5 min (menor)
+[15:38:31]   3. CORBA.pptx | 15 diapositivas | JSON 06:50 | docente 7 min (mayor)
+[15:38:31]   4. Objetos Distribuidos IRM.pptx | 10 diapositivas | JSON 05:12 | docente 5 min (igual)
+[15:38:31]   5. Sistemas Distribuidos_Arquitectura de Servicios (1).pptx | 14 diapositivas | JSON 08:38 | docente 8 min (menor)
+[15:38:31] ==============================================================================
+[15:38:41] Aplicación abierta. Materia activa: Sistemas distribuidos
+[15:38:43] Captura: 01_inicio_Sistemas_distribuidos.png
+[15:38:43] ------------------------------------------------------------------------------
+[15:38:43] Presentación 1/5: Algoritmos de Concurrencia.pptx | 18 diapositivas | docente 6 min (igual)
+[15:38:46] Captura: 02_Algoritmos_de_Concurrencia_formulario.png
+[15:38:46] Formulario: grupo=7CM1 | tiempo=6 min (igual respecto al JSON)
+[15:38:47] JSON actualizado: presentada=true -> Algoritmos de Concurrencia.json
+[15:38:47] Proyección iniciada.
+[15:38:47] Proyección: 1920x1080+0+0 (escala 1.25).
+[15:38:48] Captura: 03_Algoritmos_de_Concurrencia_slide_01.png
+[15:38:48] Geometría proyección: ventana=1920x1080+0+0 | visor=1920x1080+0+0 | label=1870x1030+25+25 | imagen=1813x1020 | label_root=(25,25)
+[15:39:09] Avance: diapositiva 1 -> 2 (t=22.4s)
+[15:39:10] Captura: 04_Algoritmos_de_Concurrencia_slide_02.png
+[15:39:29] Avance: diapositiva 2 -> 3 (t=41.5s)
+[15:39:54] Avance: diapositiva 3 -> 4 (t=66.6s)
+[15:40:09] Avance: diapositiva 4 -> 5 (t=81.5s)
+[15:40:27] Avance: diapositiva 5 -> 6 (t=100.4s)
+[15:40:54] Avance: diapositiva 6 -> 7 (t=126.6s)
+[15:41:01] Avance: diapositiva 7 -> 8 (t=133.7s)
+[15:41:29] Avance: diapositiva 8 -> 9 (t=161.6s)
+[15:41:36] Avance: diapositiva 9 -> 10 (t=169.4s)
+[15:42:07] Avance: diapositiva 10 -> 11 (t=199.6s)
+[15:42:14] Avance: diapositiva 11 -> 12 (t=207.4s)
+[15:42:54] Avance: diapositiva 12 -> 13 (t=246.8s)
+[15:43:02] Avance: diapositiva 13 -> 14 (t=254.6s)
+[15:43:36] Avance: diapositiva 14 -> 15 (t=288.7s)
+[15:43:43] Avance: diapositiva 15 -> 16 (t=296.4s)
+[15:44:37] Avance: diapositiva 16 -> 17 (t=350.4s)
+[15:45:01] Avance: diapositiva 17 -> 18 (t=374.4s)
+[15:45:09] Presentación detenida; guardando reporte de tiempos...
+[15:45:11] Fin de 'Algoritmos de Concurrencia.pptx': duración real 383.7s | reporte=OK planeado=360s, duracion=378s
+[15:45:13] ------------------------------------------------------------------------------
+[15:45:13] Presentación 2/5: AlgoritmosDeSincronización.pptx | 15 diapositivas | docente 5 min (menor)
+[15:45:19] Captura: 05_AlgoritmosDeSincronizacion_formulario.png
+[15:45:19] Formulario: grupo=7CM1 | tiempo=5 min (menor respecto al JSON)
+[15:45:23] JSON actualizado: presentada=true -> AlgoritmosDeSincronización.json
+[15:45:23] Proyección iniciada.
+[15:45:23] Proyección: 1920x1080+0+0 (escala 1.25).
+[15:45:24] Captura: 06_AlgoritmosDeSincronizacion_slide_01.png
+[15:45:25] Geometría proyección: ventana=1920x1080+0+0 | visor=1920x1080+0+0 | label=1870x1030+25+25 | imagen=1813x1020 | label_root=(25,25)
+[15:45:41] Avance: diapositiva 1 -> 2 (t=17.8s)
+[15:45:42] Captura: 07_AlgoritmosDeSincronizacion_slide_02.png
+[15:46:10] Avance: diapositiva 2 -> 3 (t=46.9s)
+[15:46:25] Avance: diapositiva 3 -> 4 (t=61.9s)
+[15:46:41] Avance: diapositiva 4 -> 5 (t=77.5s)
+[15:47:02] Avance: diapositiva 5 -> 6 (t=98.7s)
+[15:47:27] Avance: diapositiva 6 -> 7 (t=123.7s)
+[15:47:46] Avance: diapositiva 7 -> 8 (t=142.8s)
+[15:48:19] Avance: diapositiva 8 -> 9 (t=175.8s)
+[15:48:42] Avance: diapositiva 9 -> 10 (t=198.8s)
+[15:49:16] Avance: diapositiva 10 -> 11 (t=232.9s)
+[15:49:39] Avance: diapositiva 11 -> 12 (t=255.8s)
+[15:50:15] Avance: diapositiva 12 -> 13 (t=291.8s)
+[15:50:53] Avance: diapositiva 13 -> 14 (t=329.7s)
+[15:51:14] Avance: diapositiva 14 -> 15 (t=351.0s)
+[15:51:21] Presentación detenida; guardando reporte de tiempos...
+[15:51:22] Fin de 'AlgoritmosDeSincronización.pptx': duración real 358.8s | reporte=OK planeado=300s, duracion=352s
+[15:51:25] ------------------------------------------------------------------------------
+[15:51:25] Presentación 3/5: CORBA.pptx | 15 diapositivas | docente 7 min (mayor)
+[15:51:29] Captura: 08_CORBA_formulario.png
+[15:51:29] Formulario: grupo=7CM1 | tiempo=7 min (mayor respecto al JSON)
+[15:51:31] JSON actualizado: presentada=true -> CORBA.json
+[15:51:31] Proyección iniciada.
+[15:51:31] Proyección: 1920x1080+0+0 (escala 1.25).
+[15:51:32] Captura: 09_CORBA_slide_01.png
+[15:51:33] Geometría proyección: ventana=1920x1080+0+0 | visor=1920x1080+0+0 | label=1870x1030+25+25 | imagen=1813x1020 | label_root=(25,25)
+[15:51:56] Avance: diapositiva 1 -> 2 (t=24.5s)
+[15:51:56] Captura: 10_CORBA_slide_02.png
+[15:52:28] Avance: diapositiva 2 -> 3 (t=56.4s)
+[15:52:52] Avance: diapositiva 3 -> 4 (t=80.4s)
+[15:53:19] Avance: diapositiva 4 -> 5 (t=107.5s)
+[15:53:41] Avance: diapositiva 5 -> 6 (t=129.4s)
+[15:54:12] Avance: diapositiva 6 -> 7 (t=160.4s)
+[15:54:34] Avance: diapositiva 7 -> 8 (t=182.4s)
+[15:55:09] Avance: diapositiva 8 -> 9 (t=217.4s)
+[15:55:33] Avance: diapositiva 9 -> 10 (t=241.4s)
+[15:56:01] Avance: diapositiva 10 -> 11 (t=269.4s)
+[15:56:29] Avance: diapositiva 11 -> 12 (t=297.4s)
+[15:56:53] Avance: diapositiva 12 -> 13 (t=321.4s)
+[15:57:23] Avance: diapositiva 13 -> 14 (t=351.4s)
+[15:57:52] Avance: diapositiva 14 -> 15 (t=380.4s)
+[15:58:22] Presentación detenida; guardando reporte de tiempos...
+[15:58:23] Fin de 'CORBA.pptx': duración real 411.8s | reporte=OK planeado=420s, duracion=405s
+[15:58:25] ------------------------------------------------------------------------------
+[15:58:25] Presentación 4/5: Objetos Distribuidos IRM.pptx | 10 diapositivas | docente 5 min (igual)
+[15:58:30] Captura: 11_Objetos_Distribuidos_IRM_formulario.png
+[15:58:30] Formulario: grupo=7CM1 | tiempo=5 min (igual respecto al JSON)
+[15:58:33] JSON actualizado: presentada=true -> Objetos Distribuidos IRM.json
+[15:58:33] Proyección iniciada.
+[15:58:33] Proyección: 1920x1080+0+0 (escala 1.25).
+[15:58:34] Captura: 12_Objetos_Distribuidos_IRM_slide_01.png
+[15:58:34] Geometría proyección: ventana=1920x1080+0+0 | visor=1920x1080+0+0 | label=1870x1030+25+25 | imagen=1813x1020 | label_root=(25,25)
+[15:59:02] Avance: diapositiva 1 -> 2 (t=28.6s)
+[15:59:03] Captura: 13_Objetos_Distribuidos_IRM_slide_02.png
+[15:59:31] Avance: diapositiva 2 -> 3 (t=57.6s)
+[16:00:02] Avance: diapositiva 3 -> 4 (t=88.6s)
+[16:00:29] Avance: diapositiva 4 -> 5 (t=115.6s)
+[16:01:02] Avance: diapositiva 5 -> 6 (t=148.6s)
+[16:01:41] Avance: diapositiva 6 -> 7 (t=187.6s)
+[16:02:09] Avance: diapositiva 7 -> 8 (t=215.7s)
+[16:02:41] Avance: diapositiva 8 -> 9 (t=247.6s)
+[16:03:09] Avance: diapositiva 9 -> 10 (t=275.8s)
+[16:03:46] Presentación detenida; guardando reporte de tiempos...
+[16:03:47] Fin de 'Objetos Distribuidos IRM.pptx': duración real 313.8s | reporte=OK planeado=300s, duracion=308s
+[16:03:49] ------------------------------------------------------------------------------
+[16:03:49] Presentación 5/5: Sistemas Distribuidos_Arquitectura de Servicios (1).pptx | 14 diapositivas | docente 8 min (menor)
+[16:03:53] Captura: 14_Sistemas_Distribuidos_Arquitectura_de_Servicios_1_formulario.png
+[16:03:53] Formulario: grupo=7CM1 | tiempo=8 min (menor respecto al JSON)
+[16:03:56] JSON actualizado: presentada=true -> Sistemas Distribuidos_Arquitectura de Servicios (1).json
+[16:03:56] Proyección iniciada.
+[16:03:56] Proyección: 1920x1080+0+0 (escala 1.25).
+[16:03:56] Captura: 15_Sistemas_Distribuidos_Arquitectura_de_Servicios_1_slide_01.png
+[16:03:57] Geometría proyección: ventana=1920x1080+0+0 | visor=1920x1080+0+0 | label=1870x1030+25+25 | imagen=1813x1020 | label_root=(25,25)
+[16:04:16] Avance: diapositiva 1 -> 2 (t=20.5s)
+[16:04:17] Captura: 16_Sistemas_Distribuidos_Arquitectura_de_Servicios_1_slide_02.png
+[16:04:40] Avance: diapositiva 2 -> 3 (t=44.4s)
+[16:05:27] Avance: diapositiva 3 -> 4 (t=91.5s)
+[16:06:13] Avance: diapositiva 4 -> 5 (t=137.4s)
+[16:07:02] Avance: diapositiva 5 -> 6 (t=186.5s)
+[16:07:32] Avance: diapositiva 6 -> 7 (t=216.4s)
+[16:08:25] Avance: diapositiva 7 -> 8 (t=269.4s)
+[16:09:03] Avance: diapositiva 8 -> 9 (t=307.4s)
+[16:09:36] Avance: diapositiva 9 -> 10 (t=340.5s)
+[16:10:16] Avance: diapositiva 10 -> 11 (t=380.4s)
+[16:10:59] Avance: diapositiva 11 -> 12 (t=423.4s)
+[16:11:46] Avance: diapositiva 12 -> 13 (t=470.5s)
+[16:12:26] Avance: diapositiva 13 -> 14 (t=510.4s)
+[16:12:34] Presentación detenida; guardando reporte de tiempos...
+[16:12:35] Fin de 'Sistemas Distribuidos_Arquitectura de Servicios (1).pptx': duración real 519.8s | reporte=OK planeado=480s, duracion=512s
+[16:12:38] ==============================================================================
+[16:12:38] RESUMEN FINAL
+[16:12:38]   Algoritmos de Concurrencia.pptx | 18 diapositivas | JSON 382s | docente 6 min (igual) | duración 383.7s | presentada=True | reporte=True | OK
+[16:12:38]   AlgoritmosDeSincronización.pptx | 15 diapositivas | JSON 357s | docente 5 min (menor) | duración 358.8s | presentada=True | reporte=True | OK
+[16:12:38]   CORBA.pptx | 15 diapositivas | JSON 410s | docente 7 min (mayor) | duración 411.8s | presentada=True | reporte=True | OK
+[16:12:38]   Objetos Distribuidos IRM.pptx | 10 diapositivas | JSON 312s | docente 5 min (igual) | duración 313.8s | presentada=True | reporte=True | OK
+[16:12:38]   Sistemas Distribuidos_Arquitectura de Servicios (1).pptx | 14 diapositivas | JSON 518s | docente 8 min (menor) | duración 519.8s | presentada=True | reporte=True | OK
+[16:12:38] Resumen guardado en: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\presentacion_20261020_153831\resumen.txt

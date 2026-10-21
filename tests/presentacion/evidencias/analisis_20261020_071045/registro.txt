@@ -1,0 +1,513 @@
+[07:10:45] Carpeta de evidencias: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\analisis_20261020_071045
+[07:10:45] Pausa entre presentaciones: 0s
+[07:10:45] Abriendo la aplicación principal (main.py)...
+[07:10:59] Aplicación iniciada (PID 24964).
+[07:11:12] Ventana de la app: 1900x1040 en (0,0).
+[07:11:12] Captura: 01_aplicacion_iniciada.png
+[07:11:13] Materias activas: Administración de Servicios en Red
+[07:11:13] Administración de Servicios en Red: 1 presentaciones, 1 pendientes.
+[07:11:13] Total de presentaciones pendientes: 1
+[07:11:13] ========================================================================
+[07:11:13] MATERIA: Administración de Servicios en Red
+[07:11:13]   Materia ya activa: Administración de Servicios en Red
+[07:11:13] Captura: 02_materia_Administracion_de_Servicios_en_Red_inicio.png
+[07:11:13] ------------------------------------------------------------------------
+[07:11:13] Presentación: 10 - OSPF_Presentacion 1.pptx
+[07:11:13]   Intento 1/3: 10 - OSPF_Presentacion 1.pptx
+[07:11:16]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:11:16]   Análisis en curso (modal de carga visible).
+[07:11:16] Captura: 03_cargando_Administracion_de_Servicios_en_Red_10_-_OSPF_Presentacion_1.png
+[07:11:59]   Análisis terminado correctamente. Capturando evidencia.
+[07:11:59] Captura: 04_analisis_Administracion_de_Servicios_en_Red_10_-_OSPF_Presentacion_1_diapositiva_01.png
+[07:12:01] Captura: 05_analisis_Administracion_de_Servicios_en_Red_10_-_OSPF_Presentacion_1_diapositiva_02.png
+[07:12:02] Captura: 06_analisis_Administracion_de_Servicios_en_Red_10_-_OSPF_Presentacion_1_diapositiva_03.png
+[07:12:02]   Volviendo a inicio (botón en 1648,80).
+[07:12:05]   RESULTADO: OK | score=8.46 | zona=excelente
+[07:12:06] Captura: 07_resumen_materia_Administracion_de_Servicios_en_Red.png
+[07:12:07] Captura: 08_resumen_final_analisis.png
+[07:12:07] ========================================================================
+[07:12:07] RESUMEN
+[07:12:07]   Administración de Servicios en Red | 10 - OSPF_Presentacion 1.pptx | OK | score=8.46 | zona=excelente
+[07:12:07] Resumen guardado en: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\analisis_20261020_071045\resumen.txt
+[07:12:07] La aplicación queda abierta para su revisión.
+[07:15:17] Carpeta de evidencias: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\analisis_20261020_071045
+[07:15:17] Pausa entre presentaciones: 75s
+[07:15:17] Se reutiliza la aplicación ya abierta (PID 24964).
+[07:15:30] Ventana de la app: 1900x1040 en (0,0).
+[07:15:30] Captura: 09_aplicacion_iniciada.png
+[07:15:31] Materias activas: Administración de Servicios en Red, Comunicación oral y escrita, Arquitectura de Computadoras, Procesamiento Digital de Señales, Sistemas distribuidos
+[07:15:31] Administración de Servicios en Red: 5 presentaciones, 4 pendientes.
+[07:15:31] Comunicación oral y escrita: 5 presentaciones, 5 pendientes.
+[07:15:31] Arquitectura de Computadoras: 5 presentaciones, 5 pendientes.
+[07:15:31] Procesamiento Digital de Señales: 5 presentaciones, 5 pendientes.
+[07:15:31] Sistemas distribuidos: 5 presentaciones, 5 pendientes.
+[07:15:31] Total de presentaciones pendientes: 24
+[07:15:31] ========================================================================
+[07:15:31] MATERIA: Administración de Servicios en Red
+[07:15:31]   Materia ya activa: Administración de Servicios en Red
+[07:15:31] Captura: 10_materia_Administracion_de_Servicios_en_Red_inicio.png
+[07:15:31]   OMITIDA (ya analizada): 10 - OSPF_Presentacion 1.pptx
+[07:15:31] ------------------------------------------------------------------------
+[07:15:31] Presentación: 12 - EIGRP.pptx
+[07:15:31]   Intento 1/3: 12 - EIGRP.pptx
+[07:15:34]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:15:34]   Análisis en curso (modal de carga visible).
+[07:15:34] Captura: 11_cargando_Administracion_de_Servicios_en_Red_12_-_EIGRP.png
+[07:16:30]   Análisis terminado correctamente. Capturando evidencia.
+[07:16:30] Captura: 12_analisis_Administracion_de_Servicios_en_Red_12_-_EIGRP_diapositiva_01.png
+[07:16:32] Captura: 13_analisis_Administracion_de_Servicios_en_Red_12_-_EIGRP_diapositiva_02.png
+[07:16:34] Captura: 14_analisis_Administracion_de_Servicios_en_Red_12_-_EIGRP_diapositiva_03.png
+[07:16:34]   Volviendo a inicio (botón en 1648,80).
+[07:16:36]   RESULTADO: OK | score=9.08 | zona=excelente
+[07:16:36]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:16:51]     ...faltan 60s
+[07:17:06]     ...faltan 45s
+[07:17:21]     ...faltan 30s
+[07:17:36]     ...faltan 15s
+[07:17:51] ------------------------------------------------------------------------
+[07:17:51] Presentación: 16 - DHCP.pptx
+[07:17:51]   Intento 1/3: 16 - DHCP.pptx
+[07:17:54]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:17:55]   Análisis en curso (modal de carga visible).
+[07:17:55] Captura: 15_cargando_Administracion_de_Servicios_en_Red_16_-_DHCP.png
+[07:18:34]   Análisis terminado correctamente. Capturando evidencia.
+[07:18:34] Captura: 16_analisis_Administracion_de_Servicios_en_Red_16_-_DHCP_diapositiva_01.png
+[07:18:36] Captura: 17_analisis_Administracion_de_Servicios_en_Red_16_-_DHCP_diapositiva_02.png
+[07:18:37] Captura: 18_analisis_Administracion_de_Servicios_en_Red_16_-_DHCP_diapositiva_03.png
+[07:18:37]   Volviendo a inicio (botón en 1648,80).
+[07:18:40]   RESULTADO: OK | score=9.03 | zona=excelente
+[07:18:40]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:18:55]     ...faltan 60s
+[07:19:10]     ...faltan 45s
+[07:19:25]     ...faltan 30s
+[07:19:40]     ...faltan 15s
+[07:19:55] ------------------------------------------------------------------------
+[07:19:55] Presentación: 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx
+[07:19:55]   Intento 1/3: 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx
+[07:19:58]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:19:59]   Análisis en curso (modal de carga visible).
+[07:19:59] Captura: 19_cargando_Administracion_de_Servicios_en_Red_19_-_NAT_Servicios_de_direccionamiento_IPbuenoNAT.png
+[07:21:25]   Análisis terminado correctamente. Capturando evidencia.
+[07:21:26] Captura: 20_analisis_Administracion_de_Servicios_en_Red_19_-_NAT_Servicios_de_direccionamiento_IPbuenoNAT_diapositiva_01.png
+[07:21:27] Captura: 21_analisis_Administracion_de_Servicios_en_Red_19_-_NAT_Servicios_de_direccionamiento_IPbuenoNAT_diapositiva_02.png
+[07:21:29] Captura: 22_analisis_Administracion_de_Servicios_en_Red_19_-_NAT_Servicios_de_direccionamiento_IPbuenoNAT_diapositiva_03.png
+[07:21:29]   Volviendo a inicio (botón en 1648,80).
+[07:21:32]   RESULTADO: OK | score=8.88 | zona=excelente
+[07:21:32]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:21:47]     ...faltan 60s
+[07:22:02]     ...faltan 45s
+[07:22:17]     ...faltan 30s
+[07:22:32]     ...faltan 15s
+[07:22:47] ------------------------------------------------------------------------
+[07:22:47] Presentación: 20 - SNMP completo.pptx
+[07:22:47]   Intento 1/3: 20 - SNMP completo.pptx
+[07:22:50]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:22:50]   Análisis en curso (modal de carga visible).
+[07:22:50] Captura: 23_cargando_Administracion_de_Servicios_en_Red_20_-_SNMP_completo.png
+[07:23:33]   Análisis terminado correctamente. Capturando evidencia.
+[07:23:33] Captura: 24_analisis_Administracion_de_Servicios_en_Red_20_-_SNMP_completo_diapositiva_01.png
+[07:23:35] Captura: 25_analisis_Administracion_de_Servicios_en_Red_20_-_SNMP_completo_diapositiva_02.png
+[07:23:36] Captura: 26_analisis_Administracion_de_Servicios_en_Red_20_-_SNMP_completo_diapositiva_03.png
+[07:23:36]   Volviendo a inicio (botón en 1648,80).
+[07:23:39]   RESULTADO: OK | score=9.33 | zona=excelente
+[07:23:39]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:23:54]     ...faltan 60s
+[07:24:09]     ...faltan 45s
+[07:24:24]     ...faltan 30s
+[07:24:39]     ...faltan 15s
+[07:24:55] Captura: 27_resumen_materia_Administracion_de_Servicios_en_Red.png
+[07:24:55] ========================================================================
+[07:24:55] MATERIA: Comunicación oral y escrita
+[07:24:57]   Fila 1/5 -> Administración de Servicios en Red
+[07:24:58]   Fila 2/5 -> Comunicación oral y escrita
+[07:24:58] Captura: 28_materia_Comunicacion_oral_y_escrita_inicio.png
+[07:24:58] ------------------------------------------------------------------------
+[07:24:58] Presentación: 1 Naturaleza social de la comunicación.pptx
+[07:24:58]   Intento 1/3: 1 Naturaleza social de la comunicación.pptx
+[07:25:01]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:25:02]   Análisis en curso (modal de carga visible).
+[07:25:02] Captura: 29_cargando_Comunicacion_oral_y_escrita_1_Naturaleza_social_de_la_comunicacion.png
+[07:26:00]   Análisis terminado correctamente. Capturando evidencia.
+[07:26:00] Captura: 30_analisis_Comunicacion_oral_y_escrita_1_Naturaleza_social_de_la_comunicacion_diapositiva_01.png
+[07:26:02] Captura: 31_analisis_Comunicacion_oral_y_escrita_1_Naturaleza_social_de_la_comunicacion_diapositiva_02.png
+[07:26:03] Captura: 32_analisis_Comunicacion_oral_y_escrita_1_Naturaleza_social_de_la_comunicacion_diapositiva_03.png
+[07:26:03]   Volviendo a inicio (botón en 1648,80).
+[07:26:06]   RESULTADO: OK | score=9.01 | zona=excelente
+[07:26:06]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:26:21]     ...faltan 60s
+[07:26:36]     ...faltan 45s
+[07:26:51]     ...faltan 30s
+[07:27:06]     ...faltan 15s
+[07:27:21] ------------------------------------------------------------------------
+[07:27:21] Presentación: 3NF.pptx
+[07:27:21]   Intento 1/3: 3NF.pptx
+[07:27:24]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:27:25]   Análisis en curso (modal de carga visible).
+[07:27:25] Captura: 33_cargando_Comunicacion_oral_y_escrita_3NF.png
+[07:27:54]   Análisis terminado correctamente. Capturando evidencia.
+[07:27:54] Captura: 34_analisis_Comunicacion_oral_y_escrita_3NF_diapositiva_01.png
+[07:27:56] Captura: 35_analisis_Comunicacion_oral_y_escrita_3NF_diapositiva_02.png
+[07:27:57] Captura: 36_analisis_Comunicacion_oral_y_escrita_3NF_diapositiva_03.png
+[07:27:57]   Volviendo a inicio (botón en 1648,80).
+[07:28:00]   RESULTADO: OK | score=7.96 | zona=bueno
+[07:28:00]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:28:15]     ...faltan 60s
+[07:28:30]     ...faltan 45s
+[07:28:45]     ...faltan 30s
+[07:29:00]     ...faltan 15s
+[07:29:15] ------------------------------------------------------------------------
+[07:29:15] Presentación: Actividad7_Puntos1y2.pptx
+[07:29:15]   Intento 1/3: Actividad7_Puntos1y2.pptx
+[07:29:18]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:29:18]   Análisis en curso (modal de carga visible).
+[07:29:18] Captura: 37_cargando_Comunicacion_oral_y_escrita_Actividad7_Puntos1y2.png
+[07:29:51]   Análisis terminado correctamente. Capturando evidencia.
+[07:29:51] Captura: 38_analisis_Comunicacion_oral_y_escrita_Actividad7_Puntos1y2_diapositiva_01.png
+[07:29:53] Captura: 39_analisis_Comunicacion_oral_y_escrita_Actividad7_Puntos1y2_diapositiva_02.png
+[07:29:55] Captura: 40_analisis_Comunicacion_oral_y_escrita_Actividad7_Puntos1y2_diapositiva_03.png
+[07:29:55]   Volviendo a inicio (botón en 1648,80).
+[07:29:58]   RESULTADO: OK | score=6.08 | zona=bueno
+[07:29:58]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:30:13]     ...faltan 60s
+[07:30:28]     ...faltan 45s
+[07:30:43]     ...faltan 30s
+[07:30:58]     ...faltan 15s
+[07:31:13] ------------------------------------------------------------------------
+[07:31:13] Presentación: ARQUITECTURA_ANSI-SPARC.pptx
+[07:31:13]   Intento 1/3: ARQUITECTURA_ANSI-SPARC.pptx
+[07:31:16]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:31:16]   Análisis en curso (modal de carga visible).
+[07:31:16] Captura: 41_cargando_Comunicacion_oral_y_escrita_ARQUITECTURA_ANSI-SPARC.png
+[07:31:42]   Análisis terminado correctamente. Capturando evidencia.
+[07:31:42] Captura: 42_analisis_Comunicacion_oral_y_escrita_ARQUITECTURA_ANSI-SPARC_diapositiva_01.png
+[07:31:44] Captura: 43_analisis_Comunicacion_oral_y_escrita_ARQUITECTURA_ANSI-SPARC_diapositiva_02.png
+[07:31:45] Captura: 44_analisis_Comunicacion_oral_y_escrita_ARQUITECTURA_ANSI-SPARC_diapositiva_03.png
+[07:31:45]   Volviendo a inicio (botón en 1648,80).
+[07:31:48]   RESULTADO: OK | score=9.37 | zona=excelente
+[07:31:48]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:32:03]     ...faltan 60s
+[07:32:18]     ...faltan 45s
+[07:32:33]     ...faltan 30s
+[07:32:48]     ...faltan 15s
+[07:33:03] ------------------------------------------------------------------------
+[07:33:03] Presentación: Encuadre 1CM13.pptx
+[07:33:03]   Intento 1/3: Encuadre 1CM13.pptx
+[07:33:06]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:33:06]   Análisis en curso (modal de carga visible).
+[07:33:06] Captura: 45_cargando_Comunicacion_oral_y_escrita_Encuadre_1CM13.png
+[07:33:56]   Análisis terminado correctamente. Capturando evidencia.
+[07:33:57] Captura: 46_analisis_Comunicacion_oral_y_escrita_Encuadre_1CM13_diapositiva_01.png
+[07:33:59] Captura: 47_analisis_Comunicacion_oral_y_escrita_Encuadre_1CM13_diapositiva_02.png
+[07:34:01] Captura: 48_analisis_Comunicacion_oral_y_escrita_Encuadre_1CM13_diapositiva_03.png
+[07:34:01]   Volviendo a inicio (botón en 1648,80).
+[07:34:03]   RESULTADO: OK | score=8.62 | zona=excelente
+[07:34:03]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:34:18]     ...faltan 60s
+[07:34:33]     ...faltan 45s
+[07:34:48]     ...faltan 30s
+[07:35:03]     ...faltan 15s
+[07:35:19] Captura: 49_resumen_materia_Comunicacion_oral_y_escrita.png
+[07:35:19] ========================================================================
+[07:35:19] MATERIA: Arquitectura de Computadoras
+[07:35:21]   Fila 1/5 -> Administración de Servicios en Red
+[07:35:22]   Fila 2/5 -> Comunicación oral y escrita
+[07:35:23]   Fila 3/5 -> Arquitectura de Computadoras
+[07:35:24] Captura: 50_materia_Arquitectura_de_Computadoras_inicio.png
+[07:35:24] ------------------------------------------------------------------------
+[07:35:24] Presentación: Diapositivas-03-2020-2021-1.pptx
+[07:35:24]   Intento 1/3: Diapositivas-03-2020-2021-1.pptx
+[07:35:27]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:35:27]   Análisis en curso (modal de carga visible).
+[07:35:27] Captura: 51_cargando_Arquitectura_de_Computadoras_Diapositivas-03-2020-2021-1.png
+[07:36:00]   Análisis terminado correctamente. Capturando evidencia.
+[07:36:00] Captura: 52_analisis_Arquitectura_de_Computadoras_Diapositivas-03-2020-2021-1_diapositiva_01.png
+[07:36:02] Captura: 53_analisis_Arquitectura_de_Computadoras_Diapositivas-03-2020-2021-1_diapositiva_02.png
+[07:36:03] Captura: 54_analisis_Arquitectura_de_Computadoras_Diapositivas-03-2020-2021-1_diapositiva_03.png
+[07:36:03]   Volviendo a inicio (botón en 1648,80).
+[07:36:06]   RESULTADO: OK | score=8.73 | zona=excelente
+[07:36:06]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:36:21]     ...faltan 60s
+[07:36:36]     ...faltan 45s
+[07:36:51]     ...faltan 30s
+[07:37:06]     ...faltan 15s
+[07:37:21] ------------------------------------------------------------------------
+[07:37:21] Presentación: Diapositivas-05.pptx
+[07:37:21]   Intento 1/3: Diapositivas-05.pptx
+[07:37:24]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:37:24]   Análisis en curso (modal de carga visible).
+[07:37:24] Captura: 55_cargando_Arquitectura_de_Computadoras_Diapositivas-05.png
+[07:38:13]   Análisis terminado correctamente. Capturando evidencia.
+[07:38:13] Captura: 56_analisis_Arquitectura_de_Computadoras_Diapositivas-05_diapositiva_01.png
+[07:38:15] Captura: 57_analisis_Arquitectura_de_Computadoras_Diapositivas-05_diapositiva_02.png
+[07:38:16] Captura: 58_analisis_Arquitectura_de_Computadoras_Diapositivas-05_diapositiva_03.png
+[07:38:16]   Volviendo a inicio (botón en 1648,80).
+[07:38:19]   RESULTADO: OK | score=8.69 | zona=excelente
+[07:38:19]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:38:34]     ...faltan 60s
+[07:38:49]     ...faltan 45s
+[07:39:04]     ...faltan 30s
+[07:39:19]     ...faltan 15s
+[07:39:34] ------------------------------------------------------------------------
+[07:39:34] Presentación: Diapositivas-06-00.pptx
+[07:39:34]   Intento 1/3: Diapositivas-06-00.pptx
+[07:39:37]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:39:37]   Análisis en curso (modal de carga visible).
+[07:39:37] Captura: 59_cargando_Arquitectura_de_Computadoras_Diapositivas-06-00.png
+[07:40:46]   Análisis terminado correctamente. Capturando evidencia.
+[07:40:46] Captura: 60_analisis_Arquitectura_de_Computadoras_Diapositivas-06-00_diapositiva_01.png
+[07:40:48] Captura: 61_analisis_Arquitectura_de_Computadoras_Diapositivas-06-00_diapositiva_02.png
+[07:40:50] Captura: 62_analisis_Arquitectura_de_Computadoras_Diapositivas-06-00_diapositiva_03.png
+[07:40:50]   Volviendo a inicio (botón en 1648,80).
+[07:40:52]   RESULTADO: OK | score=8.6 | zona=excelente
+[07:40:52]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:41:07]     ...faltan 60s
+[07:41:22]     ...faltan 45s
+[07:41:37]     ...faltan 30s
+[07:41:52]     ...faltan 15s
+[07:42:07] ------------------------------------------------------------------------
+[07:42:07] Presentación: Diapositivas-07.pptx
+[07:42:07]   Intento 1/3: Diapositivas-07.pptx
+[07:42:10]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:42:11]   Análisis en curso (modal de carga visible).
+[07:42:11] Captura: 63_cargando_Arquitectura_de_Computadoras_Diapositivas-07.png
+[07:43:13]   Análisis terminado correctamente. Capturando evidencia.
+[07:43:13] Captura: 64_analisis_Arquitectura_de_Computadoras_Diapositivas-07_diapositiva_01.png
+[07:43:14] Captura: 65_analisis_Arquitectura_de_Computadoras_Diapositivas-07_diapositiva_02.png
+[07:43:16] Captura: 66_analisis_Arquitectura_de_Computadoras_Diapositivas-07_diapositiva_03.png
+[07:43:16]   Volviendo a inicio (botón en 1648,80).
+[07:43:19]   RESULTADO: OK | score=9.11 | zona=excelente
+[07:43:19]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:43:34]     ...faltan 60s
+[07:43:49]     ...faltan 45s
+[07:44:04]     ...faltan 30s
+[07:44:19]     ...faltan 15s
+[07:44:34] ------------------------------------------------------------------------
+[07:44:34] Presentación: Diapositivas-08.pptx
+[07:44:34]   Intento 1/3: Diapositivas-08.pptx
+[07:44:37]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:44:37]   Análisis en curso (modal de carga visible).
+[07:44:37] Captura: 67_cargando_Arquitectura_de_Computadoras_Diapositivas-08.png
+[07:45:15]   Análisis terminado correctamente. Capturando evidencia.
+[07:45:15] Captura: 68_analisis_Arquitectura_de_Computadoras_Diapositivas-08_diapositiva_01.png
+[07:45:17] Captura: 69_analisis_Arquitectura_de_Computadoras_Diapositivas-08_diapositiva_02.png
+[07:45:18] Captura: 70_analisis_Arquitectura_de_Computadoras_Diapositivas-08_diapositiva_03.png
+[07:45:18]   Volviendo a inicio (botón en 1648,80).
+[07:45:21]   RESULTADO: OK | score=8.93 | zona=excelente
+[07:45:21]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:45:36]     ...faltan 60s
+[07:45:51]     ...faltan 45s
+[07:46:06]     ...faltan 30s
+[07:46:21]     ...faltan 15s
+[07:46:37] Captura: 71_resumen_materia_Arquitectura_de_Computadoras.png
+[07:46:37] ========================================================================
+[07:46:37] MATERIA: Procesamiento Digital de Señales
+[07:46:39]   Fila 1/5 -> Administración de Servicios en Red
+[07:46:40]   Fila 2/5 -> Comunicación oral y escrita
+[07:46:41]   Fila 3/5 -> Arquitectura de Computadoras
+[07:46:42]   Fila 4/5 -> Procesamiento Digital de Señales
+[07:46:43] Captura: 72_materia_Procesamiento_Digital_de_Senales_inicio.png
+[07:46:43] ------------------------------------------------------------------------
+[07:46:43] Presentación: Diapositiva02.pptx
+[07:46:43]   Intento 1/3: Diapositiva02.pptx
+[07:46:46]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:46:46]   Análisis en curso (modal de carga visible).
+[07:46:46] Captura: 73_cargando_Procesamiento_Digital_de_Senales_Diapositiva02.png
+[07:47:50]   Análisis terminado correctamente. Capturando evidencia.
+[07:47:50] Captura: 74_analisis_Procesamiento_Digital_de_Senales_Diapositiva02_diapositiva_01.png
+[07:47:52] Captura: 75_analisis_Procesamiento_Digital_de_Senales_Diapositiva02_diapositiva_02.png
+[07:47:54] Captura: 76_analisis_Procesamiento_Digital_de_Senales_Diapositiva02_diapositiva_03.png
+[07:47:54]   Volviendo a inicio (botón en 1648,80).
+[07:47:56]   RESULTADO: OK | score=7.67 | zona=bueno
+[07:47:56]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:48:11]     ...faltan 60s
+[07:48:26]     ...faltan 45s
+[07:48:41]     ...faltan 30s
+[07:48:56]     ...faltan 15s
+[07:49:11] ------------------------------------------------------------------------
+[07:49:11] Presentación: Diapositiva03.pptx
+[07:49:11]   Intento 1/3: Diapositiva03.pptx
+[07:49:14]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:49:15]   Análisis en curso (modal de carga visible).
+[07:49:15] Captura: 77_cargando_Procesamiento_Digital_de_Senales_Diapositiva03.png
+[07:50:03]   Análisis terminado correctamente. Capturando evidencia.
+[07:50:03] Captura: 78_analisis_Procesamiento_Digital_de_Senales_Diapositiva03_diapositiva_01.png
+[07:50:05] Captura: 79_analisis_Procesamiento_Digital_de_Senales_Diapositiva03_diapositiva_02.png
+[07:50:07] Captura: 80_analisis_Procesamiento_Digital_de_Senales_Diapositiva03_diapositiva_03.png
+[07:50:07]   Volviendo a inicio (botón en 1648,80).
+[07:50:09]   RESULTADO: OK | score=8.6 | zona=excelente
+[07:50:09]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:50:24]     ...faltan 60s
+[07:50:39]     ...faltan 45s
+[07:50:54]     ...faltan 30s
+[07:51:09]     ...faltan 15s
+[07:51:24] ------------------------------------------------------------------------
+[07:51:24] Presentación: Diapositivas04.pptx
+[07:51:24]   Intento 1/3: Diapositivas04.pptx
+[07:51:27]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:51:28]   Análisis en curso (modal de carga visible).
+[07:51:28] Captura: 81_cargando_Procesamiento_Digital_de_Senales_Diapositivas04.png
+[07:52:33]   Análisis terminado correctamente. Capturando evidencia.
+[07:52:33] Captura: 82_analisis_Procesamiento_Digital_de_Senales_Diapositivas04_diapositiva_01.png
+[07:52:35] Captura: 83_analisis_Procesamiento_Digital_de_Senales_Diapositivas04_diapositiva_02.png
+[07:52:37] Captura: 84_analisis_Procesamiento_Digital_de_Senales_Diapositivas04_diapositiva_03.png
+[07:52:37]   Volviendo a inicio (botón en 1648,80).
+[07:52:39]   RESULTADO: OK | score=8.33 | zona=excelente
+[07:52:39]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:52:54]     ...faltan 60s
+[07:53:09]     ...faltan 45s
+[07:53:24]     ...faltan 30s
+[07:53:39]     ...faltan 15s
+[07:53:54] ------------------------------------------------------------------------
+[07:53:54] Presentación: Diapositivas05.pptx
+[07:53:54]   Intento 1/3: Diapositivas05.pptx
+[07:53:57]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:53:58]   Análisis en curso (modal de carga visible).
+[07:53:58] Captura: 85_cargando_Procesamiento_Digital_de_Senales_Diapositivas05.png
+[07:55:05]   Análisis terminado correctamente. Capturando evidencia.
+[07:55:06] Captura: 86_analisis_Procesamiento_Digital_de_Senales_Diapositivas05_diapositiva_01.png
+[07:55:07] Captura: 87_analisis_Procesamiento_Digital_de_Senales_Diapositivas05_diapositiva_02.png
+[07:55:09] Captura: 88_analisis_Procesamiento_Digital_de_Senales_Diapositivas05_diapositiva_03.png
+[07:55:09]   Volviendo a inicio (botón en 1648,80).
+[07:55:11]   RESULTADO: OK | score=8.72 | zona=excelente
+[07:55:11]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:55:26]     ...faltan 60s
+[07:55:41]     ...faltan 45s
+[07:55:56]     ...faltan 30s
+[07:56:11]     ...faltan 15s
+[07:56:27] ------------------------------------------------------------------------
+[07:56:27] Presentación: Diapositivas06.pptx
+[07:56:27]   Intento 1/3: Diapositivas06.pptx
+[07:56:30]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:56:30]   Análisis en curso (modal de carga visible).
+[07:56:30] Captura: 89_cargando_Procesamiento_Digital_de_Senales_Diapositivas06.png
+[07:58:11]   Análisis terminado correctamente. Capturando evidencia.
+[07:58:11] Captura: 90_analisis_Procesamiento_Digital_de_Senales_Diapositivas06_diapositiva_01.png
+[07:58:13] Captura: 91_analisis_Procesamiento_Digital_de_Senales_Diapositivas06_diapositiva_02.png
+[07:58:15] Captura: 92_analisis_Procesamiento_Digital_de_Senales_Diapositivas06_diapositiva_03.png
+[07:58:15]   Volviendo a inicio (botón en 1648,80).
+[07:58:17]   RESULTADO: OK | score=8.61 | zona=excelente
+[07:58:17]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[07:58:32]     ...faltan 60s
+[07:58:47]     ...faltan 45s
+[07:59:02]     ...faltan 30s
+[07:59:17]     ...faltan 15s
+[07:59:33] Captura: 93_resumen_materia_Procesamiento_Digital_de_Senales.png
+[07:59:33] ========================================================================
+[07:59:33] MATERIA: Sistemas distribuidos
+[07:59:35]   Fila 1/5 -> Administración de Servicios en Red
+[07:59:36]   Fila 2/5 -> Comunicación oral y escrita
+[07:59:37]   Fila 3/5 -> Arquitectura de Computadoras
+[07:59:39]   Fila 4/5 -> Procesamiento Digital de Señales
+[07:59:40]   Fila 5/5 -> Sistemas distribuidos
+[07:59:40] Captura: 94_materia_Sistemas_distribuidos_inicio.png
+[07:59:40] ------------------------------------------------------------------------
+[07:59:40] Presentación: Algoritmos de Concurrencia.pptx
+[07:59:40]   Intento 1/3: Algoritmos de Concurrencia.pptx
+[07:59:43]   Pulsando 'Analizar presentación' (confianza 1.00).
+[07:59:44]   Análisis en curso (modal de carga visible).
+[07:59:44] Captura: 95_cargando_Sistemas_distribuidos_Algoritmos_de_Concurrencia.png
+[08:00:01]   Análisis terminado correctamente. Capturando evidencia.
+[08:00:01] Captura: 96_analisis_Sistemas_distribuidos_Algoritmos_de_Concurrencia_diapositiva_01.png
+[08:00:03] Captura: 97_analisis_Sistemas_distribuidos_Algoritmos_de_Concurrencia_diapositiva_02.png
+[08:00:04] Captura: 98_analisis_Sistemas_distribuidos_Algoritmos_de_Concurrencia_diapositiva_03.png
+[08:00:05]   Volviendo a inicio (botón en 1648,80).
+[08:00:07]   RESULTADO: OK | score=0.0 | zona=deficiente
+[08:00:07]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[08:00:22]     ...faltan 60s
+[08:00:37]     ...faltan 45s
+[08:00:52]     ...faltan 30s
+[08:01:07]     ...faltan 15s
+[08:01:22] ------------------------------------------------------------------------
+[08:01:22] Presentación: AlgoritmosDeSincronización.pptx
+[08:01:22]   Intento 1/3: AlgoritmosDeSincronización.pptx
+[08:01:25]   Pulsando 'Analizar presentación' (confianza 1.00).
+[08:01:26]   Análisis en curso (modal de carga visible).
+[08:01:26] Captura: 99_cargando_Sistemas_distribuidos_AlgoritmosDeSincronizacion.png
+[08:01:51]   Análisis terminado correctamente. Capturando evidencia.
+[08:01:52] Captura: 100_analisis_Sistemas_distribuidos_AlgoritmosDeSincronizacion_diapositiva_01.png
+[08:01:53] Captura: 101_analisis_Sistemas_distribuidos_AlgoritmosDeSincronizacion_diapositiva_02.png
+[08:01:55] Captura: 102_analisis_Sistemas_distribuidos_AlgoritmosDeSincronizacion_diapositiva_03.png
+[08:01:55]   Volviendo a inicio (botón en 1648,80).
+[08:01:58]   RESULTADO: OK | score=0.0 | zona=deficiente
+[08:01:58]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[08:02:13]     ...faltan 60s
+[08:02:28]     ...faltan 45s
+[08:02:43]     ...faltan 30s
+[08:02:58]     ...faltan 15s
+[08:03:13] ------------------------------------------------------------------------
+[08:03:13] Presentación: CORBA.pptx
+[08:03:13]   Intento 1/3: CORBA.pptx
+[08:03:16]   Pulsando 'Analizar presentación' (confianza 1.00).
+[08:03:16]   Análisis en curso (modal de carga visible).
+[08:03:16] Captura: 103_cargando_Sistemas_distribuidos_CORBA.png
+[08:04:04]   Análisis terminado correctamente. Capturando evidencia.
+[08:04:04] Captura: 104_analisis_Sistemas_distribuidos_CORBA_diapositiva_01.png
+[08:04:06] Captura: 105_analisis_Sistemas_distribuidos_CORBA_diapositiva_02.png
+[08:04:07] Captura: 106_analisis_Sistemas_distribuidos_CORBA_diapositiva_03.png
+[08:04:07]   Volviendo a inicio (botón en 1648,80).
+[08:04:10]   RESULTADO: OK | score=0.0 | zona=deficiente
+[08:04:10]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[08:04:25]     ...faltan 60s
+[08:04:40]     ...faltan 45s
+[08:04:55]     ...faltan 30s
+[08:05:10]     ...faltan 15s
+[08:05:25] ------------------------------------------------------------------------
+[08:05:25] Presentación: Objetos Distribuidos IRM.pptx
+[08:05:25]   Intento 1/3: Objetos Distribuidos IRM.pptx
+[08:05:28]   Pulsando 'Analizar presentación' (confianza 1.00).
+[08:05:28]   Análisis en curso (modal de carga visible).
+[08:05:28] Captura: 107_cargando_Sistemas_distribuidos_Objetos_Distribuidos_IRM.png
+[08:06:25]   Análisis terminado correctamente. Capturando evidencia.
+[08:06:26] Captura: 108_analisis_Sistemas_distribuidos_Objetos_Distribuidos_IRM_diapositiva_01.png
+[08:06:27] Captura: 109_analisis_Sistemas_distribuidos_Objetos_Distribuidos_IRM_diapositiva_02.png
+[08:06:29] Captura: 110_analisis_Sistemas_distribuidos_Objetos_Distribuidos_IRM_diapositiva_03.png
+[08:06:29]   Volviendo a inicio (botón en 1648,80).
+[08:06:32]   RESULTADO: OK | score=0.0 | zona=deficiente
+[08:06:32]   Pausa de 75s (espera para respetar el límite de tokens por minuto)...
+[08:06:47]     ...faltan 60s
+[08:07:02]     ...faltan 45s
+[08:07:17]     ...faltan 30s
+[08:07:32]     ...faltan 15s
+[08:07:47] ------------------------------------------------------------------------
+[08:07:47] Presentación: Sistemas Distribuidos_Arquitectura de Servicios (1).pptx
+[08:07:47]   Intento 1/3: Sistemas Distribuidos_Arquitectura de Servicios (1).pptx
+[08:07:50]   Pulsando 'Analizar presentación' (confianza 1.00).
+[08:07:50]   Análisis en curso (modal de carga visible).
+[08:07:50] Captura: 111_cargando_Sistemas_distribuidos_Sistemas_Distribuidos_Arquitectura_de_Servicios_1.png
+[08:08:38]   Análisis terminado correctamente. Capturando evidencia.
+[08:08:38] Captura: 112_analisis_Sistemas_distribuidos_Sistemas_Distribuidos_Arquitectura_de_Servicios_1_diapositiva_01.png
+[08:08:40] Captura: 113_analisis_Sistemas_distribuidos_Sistemas_Distribuidos_Arquitectura_de_Servicios_1_diapositiva_02.png
+[08:08:41] Captura: 114_analisis_Sistemas_distribuidos_Sistemas_Distribuidos_Arquitectura_de_Servicios_1_diapositiva_03.png
+[08:08:41]   Volviendo a inicio (botón en 1648,80).
+[08:08:44]   RESULTADO: OK | score=0.0 | zona=deficiente
+[08:08:45] Captura: 115_resumen_materia_Sistemas_distribuidos.png
+[08:08:46] Captura: 116_resumen_final_analisis.png
+[08:08:46] ========================================================================
+[08:08:46] RESUMEN
+[08:08:46]   Administración de Servicios en Red | 10 - OSPF_Presentacion 1.pptx | YA ANALIZADA
+[08:08:46]   Administración de Servicios en Red | 12 - EIGRP.pptx | OK | score=9.08 | zona=excelente
+[08:08:46]   Administración de Servicios en Red | 16 - DHCP.pptx | OK | score=9.03 | zona=excelente
+[08:08:46]   Administración de Servicios en Red | 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx | OK | score=8.88 | zona=excelente
+[08:08:46]   Administración de Servicios en Red | 20 - SNMP completo.pptx | OK | score=9.33 | zona=excelente
+[08:08:46]   Comunicación oral y escrita | 1 Naturaleza social de la comunicación.pptx | OK | score=9.01 | zona=excelente
+[08:08:46]   Comunicación oral y escrita | 3NF.pptx | OK | score=7.96 | zona=bueno
+[08:08:46]   Comunicación oral y escrita | Actividad7_Puntos1y2.pptx | OK | score=6.08 | zona=bueno
+[08:08:46]   Comunicación oral y escrita | ARQUITECTURA_ANSI-SPARC.pptx | OK | score=9.37 | zona=excelente
+[08:08:46]   Comunicación oral y escrita | Encuadre 1CM13.pptx | OK | score=8.62 | zona=excelente
+[08:08:46]   Arquitectura de Computadoras | Diapositivas-03-2020-2021-1.pptx | OK | score=8.73 | zona=excelente
+[08:08:46]   Arquitectura de Computadoras | Diapositivas-05.pptx | OK | score=8.69 | zona=excelente
+[08:08:46]   Arquitectura de Computadoras | Diapositivas-06-00.pptx | OK | score=8.6 | zona=excelente
+[08:08:46]   Arquitectura de Computadoras | Diapositivas-07.pptx | OK | score=9.11 | zona=excelente
+[08:08:46]   Arquitectura de Computadoras | Diapositivas-08.pptx | OK | score=8.93 | zona=excelente
+[08:08:46]   Procesamiento Digital de Señales | Diapositiva02.pptx | OK | score=7.67 | zona=bueno
+[08:08:46]   Procesamiento Digital de Señales | Diapositiva03.pptx | OK | score=8.6 | zona=excelente
+[08:08:46]   Procesamiento Digital de Señales | Diapositivas04.pptx | OK | score=8.33 | zona=excelente
+[08:08:46]   Procesamiento Digital de Señales | Diapositivas05.pptx | OK | score=8.72 | zona=excelente
+[08:08:46]   Procesamiento Digital de Señales | Diapositivas06.pptx | OK | score=8.61 | zona=excelente
+[08:08:46]   Sistemas distribuidos | Algoritmos de Concurrencia.pptx | OK | score=0.0 | zona=deficiente
+[08:08:46]   Sistemas distribuidos | AlgoritmosDeSincronización.pptx | OK | score=0.0 | zona=deficiente
+[08:08:46]   Sistemas distribuidos | CORBA.pptx | OK | score=0.0 | zona=deficiente
+[08:08:46]   Sistemas distribuidos | Objetos Distribuidos IRM.pptx | OK | score=0.0 | zona=deficiente
+[08:08:46]   Sistemas distribuidos | Sistemas Distribuidos_Arquitectura de Servicios (1).pptx | OK | score=0.0 | zona=deficiente
+[08:08:46] Resumen guardado en: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\analisis_20261020_071045\resumen.txt
+[08:08:46] La aplicación queda abierta para su revisión.

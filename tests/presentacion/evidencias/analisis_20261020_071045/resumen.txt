@@ -1,0 +1,80 @@
+Análisis secuencial de presentaciones mediante la GUI
+Fecha: 2026-10-20 08:08:46
+Aplicación: C:\Users\Aldai\ai-presentation-analyzer\main.py
+Pausa entre presentaciones: 75 s
+Pausa antes de reintentos: 180 s
+Presentaciones procesadas en esta corrida: 24
+
+Estado final de las presentaciones:
+
+Administración de Servicios en Red
+  - 10 - OSPF_Presentacion 1.pptx: ANALIZADA | score=8.46 | zona=excelente
+  - 12 - EIGRP.pptx: ANALIZADA | score=9.08 | zona=excelente
+  - 16 - DHCP.pptx: ANALIZADA | score=9.03 | zona=excelente
+  - 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx: ANALIZADA | score=8.88 | zona=excelente
+  - 20 - SNMP completo.pptx: ANALIZADA | score=9.33 | zona=excelente
+
+Comunicación oral y escrita
+  - 1 Naturaleza social de la comunicación.pptx: ANALIZADA | score=9.01 | zona=excelente
+  - 3NF.pptx: ANALIZADA | score=7.96 | zona=bueno
+  - Actividad7_Puntos1y2.pptx: ANALIZADA | score=6.08 | zona=bueno
+  - ARQUITECTURA_ANSI-SPARC.pptx: ANALIZADA | score=9.37 | zona=excelente
+  - Encuadre 1CM13.pptx: ANALIZADA | score=8.62 | zona=excelente
+
+Arquitectura de Computadoras
+  - Diapositivas-03-2020-2021-1.pptx: ANALIZADA | score=8.73 | zona=excelente
+  - Diapositivas-05.pptx: ANALIZADA | score=8.69 | zona=excelente
+  - Diapositivas-06-00.pptx: ANALIZADA | score=8.6 | zona=excelente
+  - Diapositivas-07.pptx: ANALIZADA | score=9.11 | zona=excelente
+  - Diapositivas-08.pptx: ANALIZADA | score=8.93 | zona=excelente
+
+Procesamiento Digital de Señales
+  - Diapositiva02.pptx: ANALIZADA | score=7.67 | zona=bueno
+  - Diapositiva03.pptx: ANALIZADA | score=8.6 | zona=excelente
+  - Diapositivas04.pptx: ANALIZADA | score=8.33 | zona=excelente
+  - Diapositivas05.pptx: ANALIZADA | score=8.72 | zona=excelente
+  - Diapositivas06.pptx: ANALIZADA | score=8.61 | zona=excelente
+
+Sistemas distribuidos
+  - Algoritmos de Concurrencia.pptx: ANALIZADA | score=0.0 | zona=deficiente
+  - AlgoritmosDeSincronización.pptx: ANALIZADA | score=0.0 | zona=deficiente
+  - CORBA.pptx: ANALIZADA | score=0.0 | zona=deficiente
+  - Objetos Distribuidos IRM.pptx: ANALIZADA | score=0.0 | zona=deficiente
+  - Sistemas Distribuidos_Arquitectura de Servicios (1).pptx: ANALIZADA | score=0.0 | zona=deficiente
+
+Resultados de esta corrida:
+Administración de Servicios en Red | 10 - OSPF_Presentacion 1.pptx | YA ANALIZADA
+Administración de Servicios en Red | 12 - EIGRP.pptx | OK | score=9.08 | zona=excelente
+Administración de Servicios en Red | 16 - DHCP.pptx | OK | score=9.03 | zona=excelente
+Administración de Servicios en Red | 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx | OK | score=8.88 | zona=excelente
+Administración de Servicios en Red | 20 - SNMP completo.pptx | OK | score=9.33 | zona=excelente
+Comunicación oral y escrita | 1 Naturaleza social de la comunicación.pptx | OK | score=9.01 | zona=excelente
+Comunicación oral y escrita | 3NF.pptx | OK | score=7.96 | zona=bueno
+Comunicación oral y escrita | Actividad7_Puntos1y2.pptx | OK | score=6.08 | zona=bueno
+Comunicación oral y escrita | ARQUITECTURA_ANSI-SPARC.pptx | OK | score=9.37 | zona=excelente
+Comunicación oral y escrita | Encuadre 1CM13.pptx | OK | score=8.62 | zona=excelente
+Arquitectura de Computadoras | Diapositivas-03-2020-2021-1.pptx | OK | score=8.73 | zona=excelente
+Arquitectura de Computadoras | Diapositivas-05.pptx | OK | score=8.69 | zona=excelente
+Arquitectura de Computadoras | Diapositivas-06-00.pptx | OK | score=8.6 | zona=excelente
+Arquitectura de Computadoras | Diapositivas-07.pptx | OK | score=9.11 | zona=excelente
+Arquitectura de Computadoras | Diapositivas-08.pptx | OK | score=8.93 | zona=excelente
+Procesamiento Digital de Señales | Diapositiva02.pptx | OK | score=7.67 | zona=bueno
+Procesamiento Digital de Señales | Diapositiva03.pptx | OK | score=8.6 | zona=excelente
+Procesamiento Digital de Señales | Diapositivas04.pptx | OK | score=8.33 | zona=excelente
+Procesamiento Digital de Señales | Diapositivas05.pptx | OK | score=8.72 | zona=excelente
+Procesamiento Digital de Señales | Diapositivas06.pptx | OK | score=8.61 | zona=excelente
+Sistemas distribuidos | Algoritmos de Concurrencia.pptx | OK | score=0.0 | zona=deficiente
+Sistemas distribuidos | AlgoritmosDeSincronización.pptx | OK | score=0.0 | zona=deficiente
+Sistemas distribuidos | CORBA.pptx | OK | score=0.0 | zona=deficiente
+Sistemas distribuidos | Objetos Distribuidos IRM.pptx | OK | score=0.0 | zona=deficiente
+Sistemas distribuidos | Sistemas Distribuidos_Arquitectura de Servicios (1).pptx | OK | score=0.0 | zona=deficiente
+
+Capturas: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\analisis_20261020_071045
+
+Nota sobre Sistemas distribuidos:
+Las 5 presentaciones de esta materia están formadas únicamente por diapositivas
+clasificadas como "visual" (contenido en imágenes). El prototipo no analiza
+imágenes: las marca como omitidas y, al no quedar diapositivas con texto
+analizable, el score global queda en 0.0 / deficiente. No es un fallo de la
+automatización; las capturas muestran la advertencia "Actualmente el prototipo
+no es capaz de analizar imágenes" en cada diapositiva.

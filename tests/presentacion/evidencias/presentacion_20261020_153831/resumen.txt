@@ -1,0 +1,13 @@
+Presentación automática mediante la GUI
+Fecha: 2026-10-20 16:12:38
+Materia: Sistemas distribuidos
+Grupo: 7CM1
+Presentaciones: 5
+
+Algoritmos de Concurrencia.pptx | 18 diapositivas | JSON 382s | docente 6 min (igual) | duración 383.7s | presentada=True | reporte=True | OK
+AlgoritmosDeSincronización.pptx | 15 diapositivas | JSON 357s | docente 5 min (menor) | duración 358.8s | presentada=True | reporte=True | OK
+CORBA.pptx | 15 diapositivas | JSON 410s | docente 7 min (mayor) | duración 411.8s | presentada=True | reporte=True | OK
+Objetos Distribuidos IRM.pptx | 10 diapositivas | JSON 312s | docente 5 min (igual) | duración 313.8s | presentada=True | reporte=True | OK
+Sistemas Distribuidos_Arquitectura de Servicios (1).pptx | 14 diapositivas | JSON 518s | docente 8 min (menor) | duración 519.8s | presentada=True | reporte=True | OK
+
+Capturas: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\presentacion_20261020_153831

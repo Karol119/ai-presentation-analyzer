@@ -1,0 +1,15 @@
+Presentación automática en paralelo
+Fecha: 2026-10-20 17:57:35
+Materia: Administración de Servicios en Red
+Grupo: 7CM5
+Presentaciones: 5
+Modo: headless
+Tiempo total de pared: 1971.2s
+
+10 - OSPF_Presentacion 1.pptx | 47 diapositivas | JSON 1884s | docente 31 min (igual) | duración 1885.7s | presentada=True | reporte=True | OK
+12 - EIGRP.pptx | 85 diapositivas | JSON 1935s | docente 31 min (menor) | duración 1936.7s | presentada=True | reporte=True | OK
+16 - DHCP.pptx | 26 diapositivas | JSON 864s | docente 15 min (mayor) | duración 865.7s | presentada=True | reporte=True | OK
+19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx | 27 diapositivas | JSON 496s | docente 8 min (igual) | duración 497.7s | presentada=True | reporte=True | OK
+20 - SNMP completo.pptx | 30 diapositivas | JSON 825s | docente 13 min (menor) | duración 826.7s | presentada=True | reporte=True | OK
+
+Evidencias: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\presentacion_20261020_172444

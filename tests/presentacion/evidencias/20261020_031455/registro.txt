@@ -1,0 +1,194 @@
+[03:14:55] Carpeta de evidencias: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\20261020_031455
+[03:14:55] Abriendo la aplicación principal (main.py)...
+[03:15:01] Aplicación iniciada (PID 6316).
+[03:15:14] Ventana de la app: 1900x1040 en (0,0).
+[03:15:14] Captura: 01_aplicacion_iniciada.png
+[03:15:14] ======================================================================
+[03:15:14] MATERIA: Administración de Servicios en Red
+[03:15:14] Agregando materia: Administración de Servicios en Red
+[03:15:17] Captura: 02_modal_agregar_Administracion_de_Servicios_en_Red.png
+[03:15:18] Captura: 03_modal_busqueda_Administracion_de_Servicios_en_Red.png
+[03:15:19]   Fila localizada en 338,441 (confianza 1.00).
+[03:15:20] Captura: 04_modal_seleccion_Administracion_de_Servicios_en_Red.png
+[03:15:22] Captura: 05_materia_agregada_Administracion_de_Servicios_en_Red.png
+[03:15:22]   Materia agregada: Administración de Servicios en Red
+[03:15:22]   Archivos a cargar (5):
+[03:15:22]     - 10 - OSPF_Presentacion 1.pptx
+[03:15:22]     - 12 - EIGRP.pptx
+[03:15:22]     - 16 - DHCP.pptx
+[03:15:22]     - 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx
+[03:15:22]     - 20 - SNMP completo.pptx
+[03:15:22]   Subiendo: 10 - OSPF_Presentacion 1.pptx (2.1 MB)
+[03:15:25] Captura: 06_cargando_10_-_OSPF_Presentacion_1.png
+[03:15:41] Captura: 07_presentacion_cargada_Administracion_de_Servicios_en_Red_10_-_OSPF_Presentacion_1.png
+[03:15:41]   Resultado: ok - 10 - OSPF_Presentacion 1.pptx
+[03:15:41]   Subiendo: 12 - EIGRP.pptx (2.3 MB)
+[03:15:44] Captura: 08_cargando_12_-_EIGRP.png
+[03:16:03] Captura: 09_presentacion_cargada_Administracion_de_Servicios_en_Red_12_-_EIGRP.png
+[03:16:03]   Resultado: ok - 12 - EIGRP.pptx
+[03:16:03]   Subiendo: 16 - DHCP.pptx (0.1 MB)
+[03:16:06] Captura: 10_cargando_16_-_DHCP.png
+[03:16:18] Captura: 11_presentacion_cargada_Administracion_de_Servicios_en_Red_16_-_DHCP.png
+[03:16:18]   Resultado: ok - 16 - DHCP.pptx
+[03:16:18]   Subiendo: 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx (2.3 MB)
+[03:16:20] Captura: 12_cargando_19_-_NAT_Servicios_de_direccionamiento_IPbuenoNAT.png
+[03:16:34] Captura: 13_presentacion_cargada_Administracion_de_Servicios_en_Red_19_-_NAT_Servicios_de_direccionamiento_IPbuenoNAT.png
+[03:16:34]   Resultado: ok - 19 - NAT_Servicios de direccionamiento IPbuenoNAT.pptx
+[03:16:34]   Subiendo: 20 - SNMP completo.pptx (0.5 MB)
+[03:16:37] Captura: 14_cargando_20_-_SNMP_completo.png
+[03:16:50] Captura: 15_presentacion_cargada_Administracion_de_Servicios_en_Red_20_-_SNMP_completo.png
+[03:16:50]   Resultado: ok - 20 - SNMP completo.pptx
+[03:16:50] ======================================================================
+[03:16:50] MATERIA: Arquitectura de Computadoras
+[03:16:50] Agregando materia: Arquitectura de Computadoras
+[03:16:53] Captura: 16_modal_agregar_Arquitectura_de_Computadoras.png
+[03:16:54] Captura: 17_modal_busqueda_Arquitectura_de_Computadoras.png
+[03:16:54]   Fila localizada en 274,377 (confianza 0.73).
+[03:16:55] Captura: 18_modal_seleccion_Arquitectura_de_Computadoras.png
+[03:16:58] Captura: 19_materia_agregada_Arquitectura_de_Computadoras.png
+[03:16:58]   Materia agregada: Arquitectura de Computadoras
+[03:16:58]   Archivos a cargar (5):
+[03:16:58]     - Diapositivas-03-2020-2021-1.pptx
+[03:16:58]     - Diapositivas-05.pptx
+[03:16:58]     - Diapositivas-06-00.pptx
+[03:16:58]     - Diapositivas-07.pptx
+[03:16:58]     - Diapositivas-08.pptx
+[03:16:58]   Subiendo: Diapositivas-03-2020-2021-1.pptx (0.4 MB)
+[03:17:01] Captura: 20_cargando_Diapositivas-03-2020-2021-1.png
+[03:17:12] Captura: 21_presentacion_cargada_Arquitectura_de_Computadoras_Diapositivas-03-2020-2021-1.png
+[03:17:12]   Resultado: ok - Diapositivas-03-2020-2021-1.pptx
+[03:17:12]   Subiendo: Diapositivas-05.pptx (1.4 MB)
+[03:17:15] Captura: 22_cargando_Diapositivas-05.png
+[03:17:28] Captura: 23_presentacion_cargada_Arquitectura_de_Computadoras_Diapositivas-05.png
+[03:17:28]   Resultado: ok - Diapositivas-05.pptx
+[03:17:28]   Subiendo: Diapositivas-06-00.pptx (0.5 MB)
+[03:17:31] Captura: 24_cargando_Diapositivas-06-00.png
+[03:17:44] Captura: 25_presentacion_cargada_Arquitectura_de_Computadoras_Diapositivas-06-00.png
+[03:17:44]   Resultado: ok - Diapositivas-06-00.pptx
+[03:17:44]   Subiendo: Diapositivas-07.pptx (4.8 MB)
+[03:17:46] Captura: 26_cargando_Diapositivas-07.png
+[03:18:01] Captura: 27_presentacion_cargada_Arquitectura_de_Computadoras_Diapositivas-07.png
+[03:18:01]   Resultado: ok - Diapositivas-07.pptx
+[03:18:01]   Subiendo: Diapositivas-08.pptx (0.8 MB)
+[03:18:04] Captura: 28_cargando_Diapositivas-08.png
+[03:18:14] Captura: 29_presentacion_cargada_Arquitectura_de_Computadoras_Diapositivas-08.png
+[03:18:14]   Resultado: ok - Diapositivas-08.pptx
+[03:18:14] ======================================================================
+[03:18:14] MATERIA: Comunicación oral y escrita
+[03:18:14] Agregando materia: Comunicación oral y escrita
+[03:18:17] Captura: 30_modal_agregar_Comunicacion_oral_y_escrita.png
+[03:18:19] Captura: 31_modal_busqueda_Comunicacion_oral_y_escrita.png
+[03:18:19]   Fila localizada en 433,537 (confianza 0.71).
+[03:18:20] Captura: 32_modal_seleccion_Comunicacion_oral_y_escrita.png
+[03:18:22] Captura: 33_materia_agregada_Comunicacion_oral_y_escrita.png
+[03:18:22]   Materia agregada: Comunicación oral y escrita
+[03:18:22]   Archivos a cargar (5):
+[03:18:22]     - 1 Naturaleza social de la comunicación.pptx
+[03:18:22]     - 3NF.pptx
+[03:18:22]     - Actividad7_Puntos1y2.pptx
+[03:18:22]     - ARQUITECTURA_ANSI-SPARC.pptx
+[03:18:22]     - Encuadre 1CM13.pptx
+[03:18:22]   Subiendo: 1 Naturaleza social de la comunicación.pptx (2.9 MB)
+[03:18:25] Captura: 34_cargando_1_Naturaleza_social_de_la_comunicacion.png
+[03:18:41] Captura: 35_presentacion_cargada_Comunicacion_oral_y_escrita_1_Naturaleza_social_de_la_comunicacion.png
+[03:18:41]   Resultado: ok - 1 Naturaleza social de la comunicación.pptx
+[03:18:41]   Subiendo: 3NF.pptx (0.3 MB)
+[03:18:44] Captura: 36_cargando_3NF.png
+[03:18:57] Captura: 37_presentacion_cargada_Comunicacion_oral_y_escrita_3NF.png
+[03:18:57]   Resultado: ok - 3NF.pptx
+[03:18:57]   Subiendo: Actividad7_Puntos1y2.pptx (3.4 MB)
+[03:18:59] Captura: 38_cargando_Actividad7_Puntos1y2.png
+[03:19:14] Captura: 39_presentacion_cargada_Comunicacion_oral_y_escrita_Actividad7_Puntos1y2.png
+[03:19:14]   Resultado: ok - Actividad7_Puntos1y2.pptx
+[03:19:14]   Subiendo: ARQUITECTURA_ANSI-SPARC.pptx (0.8 MB)
+[03:19:17] Captura: 40_cargando_ARQUITECTURA_ANSI-SPARC.png
+[03:19:29] Captura: 41_presentacion_cargada_Comunicacion_oral_y_escrita_ARQUITECTURA_ANSI-SPARC.png
+[03:19:29]   Resultado: ok - ARQUITECTURA_ANSI-SPARC.pptx
+[03:19:29]   Subiendo: Encuadre 1CM13.pptx (2.4 MB)
+[03:19:32] Captura: 42_cargando_Encuadre_1CM13.png
+[03:19:44] Captura: 43_presentacion_cargada_Comunicacion_oral_y_escrita_Encuadre_1CM13.png
+[03:19:44]   Resultado: ok - Encuadre 1CM13.pptx
+[03:19:44] ======================================================================
+[03:19:44] MATERIA: Procesamiento Digital de Señales
+[03:19:44] Agregando materia: Procesamiento Digital de Señales
+[03:19:47] Captura: 44_modal_agregar_Procesamiento_Digital_de_Senales.png
+[03:19:49] Captura: 45_modal_busqueda_Procesamiento_Digital_de_Senales.png
+[03:19:49]   Fila seleccionada por posición relativa.
+[03:19:50] Captura: 46_modal_seleccion_Procesamiento_Digital_de_Senales.png
+[03:19:52] Captura: 47_materia_agregada_Procesamiento_Digital_de_Senales.png
+[03:19:52]   Materia agregada: Procesamiento Digital de Señales
+[03:19:52]   Archivos a cargar (5):
+[03:19:52]     - Diapositiva02.pptx
+[03:19:52]     - Diapositiva03.pptx
+[03:19:52]     - Diapositivas04.pptx
+[03:19:52]     - Diapositivas05.pptx
+[03:19:52]     - Diapositivas06.pptx
+[03:19:52]     OMITIDO: Diapositiva01.pptx (38.7 MB > 30 MB)
+[03:19:52]   Subiendo: Diapositiva02.pptx (5.1 MB)
+[03:19:55] Captura: 48_cargando_Diapositiva02.png
+[03:20:13] Captura: 49_presentacion_cargada_Procesamiento_Digital_de_Senales_Diapositiva02.png
+[03:20:13]   Resultado: ok - Diapositiva02.pptx
+[03:20:13]   Subiendo: Diapositiva03.pptx (2.0 MB)
+[03:20:16] Captura: 50_cargando_Diapositiva03.png
+[03:20:32] Captura: 51_presentacion_cargada_Procesamiento_Digital_de_Senales_Diapositiva03.png
+[03:20:32]   Resultado: ok - Diapositiva03.pptx
+[03:20:32]   Subiendo: Diapositivas04.pptx (4.2 MB)
+[03:20:34] Captura: 52_cargando_Diapositivas04.png
+[03:20:49] Captura: 53_presentacion_cargada_Procesamiento_Digital_de_Senales_Diapositivas04.png
+[03:20:49]   Resultado: ok - Diapositivas04.pptx
+[03:20:49]   Subiendo: Diapositivas05.pptx (3.5 MB)
+[03:20:52] Captura: 54_cargando_Diapositivas05.png
+[03:21:09] Captura: 55_presentacion_cargada_Procesamiento_Digital_de_Senales_Diapositivas05.png
+[03:21:09]   Resultado: ok - Diapositivas05.pptx
+[03:21:09]   Subiendo: Diapositivas06.pptx (6.1 MB)
+[03:21:12] Captura: 56_cargando_Diapositivas06.png
+[03:21:30] Captura: 57_presentacion_cargada_Procesamiento_Digital_de_Senales_Diapositivas06.png
+[03:21:30]   Resultado: ok - Diapositivas06.pptx
+[03:21:30] ======================================================================
+[03:21:30] MATERIA: Sistemas distribuidos
+[03:21:30] Agregando materia: Sistemas distribuidos
+[03:21:33] Captura: 58_modal_agregar_Sistemas_distribuidos.png
+[03:21:35] Captura: 59_modal_busqueda_Sistemas_distribuidos.png
+[03:21:35]   Fila seleccionada por posición relativa.
+[03:21:36] Captura: 60_modal_seleccion_Sistemas_distribuidos.png
+[03:21:39] Captura: 61_materia_agregada_Sistemas_distribuidos.png
+[03:21:39]   Materia agregada: Sistemas distribuidos
+[03:21:39]   Archivos a cargar (5):
+[03:21:39]     - Algoritmos de Concurrencia.pptx
+[03:21:39]     - AlgoritmosDeSincronización.pptx
+[03:21:39]     - CORBA.pptx
+[03:21:39]     - Objetos Distribuidos IRM.pptx
+[03:21:39]     - Sistemas Distribuidos_Arquitectura de Servicios (1).pptx
+[03:21:39]   Subiendo: Algoritmos de Concurrencia.pptx (13.0 MB)
+[03:21:41] Captura: 62_cargando_Algoritmos_de_Concurrencia.png
+[03:21:54] Captura: 63_presentacion_cargada_Sistemas_distribuidos_Algoritmos_de_Concurrencia.png
+[03:21:54]   Resultado: ok - Algoritmos de Concurrencia.pptx
+[03:21:54]   Subiendo: AlgoritmosDeSincronización.pptx (9.4 MB)
+[03:21:57] Captura: 64_cargando_AlgoritmosDeSincronizacion.png
+[03:22:10] Captura: 65_presentacion_cargada_Sistemas_distribuidos_AlgoritmosDeSincronizacion.png
+[03:22:10]   Resultado: ok - AlgoritmosDeSincronización.pptx
+[03:22:10]   Subiendo: CORBA.pptx (1.2 MB)
+[03:22:13] Captura: 66_cargando_CORBA.png
+[03:22:26] Captura: 67_presentacion_cargada_Sistemas_distribuidos_CORBA.png
+[03:22:26]   Resultado: ok - CORBA.pptx
+[03:22:26]   Subiendo: Objetos Distribuidos IRM.pptx (10.3 MB)
+[03:22:28] Captura: 68_cargando_Objetos_Distribuidos_IRM.png
+[03:22:41] Captura: 69_presentacion_cargada_Sistemas_distribuidos_Objetos_Distribuidos_IRM.png
+[03:22:41]   Resultado: ok - Objetos Distribuidos IRM.pptx
+[03:22:41]   Subiendo: Sistemas Distribuidos_Arquitectura de Servicios (1).pptx (2.9 MB)
+[03:22:44] Captura: 70_cargando_Sistemas_Distribuidos_Arquitectura_de_Servicios_1.png
+[03:22:56] Captura: 71_presentacion_cargada_Sistemas_distribuidos_Sistemas_Distribuidos_Arquitectura_de_Servicios_1.png
+[03:22:56]   Resultado: ok - Sistemas Distribuidos_Arquitectura de Servicios (1).pptx
+[03:22:56] Captura: 72_resumen_final_materias.png
+[03:22:56] ======================================================================
+[03:22:56] RESUMEN
+[03:22:56]   Administración de Servicios en Red: 5 cargadas de 5 intentadas
+[03:22:56]   Arquitectura de Computadoras: 5 cargadas de 5 intentadas
+[03:22:56]   Comunicación oral y escrita: 5 cargadas de 5 intentadas
+[03:22:56]   Procesamiento Digital de Señales: 5 cargadas de 5 intentadas
+[03:22:56]     - OMITIDO Diapositiva01.pptx: 38.7 MB > 30 MB
+[03:22:56]   Sistemas distribuidos: 5 cargadas de 5 intentadas
+[03:22:56] ARCHIVOS OMITIDOS POR TAMAÑO:
+[03:22:56]   Procesamiento Digital de Señales/Diapositiva01.pptx: 38.7 MB > 30 MB
+[03:22:56] Resumen guardado en: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\20261020_031455\resumen.txt
+[03:22:56] La aplicación queda abierta para su revisión.

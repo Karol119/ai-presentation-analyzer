@@ -1,0 +1,16 @@
+Carga de materias y presentaciones mediante la GUI
+Fecha: 2026-10-20 03:22:56
+Aplicación: C:\Users\Aldai\ai-presentation-analyzer\main.py
+
+Resultados por materia:
+Administración de Servicios en Red: 5 cargadas de 5 intentadas
+Arquitectura de Computadoras: 5 cargadas de 5 intentadas
+Comunicación oral y escrita: 5 cargadas de 5 intentadas
+Procesamiento Digital de Señales: 5 cargadas de 5 intentadas
+  - OMITIDO Diapositiva01.pptx: 38.7 MB > 30 MB
+Sistemas distribuidos: 5 cargadas de 5 intentadas
+
+Archivos omitidos:
+Procesamiento Digital de Señales/Diapositiva01.pptx: 38.7 MB > 30 MB
+
+Capturas: C:\Users\Aldai\ai-presentation-analyzer\tests\presentacion\evidencias\20261020_031455
