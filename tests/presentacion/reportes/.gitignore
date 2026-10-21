@@ -1,0 +1,5 @@
+# Ignora los reportes generados; solo conserva la documentación de la carpeta.
+*
+!.gitignore
+!.gitkeep
+!README.md

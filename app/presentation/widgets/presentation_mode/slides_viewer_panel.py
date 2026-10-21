@@ -1,7 +1,7 @@
 # app/presentation/widgets/presentation_mode/slides_viewer_panel.py
 import fitz
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageTk
 import io
 
 COLOR_GUINDA = "#6A1B31"
@@ -53,13 +53,18 @@ def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
             img_pil = Image.open(io.BytesIO(pixmap.tobytes("png")))
             img_pil.thumbnail((ancho_max, alto_max), Image.LANCZOS)
 
-            escala = ctk.ScalingTracker.get_widget_scaling(panel)
-            ancho_logico = int(img_pil.width / escala)
-            alto_logico = int(img_pil.height / escala)
-
-            img_ctk = ctk.CTkImage(light_image=img_pil, size=(ancho_logico, alto_logico))
-            panel.label_imagen.configure(image=img_ctk, text="")
-            panel.label_imagen._image = img_ctk  
+            # Usar una PhotoImage nativa de Tk, ya redimensionada al tamaño real
+            # del label. CTkImage vuelve a escalar la imagen según el DPI y en
+            # pantallas grandes puede recortarla; PhotoImage respeta el tamaño
+            # exacto en píxeles y mantiene la diapositiva completa.
+            img_tk = ImageTk.PhotoImage(img_pil)
+            panel.label_imagen._image = img_tk
+            try:
+                # Asignar directamente al Label interno evita que CTkLabel
+                # intente aplicar de nuevo el escalado de DPI a la PhotoImage.
+                panel.label_imagen._label.configure(image=img_tk, text="")
+            except Exception:
+                panel.label_imagen.configure(image=img_tk, text="")
             
             if panel.on_pagina_cambiada:
                 panel.on_pagina_cambiada(panel.pagina_actual)

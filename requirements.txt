@@ -1,6 +1,9 @@
 # Interfaz Gráfica de Escritorio
 PyQt6==6.6.1
 
+# Detección de monitores para la proyección de presentaciones
+screeninfo==0.8.1
+
 # Manejo de variables de entorno (API Keys de Gemini)
 python-dotenv==1.0.1
 
