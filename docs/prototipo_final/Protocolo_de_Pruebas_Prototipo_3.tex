@@ -1,0 +1,462 @@
+% ============================================================================
+% Protocolo de Pruebas - Prototipo 3
+% Dashboard de rendimiento, gráfica de tendencias, reporte de desviaciones
+% y pruebas de integridad y usuario.
+%
+% Documento autónomo: puede compilarse directamente con pdfLaTeX.
+% Los resultados de las columnas "Aprobado" y "Observaciones" provienen de la
+% ejecución real de la suite tests/e2e (ver sección "Ejecución de las pruebas").
+% ============================================================================
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noindentfirst]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Tipo de columna usado en las tablas del protocolo.
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Compatibilidad con el comando del documento principal.
+\newcommand{\ttiiTOC}[1]{\texttt{#1}}
+
+% Nombre de método de prueba (permite guiones bajos sin escaparlos).
+\newcommand{\mth}[1]{\texttt{\detokenize{#1}}}
+
+\title{\textbf{Protocolo de Pruebas\\[0.3em]Prototipo 3}}
+\author{AI Presentation Analyzer}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Protocolo de Pruebas del Prototipo 3}
+\addcontentsline{toc}{section}{Protocolo de Pruebas del Prototipo 3}
+
+Para facilitar la trazabilidad de las pruebas del prototipo 3, se utiliza un prefijo de tres letras y un número consecutivo. La Tabla \ref{tab:nomenclatura-pruebas-prototipo-3} presenta las categorías empleadas.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|>{\centering\arraybackslash}p{1.5cm}|p{4.6cm}|X|}
+\hline
+\textbf{Sigla} & \textbf{Módulo o categoría} & \textbf{Significado dentro del protocolo} \\ \hline
+PRF & Dashboard de rendimiento & Entrada a la vista, recuperación de los JSON y construcción de las tarjetas de resumen. \\ \hline
+GRF & Gráfica de tendencias & Series de tiempo, \textit{tooltip}, desplazamiento horizontal y pestañas de grupo. \\ \hline
+DVS & Reporte de desviaciones & Apertura del modal, cálculo de porcentajes y clasificación de diapositivas. \\ \hline
+INT & Integridad & Consistencia entre el análisis, el reporte de tiempos y la base de datos. \\ \hline
+USR & Pruebas de usuario & Escenarios derivados de la interacción directa con el dashboard. \\ \hline
+\end{tabularx}
+\caption{Nomenclatura de los identificadores de las pruebas del prototipo 3.}
+\label{tab:nomenclatura-pruebas-prototipo-3}
+\end{table}
+
+% ===========================================================================
+\section*{Ejecución de las pruebas}
+\addcontentsline{toc}{section}{Ejecución de las pruebas}
+
+Todas las pruebas de este protocolo están automatizadas como pruebas de extremo a extremo (E2E) que arrancan la interfaz real (CustomTkinter) y disparan los callbacks productivos. Se ejecutan desde la raíz del repositorio con:
+
+\begin{verbatim}
+python -m tests.e2e.run_e2e
+\end{verbatim}
+
+El ejecutor guarda la salida cruda y un resumen en \texttt{docs/prototipo\_final/evidencias/<fecha\_hora>/}. La corrida documentada en este protocolo corresponde a la carpeta:
+
+\begin{center}
+\texttt{docs/prototipo\_final/evidencias/20261018\_233448/}
+\end{center}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{4.5cm}|X|}
+\hline
+\textbf{Dato} & \textbf{Valor} \\ \hline
+Fecha de ejecución & 2026-10-18 23:38:33 \\ \hline
+Intérprete & Python 3.14.6 (64 bits) \\ \hline
+Plataforma & Windows 11 (10.0.26300) \\ \hline
+Interfaz & CustomTkinter / Tk 3.14.6 (con display) \\ \hline
+SQLite & 3.50.4 (stdlib) \\ \hline
+\end{tabularx}
+\caption{Entorno de ejecución de las pruebas del prototipo 3.}
+\label{tab:entorno-ejecucion-tt3}
+\end{table}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|X|>{\centering\arraybackslash}p{2.6cm}|}
+\hline
+\textbf{Módulo de la suite} & \textbf{Resultado} \\ \hline
+\texttt{tests.e2e.test\_e2e\_negocio} & 15 pruebas, 0 fallos \\ \hline
+\texttt{tests.e2e.test\_e2e\_gui} & 15 pruebas, 0 fallos \\ \hline
+\texttt{tests.e2e.test\_e2e\_rendimiento\_gui} & 67 pruebas, 0 fallos \\ \hline
+\textbf{Total} & \textbf{97 pruebas, 0 fallos, 0 errores, resultado OK} \\ \hline
+\end{tabularx}
+\caption{Resultado global de la corrida de evidencias.}
+\label{tab:resultado-global-tt3}
+\end{table}
+
+Las 67 pruebas del módulo \texttt{test\_e2e\_rendimiento\_gui} son la evidencia directa de las 67 filas de este protocolo (la Tabla \ref{tab:trazabilidad-tt3} mapea cada identificador con su método de prueba).
+
+% ===========================================================================
+\clearpage
+\textbf{Módulo: Dashboard de Rendimiento}
+
+\textbf{Objetivo:} Validar la recuperación del análisis de la IA y del reporte de tiempos, así como la construcción de las tarjetas de resumen y la gráfica de tendencias.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+\item Acceder mediante «Ver rendimiento», disponible solo si existe al menos una sesión registrada.
+\item Configurar la interfaz en modo secundario.
+\item Resolver el identificador de la materia.
+\item Recuperar los JSON de análisis y tiempos.
+\item Construir las cinco tarjetas de resumen y la gráfica.
+\item Restaurar la vista mediante «Volver a inicio».
+\end{enumerate}
+
+\textbf{Arquitectura del módulo:}
+\begin{verbatim}
+Dashboard de Rendimiento
+|-- views/performance_gui.py
+|-- views/navigator.py
+|-- widgets/performance_mode/
+|   |-- performance_summary_panel.py
+|   |-- performance_chart_panel.py
+|   +-- performance_deviations_panel.py
+|-- controller/
+|   |-- presentation_controller.py
+|   +-- subject_controller.py
++-- data/queries.py, database_manager.py
+\end{verbatim}
+
+\textbf{Componentes que probar:}
+\begin{table}[H]
+\centering
+\begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+\hline
+\textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+Vista de rendimiento & UI/Frontend & Orquesta la carga de los JSON y monta los paneles. \\ \hline
+Tarjetas de resumen & UI/Frontend & Muestran calificación, tiempos y desviación. \\ \hline
+Controladores & Backend & Obtienen el análisis, el reporte y el identificador de la materia. \\ \hline
+Consultas & Base de datos & Extraen los datos desde \texttt{Historial\_de\_Versiones}. \\ \hline
+\end{tabular}
+\caption{Componentes del módulo de dashboard de rendimiento.}
+\label{tab:componentes-modulo-dashboard}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Dashboard de Rendimiento:}
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+PRF-01 & Entrada a la vista & Seleccionar «Ver rendimiento». & Se despliega el dashboard. & Sí & Ejecutado en \mth{test_prf01_entrada_a_la_vista}: la vista queda activa y se montan el contenedor, las tarjetas de resumen y la gráfica. \\ \hline
+PRF-02 & Carga de análisis & Recuperar la evaluación generada durante el análisis. & Se recupera el JSON de análisis. & Sí & \mth{test_prf02_carga_de_analisis} comprobó que el índice de diapositivas coincide con el JSON y que \texttt{total\_diapositivas} se conserva. \\ \hline
+PRF-03 & Carga de tiempos & Abrir una presentación con sesiones. & Se recupera el reporte de tiempos. & Sí & \mth{test_prf03_carga_de_tiempos} verificó que el grupo \texttt{3CM2} aparece como pestaña con su duración real acumulada. \\ \hline
+PRF-04 & Resumen con datos & Revisar las cinco tarjetas. & Se muestran todos los indicadores. & Sí & \mth{test_prf04_resumen_con_datos} leyó los valores reales: «Planeó docente» = 60m 00s, «Duración real» = 7m 00s, subtítulo «4/4 diapositivas» y «Desviación» = 0\,\%. \\ \hline
+PRF-05 & Resumen sin grupos & Abrir una presentación sin sesiones. & Se abre la interfaz de rendimiento. & No & Por diseño: \texttt{\_ver\_rendimiento\_ui} exige \texttt{historial\_sesiones} y muestra el modal «Sin datos de rendimiento» (\mth{test_uhp02_ver_rendimiento_sin_sesiones_muestra_modal}). A nivel de panel, \mth{test_prf05_resumen_sin_grupos} confirmó que con grupos vacío el resumen queda en «—» y «sin grupo». \\ \hline
+PRF-06 & Sin análisis & Abrir una presentación no analizada. & Se informa la ausencia de datos. & No & El control de acceso también exige el reporte de tiempos, por lo que no se navega. Si faltara el análisis, \mth{test_prf06_sin_analisis} comprobó que la gráfica dibuja «Sin datos de análisis» y el contador queda en «0/0 diapositivas». \\ \hline
+PRF-07 & Tiempo IA & Mostrar el tiempo de exposición recomendado. & El total coincide con la suma. & Sí & \mth{test_prf07_tiempo_ia_es_la_suma}: con el campo total ausente, el dashboard sumó las diapositivas (60+120+90 = 270 s) y mostró «4m 30s». \\ \hline
+PRF-08 & Grupo inicial & Abrir una presentación con dos grupos. & El dashboard selecciona el primer grupo. & Sí & \mth{test_prf08_grupo_inicial}: con \texttt{\{3CM2, 3CM4\}} quedó activo \texttt{3CM2}, el primero del reporte. \\ \hline
+PRF-09 & Análisis corrupto & Introducir un JSON inválido. & Se controla la excepción. & Sí & \mth{test_prf09_analisis_corrupto}: \texttt{json.loads} falló dentro del \texttt{try/except}, el análisis quedó vacío y la vista continuó funcionando sin excepción. \\ \hline
+PRF-10 & Reporte corrupto & Introducir un reporte inválido. & Los grupos quedan vacíos. & Sí & \mth{test_prf10_reporte_corrupto}: el reporte inválido dejó \texttt{grupos = \{\}} sin lanzar error. \\ \hline
+PRF-11 & Regreso al inicio & Seleccionar «Volver a inicio». & Se restaura la vista principal. & Sí & \mth{test_prf11_regreso_al_inicio}: la vista volvió a «main» y las referencias del contenedor y de la gráfica quedaron en \texttt{None}. \\ \hline
+PRF-12 & Eliminación durante la vista & Intentar eliminar la presentación. & No aplica por diseño. & N/A & \mth{test_prf12_eliminacion_no_aplica} confirmó que la vista no expone acciones de eliminación. \\ \hline
+PRF-13 & Calificación por etiqueta & Revisar la tarjeta de calificación. & Se muestra una etiqueta cualitativa. & Sí & \mth{test_prf13_calificacion_por_etiqueta}: con \texttt{zona\_global = "bueno"} la tarjeta mostró «Bueno» (etiqueta capitalizada, no un número). \\ \hline
+PRF-14 & Desviación global & Comparar la duración real con la IA. & La tarjeta usa el color según el umbral. & Sí & \mth{test_prf14_desviacion_global_por_umbral} verificó «+200\,\%» (naranja), «-60\,\%» (ámbar) y el color verde dentro de $\pm 20$\,\%. \\ \hline
+PRF-15 & Diapositivas presentadas & Observar el subtítulo de «Duración real». & Indica cuántas diapositivas tienen tiempo real. & Sí & \mth{test_prf15_diapositivas_presentadas}: con 2 de 4 diapositivas presentadas el subtítulo mostró «2/4 diapositivas». \\ \hline
+PRF-16 & Tiempo planeado del grupo & Guardar dos sesiones y abrir el dashboard. & Usa el tiempo de la última sesión. & Sí & \mth{test_prf16_planeado_usa_la_ultima_sesion}: con sesiones de 1800 s y 2700 s mostró «45m 00s» (la última). \\ \hline
+PRF-17 & Reapertura del dashboard & Salir del dashboard y volver a entrar. & Se reconstruye sin residuos. & Sí & \mth{test_prf17_reapertura_sin_residuos}: tras salir y volver a entrar, los grupos se recargaron y la vista quedó operativa. \\ \hline
+\caption{Casos de prueba del módulo de dashboard de rendimiento.}
+\label{tab:casos-prueba-dashboard}
+\end{longtable}
+}
+
+\clearpage
+\textbf{Módulo: Gráfica de Tendencias}
+
+\textbf{Objetivo:} Validar el dibujado de las series de tiempo real y recomendado por la IA, el \textit{tooltip}, el desplazamiento horizontal y la actualización al cambiar de grupo.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+\item Construir el lienzo, los ejes y la barra de desplazamiento.
+\item Dibujar el área real y ambas series.
+\item Mostrar el detalle de cada punto al pasar el cursor.
+\item Cambiar de grupo y redibujar la gráfica y el resumen.
+\item Ajustar el contenido al redimensionar la ventana.
+\end{enumerate}
+
+\textbf{Arquitectura del módulo:}
+\begin{verbatim}
+Gráfica de Tendencias
++-- widgets/performance_mode/performance_chart_panel.py
+\end{verbatim}
+
+\textbf{Componentes que probar:}
+\begin{table}[H]
+\centering
+\begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+\hline
+\textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+Lienzo de la gráfica & UI/Frontend & Dibuja ejes, series, área, puntos y detalles interactivos. \\ \hline
+Pestañas de grupo & UI/Frontend & Cambian el grupo activo y notifican al resumen. \\ \hline
+Barra de desplazamiento & UI/Frontend & Permite consultar presentaciones extensas. \\ \hline
+\textit{Tooltip} & UI/Frontend & Muestra diapositiva, tiempo real y tiempo recomendado. \\ \hline
+\end{tabular}
+\caption{Componentes del módulo de gráfica de tendencias.}
+\label{tab:componentes-modulo-grafica}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Gráfica de Tendencias:}
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+GRF-01 & Dibujado inicial & Abrir un grupo válido. & Se dibujan ejes, guías y series. & Sí & \mth{test_grf01_dibujado_inicial}: el lienzo contiene líneas (guías, ejes y series), el polígono del área, óvalos y las etiquetas 1 a 5 del eje X. \\ \hline
+GRF-02 & Área real & Revisar el polígono bajo la curva real. & El área utiliza el color definido. & Sí & \mth{test_grf02_area_real}: se dibuja exactamente un polígono con relleno \#F4E2E7. \\ \hline
+GRF-03 & Serie IA & Revisar la línea recomendada. & Se muestra una línea dorada discontinua. & Sí & \mth{test_grf03_serie_ia_discontinua}: se encontró la serie con color \#BC955C y trazo discontinuo. \\ \hline
+GRF-04 & Tooltip & Pasar el cursor sobre un punto. & Se muestra la guía y el detalle. & Sí & \mth{test_grf04_tooltip_muestra_detalle}: al posar el cursor se crearon los elementos «hover» y el texto «Diapositiva N». \\ \hline
+GRF-05 & Cursor fuera de rango & Alejar el cursor del punto. & El detalle desaparece. & Sí & \mth{test_grf05_cursor_lejos_del_punto}: con puntos separados más de 40 px, al alejar el cursor se eliminó todo el grupo «hover» (sin elementos). \\ \hline
+GRF-06 & Desplazamiento & Usar más de doce diapositivas. & La barra permite consultar todas. & Sí & \mth{test_grf06_desplazamiento_entre_ventanas}: con 30 diapositivas \texttt{por\_vista < total} y al mover el inicio cambió la ventana visible. \\ \hline
+GRF-07 & Cambio de grupo & Seleccionar otra pestaña. & La gráfica usa los nuevos datos. & Sí & \mth{test_grf07_cambio_de_grupo_redibuja}: al elegir \texttt{3CM4} cambió el grupo activo y los valores reales de los puntos. \\ \hline
+GRF-08 & Sincronización & Cambiar de grupo. & El resumen también se actualiza. & Sí & \mth{test_grf08_sincronizacion_con_el_resumen}: el callback \texttt{on\_grupo\_cambiado} recibió el grupo seleccionado. \\ \hline
+GRF-09 & Escala vertical & Usar un grupo con valores mayores. & La escala se ajusta al máximo. & Sí & \mth{test_grf09_escala_vertical}: el máximo vertical fue 200 (grupo) frente a 150 (IA), y 500 cuando la IA era mayor. \\ \hline
+GRF-10 & Sin grupos & Abrir una presentación sin sesiones. & Se muestra el estado vacío. & N/A & El flujo no permite abrir el dashboard sin sesiones. A nivel de panel, \mth{test_grf10_sin_grupos} validó el estado vacío: pestañas «Sin grupos» y lienzo «Sin datos de análisis». \\ \hline
+GRF-11 & Redimensionado & Cambiar el tamaño de la ventana. & La gráfica se adapta al nuevo ancho. & Sí & \mth{test_grf11_redimensionado}: el evento \texttt{<Configure>} reprogramó el dibujado (\texttt{\_resize\_id} no nulo). \\ \hline
+GRF-12 & Muchas diapositivas & Usar una presentación extensa. & La interacción permanece fluida. & Sí & \mth{test_grf12_muchas_diapositivas}: con 120 diapositivas solo se pintan \texttt{por\_vista} puntos y no hubo errores. \\ \hline
+GRF-13 & No presentada & Consultar una diapositiva sin tiempo real. & Se marca como no presentada. & Sí & \mth{test_grf13_diapositiva_no_presentada}: el detalle mostró «(no presentada)» para la diapositiva con tiempo real 0. \\ \hline
+GRF-14 & Tiempo cero & Usar tiempo recomendado igual a cero. & El punto se dibuja sin errores. & Sí & \mth{test_grf14_tiempo_ia_cero_no_rompe}: con IA = 0 la escala se mantuvo positiva y los puntos se dibujaron sin división entre cero. \\ \hline
+GRF-15 & Etiquetas de valor & Revisar las etiquetas sobre los puntos. & Se muestran los segundos reales. & Sí & \mth{test_grf15_etiquetas_de_valor}: con \texttt{por\_vista <= 12} se rotularon los valores reales (por ejemplo «20s»). \\ \hline
+GRF-16 & Leyenda & Revisar la parte superior de la gráfica. & Se distingue real de recomendado. & Sí & \mth{test_grf16_leyenda}: se encontraron los textos «Tiempo real», «Recomendado IA» y el botón «Desviaciones». \\ \hline
+GRF-17 & Límites del desplazamiento & Arrastrar la barra a los extremos. & No se puede salir del rango. & Sí & \mth{test_grf17_limites_del_desplazamiento}: con inicio 9999 se recortó a \texttt{total - por\_vista}, y con -50 a 0. \\ \hline
+GRF-18 & Presentación corta & Abrir una presentación con menos de cinco diapositivas. & La gráfica se dibuja sin errores. & Sí & \mth{test_grf18_presentacion_corta}: con 2 diapositivas se trazaron 2 puntos y se rotuló el eje X sin error. \\ \hline
+\caption{Cobertura de pruebas del módulo de gráfica de tendencias.}
+\label{tab:cobertura-grafica}
+\end{longtable}
+}
+
+\clearpage
+\textbf{Módulo: Reporte de Desviaciones}
+
+\textbf{Objetivo:} Validar la clasificación de diapositivas con duración insuficiente o excesiva y la presentación de hasta tres casos por categoría.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+\item Abrir el modal mediante «Desviaciones».
+\item Filtrar las diapositivas presentadas y calcular su porcentaje.
+\item Clasificar, ordenar y seleccionar los tres casos principales.
+\item Mostrar las dos columnas y cerrar mediante «Entendido» o la X.
+\end{enumerate}
+
+\textbf{Arquitectura del módulo:}
+\begin{verbatim}
+Reporte de Desviaciones
++-- widgets/performance_mode/performance_deviations_panel.py
+\end{verbatim}
+
+\textbf{Componentes que probar:}
+\begin{table}[H]
+\centering
+\begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+\hline
+\textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+Modal de desviaciones & UI/Frontend & Muestra dos columnas y hasta tres tarjetas por categoría. \\ \hline
+Cálculo porcentual & Lógica & Compara el tiempo real con el recomendado. \\ \hline
+Clasificación & Lógica & Ordena y limita los resultados por categoría. \\ \hline
+\end{tabular}
+\caption{Componentes del módulo de reporte de desviaciones.}
+\label{tab:componentes-modulo-desviaciones}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Reporte de Desviaciones:}
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+DVS-01 & Apertura & Seleccionar «Desviaciones». & Se abre el modal clasificado. & Sí & \mth{test_dvs01_apertura}: se abrió el Toplevel «Reporte de desviaciones» de 780x560 con el subtítulo «Desviaciones de tiempo por diapositiva» y las dos columnas. \\ \hline
+DVS-02 & Duración insuficiente & Usar tiempos reales menores. & Se muestran los tres déficits principales. & Sí & \mth{test_dvs02_duracion_insuficiente}: la diapositiva 1 (real 20s, IA 60s) apareció con «-67\,\%». \\ \hline
+DVS-03 & Duración excesiva & Usar tiempos reales mayores. & Se muestran los tres excesos principales. & Sí & \mth{test_dvs03_duracion_excesiva}: la diapositiva 2 (real 200s, IA 120s) apareció con «+67\,\%». \\ \hline
+DVS-04 & Porcentaje & Comparar con un cálculo manual. & Los porcentajes coinciden. & Sí & \mth{test_dvs04_porcentaje_correcto}: la diapositiva 4 (real 40s, IA 150s) mostró «-73\,\%», igual al cálculo manual. \\ \hline
+DVS-05 & Filtro & Incluir diapositivas no presentadas. & No se clasifican. & Sí & \mth{test_dvs05_diapositivas_no_presentadas_excluidas}: la diapositiva con real 0 no apareció en ninguna columna. \\ \hline
+DVS-06 & Categoría vacía & Usar un grupo sin déficit. & Se informa la ausencia de casos. & Sí & \mth{test_dvs06_categoria_vacia}: la columna sin datos mostró «Sin diapositivas en esta categoría.». \\ \hline
+DVS-07 & Cierre con Entendido & Seleccionar el botón inferior. & Se cierra solo el modal. & Sí & \mth{test_dvs07_cierre_con_entendido}: al invocar «Entendido» el modal dejó de existir. \\ \hline
+DVS-08 & Cierre con X & Seleccionar la X. & Se cierra solo el modal. & Sí & \mth{test_dvs08_cierre_con_la_x}: la rutina de \texttt{WM\_DELETE\_WINDOW} cerró el modal. \\ \hline
+DVS-09 & Reapertura & Cerrar y abrir nuevamente. & Se reconstruye sin residuos. & Sí & \mth{test_dvs09_reapertura}: la segunda apertura creó un modal nuevo y válido. \\ \hline
+DVS-10 & Cambio de grupo con el modal abierto & Con el modal abierto, cambiar de grupo. & Se muestran los datos del nuevo grupo. & No & \mth{test_usr01_clic_repetido_en_desviaciones} y \mth{test_usr09_salir_con_modal_abierto} confirmaron que el modal retiene el \texttt{grab}, por lo que las pestañas quedan bloqueadas hasta cerrarlo. \\ \hline
+DVS-11 & Cambio de grupo previo & Cambiar de grupo y abrir «Desviaciones». & Se muestran los datos del grupo activo. & Sí & \mth{test_dvs11_cambio_de_grupo_previo}: el encabezado cambió de «REPORTE · 3CM2» a «REPORTE · 3CM4». \\ \hline
+DVS-12 & Límite de tres por categoría & Usar más de tres desviaciones por categoría. & Solo se listan las tres más extremas. & Sí & \mth{test_dvs12_limite_de_tres_por_categoria}: con cinco déficits solo se listaron tres diapositivas. \\ \hline
+DVS-13 & Referencia IA igual a cero & Incluir una diapositiva sin tiempo recomendado. & La diapositiva no se clasifica. & Sí & \mth{test_dvs13_referencia_ia_cero}: la diapositiva con IA = 0 no generó desviación porcentual ni apareció en las columnas. \\ \hline
+DVS-14 & Encabezado y detalle & Revisar el encabezado y las filas. & Indica el grupo y el detalle. & Sí & \mth{test_dvs14_encabezado_y_detalle}: se verificó «REPORTE · 3CM2», el detalle «Real … · IA …» y la zona del análisis («Introduccion»). \\ \hline
+DVS-15 & Sin grupo activo & Abrir el modal sin grupo. & Se informa la ausencia de datos. & Sí & \mth{test_dvs15_sin_grupo}: con grupo nulo el encabezado mostró «REPORTE · —». \\ \hline
+\caption{Cobertura de pruebas del módulo de reporte de desviaciones.}
+\label{tab:cobertura-desviaciones}
+\end{longtable}
+}
+
+\clearpage
+\textbf{Módulo: Pruebas de Integridad y Usuario}
+
+\textbf{Objetivo:} Validar la consistencia entre ambos JSON y comprobar que la interacción repetida no produzca estados inconsistentes.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+\item Verificar los índices en base uno y la correspondencia entre JSON.
+\item Comparar los tiempos individuales con el total.
+\item Ejecutar clics, desplazamientos y cambios de grupo repetidos.
+\end{enumerate}
+
+\textbf{Componentes que probar:}
+\begin{table}[H]
+\centering
+\begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+\hline
+\textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+Índices de diapositiva & Datos & Verifica el uso de base uno. \\ \hline
+Correspondencia entre JSON & Datos & Compara el análisis con los tiempos registrados. \\ \hline
+Interfaz de usuario & UI/Frontend & Evalúa eventos rápidos y repetidos. \\ \hline
+\end{tabular}
+\caption{Componentes involucrados en las pruebas de integridad y usuario del prototipo 3.}
+\label{tab:componentes-integridad-tt3}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Integridad y Usuario:}
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+INT-01 & Base uno & Revisar las claves de tiempos. & La clave 1 representa la primera diapositiva. & Sí & \mth{test_int01_base_uno}: las diapositivas indexan 1..5 y las claves del reporte son «1»..«5». \\ \hline
+INT-02 & Coincidencia & Comparar ambos JSON. & La gráfica no presenta huecos inesperados. & Sí & \mth{test_int02_correspondencia_entre_json}: el punto 2 tomó el real del grupo (200 s) y la IA del análisis (120 s). \\ \hline
+INT-03 & Suma total & Sumar los tiempos individuales. & La suma coincide con la duración real. & Sí & \mth{test_int03_suma_total}: al faltar el total, el dashboard sumó 30+40 = 70 s y mostró «1m 10s». \\ \hline
+INT-04 & Diapositiva omitida & Consultar una diapositiva omitida. & Se identifica como no presentada. & Sí & \mth{test_int04_diapositiva_omitida}: el detalle de la diapositiva 5 incluyó «(no presentada)». \\ \hline
+INT-05 & Pestañas & Alternar diez veces entre grupos. & No se acumulan componentes. & Sí & \mth{test_int05_pestanas_estables}: tras alternar 10 veces el número de pestañas permaneció en 2. \\ \hline
+INT-06 & Zona por diapositiva & Revisar la zona en las tarjetas de desviación. & Proviene del análisis. & Sí & \mth{test_int06_zona_por_diapositiva}: la fila mostró la zona «Desarrollo» tomada de \texttt{zona\_slide}. \\ \hline
+INT-07 & Total derivado & Abrir un análisis sin \texttt{total\_diapositivas}. & El dashboard calcula el total. & Sí & \mth{test_int07_total_derivado}: sin el campo total, el dashboard derivó 3 del máximo \texttt{slide\_number}. \\ \hline
+INT-08 & Tiempo IA derivado & Abrir un análisis sin el tiempo total. & Se suma por diapositiva. & Sí & \mth{test_int08_tiempo_ia_derivado}: sin \texttt{tiempo\_total\_exposicion\_segundos} el tiempo IA se calculó como 10+20+30 = 60 s («1m 00s»). \\ \hline
+USR-01 & Clic repetido en Desviaciones & Realizar varios clics rápidos. & Se controla la apertura del modal. & Sí & \mth{test_usr01_clic_repetido_en_desviaciones}: mientras el modal existe, \texttt{grab\_current()} apunta a él, de modo que la gráfica no recibe más clics. \\ \hline
+USR-02 & Clic repetido en Volver & Pulsar varias veces «Volver a inicio». & La transición se ejecuta una vez. & Sí & \mth{test_usr02_clic_repetido_en_volver}: la segunda llamada no produjo error y la vista quedó en «main». \\ \hline
+USR-03 & Desplazamiento veloz & Mover rápidamente la barra. & La gráfica responde sin errores. & Sí & \mth{test_usr03_desplazamiento_veloz}: seis saltos de ventana consecutivos no generaron errores. \\ \hline
+USR-04 & Hover prolongado & Mantener el cursor sobre un punto. & El detalle permanece estable. & Sí & \mth{test_usr04_hover_repetido}: seis eventos de movimiento consecutivos no acumularon elementos «hover». \\ \hline
+USR-05 & Grupo y hover & Cambiar de grupo y mover el cursor. & El detalle usa el grupo actual. & Sí & \mth{test_usr05_grupo_y_hover}: tras cambiar a \texttt{3CM4} el detalle y las etiquetas mostraron el valor del nuevo grupo («1m39s» con 99 s). \\ \hline
+USR-06 & Redimensionado y hover & Redimensionar con el detalle visible. & El detalle se limpia o reposiciona. & Sí & \mth{test_usr06_redimensionado_con_hover}: el redimensionado con el detalle visible reprogramó el dibujado sin errores. \\ \hline
+USR-07 & Grupo sin excesos & Abrir «Desviaciones» con un grupo sin excesos. & Una columna queda con mensaje vacío. & Sí & \mth{test_usr07_grupo_sin_excesos}: la columna de excesos mostró «Sin diapositivas en esta categoría.». \\ \hline
+USR-08 & Redimensionado repetido & Redimensionar varias veces seguidas. & No se acumulan redibujados. & Sí & \mth{test_usr08_redimensionado_repetido}: varios \texttt{<Configure>} seguidos dejaron un único redibujado pendiente. \\ \hline
+USR-09 & Salir con el modal abierto & Regresar al inicio con el modal abierto. & La vista se restaura sin residuos. & Sí & \mth{test_usr09_salir_con_modal_abierto}: el modal retiene el \texttt{grab} (la topbar no responde hasta cerrarlo); tras cerrarlo, el regreso a «main» se completó sin residuos. \\ \hline
+\caption{Cobertura de pruebas de integridad y usuario del prototipo 3.}
+\label{tab:cobertura-integridad-tt3}
+\end{longtable}
+}
+
+% ===========================================================================
+\clearpage
+\section*{Trazabilidad de las pruebas}
+\addcontentsline{toc}{section}{Trazabilidad de las pruebas}
+
+La Tabla \ref{tab:trazabilidad-tt3} vincula cada identificador del protocolo con su prueba automatizada. Todas se ejecutan con \texttt{python -m tests.e2e.run\_e2e} y su salida queda en \texttt{docs/prototipo\_final/evidencias/}.
+
+{\tiny
+\renewcommand{\arraystretch}{1.1}
+\begin{longtable}{|L{1.4cm}|L{9.5cm}|L{2.2cm}|}
+\hline
+\textbf{ID} & \textbf{Prueba automatizada} & \textbf{Resultado} \\ \hline
+\endhead
+PRF-01 & \mth{test_prf01_entrada_a_la_vista} & Pasa \\ \hline
+PRF-02 & \mth{test_prf02_carga_de_analisis} & Pasa \\ \hline
+PRF-03 & \mth{test_prf03_carga_de_tiempos} & Pasa \\ \hline
+PRF-04 & \mth{test_prf04_resumen_con_datos} & Pasa \\ \hline
+PRF-05 & \mth{test_prf05_resumen_sin_grupos} & Pasa (panel) \\ \hline
+PRF-06 & \mth{test_prf06_sin_analisis} & Pasa (panel) \\ \hline
+PRF-07 & \mth{test_prf07_tiempo_ia_es_la_suma} & Pasa \\ \hline
+PRF-08 & \mth{test_prf08_grupo_inicial} & Pasa \\ \hline
+PRF-09 & \mth{test_prf09_analisis_corrupto} & Pasa \\ \hline
+PRF-10 & \mth{test_prf10_reporte_corrupto} & Pasa \\ \hline
+PRF-11 & \mth{test_prf11_regreso_al_inicio} & Pasa \\ \hline
+PRF-12 & \mth{test_prf12_eliminacion_no_aplica} & Pasa (N/A) \\ \hline
+PRF-13 & \mth{test_prf13_calificacion_por_etiqueta} & Pasa \\ \hline
+PRF-14 & \mth{test_prf14_desviacion_global_por_umbral} & Pasa \\ \hline
+PRF-15 & \mth{test_prf15_diapositivas_presentadas} & Pasa \\ \hline
+PRF-16 & \mth{test_prf16_planeado_usa_la_ultima_sesion} & Pasa \\ \hline
+PRF-17 & \mth{test_prf17_reapertura_sin_residuos} & Pasa \\ \hline
+GRF-01 & \mth{test_grf01_dibujado_inicial} & Pasa \\ \hline
+GRF-02 & \mth{test_grf02_area_real} & Pasa \\ \hline
+GRF-03 & \mth{test_grf03_serie_ia_discontinua} & Pasa \\ \hline
+GRF-04 & \mth{test_grf04_tooltip_muestra_detalle} & Pasa \\ \hline
+GRF-05 & \mth{test_grf05_cursor_lejos_del_punto} & Pasa \\ \hline
+GRF-06 & \mth{test_grf06_desplazamiento_entre_ventanas} & Pasa \\ \hline
+GRF-07 & \mth{test_grf07_cambio_de_grupo_redibuja} & Pasa \\ \hline
+GRF-08 & \mth{test_grf08_sincronizacion_con_el_resumen} & Pasa \\ \hline
+GRF-09 & \mth{test_grf09_escala_vertical} & Pasa \\ \hline
+GRF-10 & \mth{test_grf10_sin_grupos} & Pasa (N/A) \\ \hline
+GRF-11 & \mth{test_grf11_redimensionado} & Pasa \\ \hline
+GRF-12 & \mth{test_grf12_muchas_diapositivas} & Pasa \\ \hline
+GRF-13 & \mth{test_grf13_diapositiva_no_presentada} & Pasa \\ \hline
+GRF-14 & \mth{test_grf14_tiempo_ia_cero_no_rompe} & Pasa \\ \hline
+GRF-15 & \mth{test_grf15_etiquetas_de_valor} & Pasa \\ \hline
+GRF-16 & \mth{test_grf16_leyenda} & Pasa \\ \hline
+GRF-17 & \mth{test_grf17_limites_del_desplazamiento} & Pasa \\ \hline
+GRF-18 & \mth{test_grf18_presentacion_corta} & Pasa \\ \hline
+DVS-01 & \mth{test_dvs01_apertura} & Pasa \\ \hline
+DVS-02 & \mth{test_dvs02_duracion_insuficiente} & Pasa \\ \hline
+DVS-03 & \mth{test_dvs03_duracion_excesiva} & Pasa \\ \hline
+DVS-04 & \mth{test_dvs04_porcentaje_correcto} & Pasa \\ \hline
+DVS-05 & \mth{test_dvs05_diapositivas_no_presentadas_excluidas} & Pasa \\ \hline
+DVS-06 & \mth{test_dvs06_categoria_vacia} & Pasa \\ \hline
+DVS-07 & \mth{test_dvs07_cierre_con_entendido} & Pasa \\ \hline
+DVS-08 & \mth{test_dvs08_cierre_con_la_x} & Pasa \\ \hline
+DVS-09 & \mth{test_dvs09_reapertura} & Pasa \\ \hline
+DVS-10 & \mth{test_usr01_clic_repetido_en_desviaciones} & Pasa (documenta el bloqueo) \\ \hline
+DVS-11 & \mth{test_dvs11_cambio_de_grupo_previo} & Pasa \\ \hline
+DVS-12 & \mth{test_dvs12_limite_de_tres_por_categoria} & Pasa \\ \hline
+DVS-13 & \mth{test_dvs13_referencia_ia_cero} & Pasa \\ \hline
+DVS-14 & \mth{test_dvs14_encabezado_y_detalle} & Pasa \\ \hline
+DVS-15 & \mth{test_dvs15_sin_grupo} & Pasa \\ \hline
+INT-01 & \mth{test_int01_base_uno} & Pasa \\ \hline
+INT-02 & \mth{test_int02_correspondencia_entre_json} & Pasa \\ \hline
+INT-03 & \mth{test_int03_suma_total} & Pasa \\ \hline
+INT-04 & \mth{test_int04_diapositiva_omitida} & Pasa \\ \hline
+INT-05 & \mth{test_int05_pestanas_estables} & Pasa \\ \hline
+INT-06 & \mth{test_int06_zona_por_diapositiva} & Pasa \\ \hline
+INT-07 & \mth{test_int07_total_derivado} & Pasa \\ \hline
+INT-08 & \mth{test_int08_tiempo_ia_derivado} & Pasa \\ \hline
+USR-01 & \mth{test_usr01_clic_repetido_en_desviaciones} & Pasa \\ \hline
+USR-02 & \mth{test_usr02_clic_repetido_en_volver} & Pasa \\ \hline
+USR-03 & \mth{test_usr03_desplazamiento_veloz} & Pasa \\ \hline
+USR-04 & \mth{test_usr04_hover_repetido} & Pasa \\ \hline
+USR-05 & \mth{test_usr05_grupo_y_hover} & Pasa \\ \hline
+USR-06 & \mth{test_usr06_redimensionado_con_hover} & Pasa \\ \hline
+USR-07 & \mth{test_usr07_grupo_sin_excesos} & Pasa \\ \hline
+USR-08 & \mth{test_usr08_redimensionado_repetido} & Pasa \\ \hline
+USR-09 & \mth{test_usr09_salir_con_modal_abierto} & Pasa \\ \hline
+\caption{Trazabilidad entre los identificadores del protocolo y las pruebas automatizadas.}
+\label{tab:trazabilidad-tt3}
+\end{longtable}
+}
+
+% ===========================================================================
+\clearpage
+\section*{Notas de la ejecución}
+\addcontentsline{toc}{section}{Notas de la ejecución}
+
+\begin{itemize}
+    \item La corrida documentada aquí es la de \texttt{docs/prototipo\_final/evidencias/20261018\_233448/}: 97 pruebas, 0 fallos, 0 errores, resultado OK (15 de negocio + 15 de interfaz + 67 de rendimiento).
+    \item Las pruebas PRF-05, PRF-06 y GRF-10 se marcan como \emph{No} o \emph{N/A} en su resultado funcional porque el control de acceso impide abrir el dashboard sin sesiones (por diseño). Su comportamiento degradado sí quedó validado a nivel de panel por \mth{test_prf05_resumen_sin_grupos}, \mth{test_prf06_sin_analisis} y \mth{test_grf10_sin_grupos}.
+    \item DVS-10 se marca \emph{No} porque el modal usa \texttt{grab\_set}: para cambiar de grupo es necesario cerrar antes el reporte de desviaciones. Es un comportamiento deliberado de la ventana modal y quedó evidenciado por \mth{test_usr01_clic_repetido_en_desviaciones} y \mth{test_usr09_salir_con_modal_abierto}.
+    \item Los tiempos IA provienen del JSON de análisis y los reales del reporte de tiempos; cuando un campo total falta, el dashboard los deriva por suma (INT-03, INT-07, INT-08).
+    \item La vista de rendimiento activa es \texttt{performance\_gui.py}; el archivo \texttt{rendimiento\_gui.py} del repositorio corresponde a una variante anterior que no se utiliza.
+\end{itemize}
+
+\end{document}

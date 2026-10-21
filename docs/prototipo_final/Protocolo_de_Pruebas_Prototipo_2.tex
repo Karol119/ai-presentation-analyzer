@@ -1,0 +1,500 @@
+% ============================================================================
+% Protocolo de Pruebas - Prototipo 2
+% Modo de presentación en vivo, proyección, sincronización,
+% persistencia del reporte de tiempos, estrés/integridad/usuario
+% y rendimiento de la exposición.
+%
+% Documento autónomo: puede compilarse directamente con pdfLaTeX.
+% ============================================================================
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noindentfirst]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Tipo de columna usado en las tablas del protocolo.
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Compatibilidad con el comando del documento principal.
+\newcommand{\ttiiTOC}[1]{\texttt{#1}}
+
+\title{\textbf{Protocolo de Pruebas\\[0.3em]Prototipo 2}}
+\author{AI Presentation Analyzer}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Protocolo de Pruebas del Prototipo 2}
+\addcontentsline{toc}{section}{Protocolo de Pruebas del Prototipo 2}
+
+Para el prototipo 2, orientado al modo de presentación en vivo, la proyección en una pantalla secundaria y el registro del rendimiento expositivo del docente, se mantuvo la nomenclatura compuesta por un prefijo de tres letras y un número consecutivo establecida en el prototipo 1. El prefijo identifica el módulo o la categoría evaluada y el número distingue cada caso de prueba dentro de ella. La Tabla \ref{tab:nomenclatura-pruebas-prototipo-2} presenta el significado de las siglas empleadas.
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabularx}{\textwidth}{|>{\centering\arraybackslash}p{1.5cm}|p{4.6cm}|X|}
+        \hline
+        \textbf{Sigla} & \textbf{Módulo o categoría} & \textbf{Significado dentro del protocolo} \\
+        \hline
+        PMD & Modo de presentación & Pruebas del Modo de Presentación en Vivo, destinadas a validar el acceso desde la tarjeta, el ensamblaje de la vista, la configuración de la sesión, los controles de navegación y los cronómetros. \\
+        \hline
+        PRY & Proyección & Pruebas de Proyección, orientadas a verificar la ventana secundaria, el bloqueo de acciones de cierre y la detección de desconexiones del dispositivo de salida. \\
+        \hline
+        SNC & Sincronización & Pruebas de Sincronización, utilizadas para comprobar la propagación de los cambios de diapositiva entre el visor, el panel de datos y la proyección. \\
+        \hline
+        PRD & Persistencia del reporte & Pruebas del Reporte de Tiempos, destinadas a validar la generación del JSON, el almacenamiento incremental por grupo y la reanudación de sesiones. \\
+        \hline
+        STR & Pruebas de estrés & Pruebas de Estrés, que agrupan escenarios de interacción repetida, cierres forzados, navegación intensiva y desconexiones abruptas. \\
+        \hline
+        INT & Integridad & Pruebas de Integridad, destinadas a verificar la consistencia del reporte de tiempos, los índices en base uno y la estructura acumulativa por grupo. \\
+        \hline
+        USR & Pruebas de usuario & Pruebas de Usuario, que agrupan escenarios derivados de la interacción directa con el modo de presentación y sus formularios. \\
+        \hline
+        RFM & Rendimiento de la exposición & Pruebas del panel de Rendimiento, destinadas a validar la comparación entre los tiempos reales y los recomendados por la IA, el filtro por grupo y el reporte de desviaciones. \\
+        \hline
+    \end{tabularx}
+    \caption{Nomenclatura de los identificadores de las pruebas del prototipo 2.}
+    \label{tab:nomenclatura-pruebas-prototipo-2}
+\end{table}
+
+\section*{Módulo: Modo de Presentación en Vivo}
+
+\textbf{Objetivo:} Validar el funcionamiento del modo de presentación en vivo, asegurando que el prototipo pueda ensamblar el entorno de exposición, desplegar y validar el formulario de configuración de la sesión, controlar la navegación entre diapositivas, registrar los tiempos de exposición y detener la sesión de forma segura.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+    \item Acceder al modo de presentación desde la tarjeta de una presentación, abriendo el menú ``Opciones'' y seleccionando ``Presentar clase''. La versión debe estar analizada previamente; de lo contrario se muestra el aviso ``Análisis requerido''.
+    \item Ensamblar el visor de diapositivas y el panel de datos generado por la IA.
+    \item Cargar en memoria las notas, preguntas y datos de interés asociados a cada diapositiva.
+    \item Desplegar el formulario modal con los campos de grupo, tiempo estimado y dispositivo de salida al pulsar ``Presentar'' en el panel.
+    \item Validar el grupo, el intervalo de tiempo permitido y la selección del dispositivo de salida.
+    \item Reanudar la sesión desde la última diapositiva registrada para el grupo seleccionado.
+    \item Iniciar el cronómetro total y el cronómetro individual por diapositiva al confirmar el formulario.
+    \item Navegar mediante los controles de la interfaz, los atajos de teclado y el salto directo por índice.
+    \item Detener la sesión con ``Detener'' o abandonar la vista, y generar el reporte de tiempos correspondiente.
+\end{enumerate}
+
+\textbf{Arquitectura del módulo:}
+\begin{verbatim}
+Módulo de Presentación en Vivo
+|-- Frontend (Capa de Presentación)
+|   |-- views/
+|   |   |-- presentation_gui.py
+|   |   |-- navigator.py
+|   |   `-- ui_state.py
+|   `-- widgets/presentation_mode/
+|       |-- presentation_controls.py
+|       |-- presentation_data_panel.py
+|       `-- slides_viewer_panel.py
+|-- Core (Capa de Controladores y Lógica de Negocio)
+|   |-- controller/
+|   |   |-- presentation_controller.py
+|   |   `-- subject_controller.py
+|   `-- logic/
+|       `-- slide_processor.py
+|-- Infrastructure
+|   `-- utils/thread_manager.py
+`-- Data (Capa de Acceso a Datos)
+    |-- persistence.py
+    |-- queries.py
+    `-- database_manager.py
+\end{verbatim}
+
+\textbf{Componentes que probar:}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+        \hline
+        \textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+        Vista principal (\texttt{presentation\_gui.py}) & UI/Frontend & Ensambla el contenedor, incorpora el visor y el panel de datos, y gestiona el formulario modal de configuración. \\ \hline
+        Panel de datos (\texttt{presentation\_data\_panel.py}) & UI/Frontend & Muestra los cronómetros, los controles de navegación y sesión, y las notas generadas por la IA. \\ \hline
+        Visor (\texttt{slides\_viewer\_panel.py}) & UI/Frontend & Renderiza el PDF y emite los eventos asociados con los cambios de diapositiva. \\ \hline
+        Controles (\texttt{presentation\_controls.py}) & UI/Frontend & Widget legado de navegación. En la versión actual no se instancia: los controles (anterior, siguiente, salto por índice y Presentar/Detener) se construyen dentro de \texttt{presentation\_data\_panel.py}. \\ \hline
+        Orquestador (\texttt{presentation\_controller.py}) & Backend/Controller & Consulta y guarda los reportes de tiempo, recupera el análisis y coordina el inicio de la proyección. \\ \hline
+        Persistencia (\texttt{persistence.py}, \texttt{queries.py}) & Base de datos & Realiza la lectura y escritura del reporte de tiempos en \texttt{Historial\_de\_Versiones}. \\ \hline
+    \end{tabular}
+    \caption{Componentes del módulo de presentación en vivo.}
+    \label{tab:componentes-modulo-presentacion}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Presentación en vivo:}
+
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+PMD-01 & Ensamblaje de la vista & Seleccionar ``Presentar clase'' desde el menú ``Opciones'' de la tarjeta, con la versión ya analizada. & Se oculta el contenido principal y se muestran el visor y el panel de datos. & Sí & El menú se cierra y el body principal desaparece; se monta un contenedor gris con el visor PDF a la izquierda y el panel ``Apoyo de Clase'' a la derecha. La topbar cambia a ``Presentando: archivo''. El ensamblado tarda menos de un segundo. \\ \hline
+PMD-02 & Carga del análisis de IA & Al ensamblar la vista, consultar el análisis de la versión activa. & Las notas, preguntas y datos de interés quedan disponibles en memoria. & Sí & \texttt{orquestar\_obtener\_analisis} recupera la columna \texttt{resultado} de la tabla \texttt{Analisis} y la guarda en \texttt{cached\_data}; al navegar se leen \texttt{slides[i].preguntas} y \texttt{slides[i].datos\_curiosos}. \\ \hline
+PMD-03 & Apertura del formulario & Pulsar ``Presentar'' en el panel de datos. & Se despliega el formulario con los campos de grupo, tiempo y monitor. & Sí & Se abre el Toplevel ``Configuración de Sesión'' (400$\times$580, \texttt{grab\_set}, siempre al frente) con los tres bloques: 1) Grupo Escolar, 2) Tiempo Estimado (60 por defecto) y 3) Dispositivo de Salida. \\ \hline
+PMD-04 & Validación de grupo vacío & Confirmar con ``Crear Nuevo'' y el campo vacío. & Se impide continuar y se muestra un mensaje de campo obligatorio. & Sí & El modal no se cierra y muestra en rojo ``Error: El campo de grupo no puede estar vacío.'' justo debajo de los campos. \\ \hline
+PMD-05 & Longitud máxima del grupo & Ingresar ``3CM2X'' (6 caracteres). & Se rechaza el valor y se informa el límite permitido. & Sí & Aparece ``Error: Grupo debe ser alfanumérico (máx 5 caracteres).''. El valor se normaliza a mayúsculas con \texttt{strip().upper()}. \\ \hline
+PMD-06 & Intervalo del tiempo estimado & Ingresar un tiempo de 120 minutos. & Se rechaza el valor e informa el intervalo de 1 a 90 minutos. & Sí & Se muestra ``Error: El tiempo debe ser mayor a 0 y máximo 90 min.''; el campo sigue editable y el modal abierto. El valor 90 sí se acepta. \\ \hline
+PMD-07 & Selección del monitor principal & Seleccionar la pantalla principal como dispositivo de salida y confirmar. & Se impide iniciar la exposición y se solicita una pantalla secundaria. & No & La validación está comentada en \texttt{presentation\_gui.py} (bloque ``VALIDACIÓN COMENTADA PARA PERMITIR PANTALLA PRINCIPAL''). El combo acepta la pantalla principal y la proyección se abre sobre ella. No cumple el resultado esperado. \\ \hline
+PMD-08 & Bloqueo de clics repetidos & Pulsar ``Presentar'' cinco veces de forma consecutiva. & Se procesa un único inicio de sesión. & Sí & \texttt{\_is\_toggling} deshabilita ``Presentar'' y ``Detener'' durante 1 s; los clics restantes no abren más de un modal ni crean más de una proyección. \\ \hline
+PMD-09 & Reanudación por grupo & Elegir un grupo con \texttt{ultima\_diapositiva = 5}. & El visor se posiciona en la diapositiva 5. & Sí & Se lee \texttt{grupos[grupo].ultima\_diapositiva}, se convierte a índice base 0 (5 se vuelve 4) y se sincronizan visor, panel, contador y proyección. \\ \hline
+PMD-10 & Navegación con botones & Utilizar los botones ``Anterior'' y ``Siguiente'' del pie del panel. & El visor cambia de diapositiva y actualiza el contador. & Sí & El entry de página y el label ``/ N'' cambian junto con la imagen. \texttt{\_btn\_lock} bloquea 400 ms para evitar dobles pulsaciones. \\ \hline
+PMD-11 & Navegación con teclado & Utilizar flechas, barra espaciadora, Enter, RePág y AvPág. & El visor responde de la misma manera que con los botones. & Sí & Los bindings se registran en la ventana raíz (\texttt{Left}, \texttt{Prior}, \texttt{Right}, \texttt{space}, \texttt{Return}, \texttt{Next}), por lo que funcionan aunque el foco no esté en el visor. \\ \hline
+PMD-12 & Salto directo por índice & Ingresar el valor 10 en el campo de índice y presionar Enter. & El visor muestra la diapositiva 10. & Sí & \texttt{saltar\_pagina\_cmd} calcula el índice 9, renderiza la diapositiva y dispara \texttt{on\_pagina\_cambiada}; el panel carga las notas de esa diapositiva. \\ \hline
+PMD-13 & Controles en los extremos & Llegar a la primera y a la última diapositiva. & El control que excedería el límite se deshabilita. & Sí & En la diapositiva 1 el botón ``Anterior'' queda deshabilitado; en la última se deshabilita ``Siguiente''. El entry conserva el índice válido. \\ \hline
+PMD-14 & Cronómetro total & Iniciar una sesión y observar el cronómetro durante 30 segundos. & El tiempo avanza continuamente en formato minutos y segundos. & Sí & \texttt{actualizar\_reloj} se reprograma cada 1000 ms con \texttt{after()}; el label ``TOTAL (Sesión)'' pasa de 00:00 a 00:30 sin saltos. \\ \hline
+PMD-15 & Cronómetro por diapositiva & Cambiar de diapositiva y volver a la anterior. & Cada diapositiva conserva su tiempo acumulado. & Sí & Cada segundo se suma a \texttt{tiempos\_por\_slide[indice]}; al volver, el label ``ESTA SLIDE'' recupera su acumulado y no se reinicia. \\ \hline
+PMD-16 & Aviso por exceso de tiempo & Configurar un minuto y mantener la sesión durante 90 segundos. & El cronómetro total cambia a color rojo. & Sí & Al cumplirse \texttt{segundos\_totales} $>$ \texttt{tiempo\_estimado\_seg} el label total cambia a \#EF4444; si el tiempo vuelve a estar por debajo, recupera el color \#1E293B. \\ \hline
+PMD-17 & Grupo nuevo y existente & Alternar entre ``Seleccionar'' y ``Crear Nuevo''. & El selector y el campo de captura se alternan correctamente. & Sí & El \texttt{CTkSegmentedButton} oculta el combo (con botón de papelera) y muestra el entry, o viceversa; solo queda visible el control de la opción activa. \\ \hline
+PMD-18 & Detención de la sesión & Seleccionar el botón ``Detener''. & Se detienen los cronómetros y se genera el reporte de tiempos. & Sí & Se cierra la proyección, se cancelan los \texttt{after()} del reloj, se ejecuta \texttt{generar\_reporte\_json} y el botón vuelve a mostrar ``Presentar''. \\ \hline
+PMD-19 & Eliminar grupo seleccionado & Pulsar el botón de papelera y confirmar la eliminación de un grupo con sesiones registradas. & El grupo y su historial se eliminan; la lista se actualiza. & Pendiente & Se abre el messagebox ``Eliminar grupo'' con ``¿Deseas eliminar el grupo y su historial de sesiones?''. Al aceptar se elimina la clave del JSON, se guarda en \texttt{Historial\_de\_Versiones} y el combo se actualiza. Si era el último grupo, cambia a ``Crear Nuevo'' y el botón de papelera queda deshabilitado. \\ \hline
+PMD-20 & Cancelar eliminación de grupo & Pulsar el botón de papelera y responder ``No'' en el cuadro de confirmación. & Se conserva el grupo y todos sus registros. & Pendiente & El messagebox se cierra sin modificar el JSON; el combo mantiene el grupo seleccionado y el modal de configuración sigue abierto. \\ \hline
+PMD-21 & Acceso sin análisis previo & Seleccionar ``Presentar clase'' con una versión sin analizar. & Se bloquea el acceso con un aviso. & Sí & Se muestra el modal ``Análisis requerido'' con el texto ``Para poder presentar la clase, primero debes ejecutar el Análisis de IA sobre esta versión.''. No se oculta el body ni se navega. \\ \hline
+PMD-22 & Cambio de grupo antes de iniciar & Elegir un segundo grupo con otra \texttt{ultima\_diapositiva} y confirmar. & La sesión reanuda en la diapositiva registrada para ese grupo. & Sí & Cada grupo conserva su propia \texttt{ultima\_diapositiva} y sus tiempos; al confirmar se reinician \texttt{segundos\_totales} y \texttt{tiempos\_por\_slide} de la nueva sesión. \\ \hline
+PMD-23 & Salida sin proyección & Con la sesión detenida, usar el botón de regreso de la topbar. & Se guarda el avance y se restaura la vista principal. & Sí & \texttt{ir\_a\_principal} ejecuta \texttt{ocultar\_vista\_presentacion}; si \texttt{segundos\_totales} $>$ 0 se llama a \texttt{generar\_reporte\_json()}, se destruyen visor y panel y se vuelve a mostrar el body. \\ \hline
+PMD-24 & Alternancia Presentar/Detener & Observar el botón durante la sesión activa. & Solo uno de los dos controles está visible. & Sí & \texttt{set\_estado\_proyeccion(True)} oculta ``Presentar'' con \texttt{grid\_remove} y muestra ``Detener'' en la misma celda; al cerrar ocurre lo inverso. \\ \hline
+PMD-25 & Cronómetro antes de iniciar & Abrir la vista y esperar sin confirmar el formulario. & Los cronómetros permanecen en 00:00. & Sí & El reloj solo se agenda en \texttt{set\_estado\_proyeccion(True)}, es decir, después de confirmar el formulario y crear la ventana de proyección. \\ \hline
+\caption{Casos de prueba del módulo de presentación en vivo.}
+\label{tab:casos-prueba-modulo-presentacion}
+\end{longtable}
+}
+
+\clearpage
+\section*{Módulo: Proyección en Pantalla Secundaria}
+
+\textbf{Objetivo:} Validar el funcionamiento de la ventana de proyección, asegurando que el prototipo pueda abrir una vista sin bordes en el monitor seleccionado, impedir cierres accidentales, mantener la sincronización con el visor principal y detectar la desconexión del dispositivo mediante un mecanismo de vigilancia.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+    \item Calcular las coordenadas y la resolución del monitor seleccionado en el formulario.
+    \item Crear una ventana \texttt{CTkToplevel} sin bordes con la geometría del dispositivo de salida.
+    \item Bloquear las acciones de cierre mediante Alt+F4, Escape y el protocolo de cierre de la ventana.
+    \item Instanciar un visor secundario que muestre la diapositiva activa.
+    \item Mantener un mecanismo de vigilancia que consulte periódicamente la lista de monitores conectados.
+    \item Cerrar la proyección de manera controlada si el dispositivo de salida deja de estar disponible.
+\end{enumerate}
+
+\textbf{Arquitectura del módulo:}
+\begin{verbatim}
+Módulo de Proyección
+|-- Frontend
+|   |-- views/
+|   |   |-- presentation_gui.py
+|   |   `-- projection_gui.py
+|   `-- widgets/presentation_mode/
+|       `-- slides_viewer_panel.py
+|-- Infrastructure
+|   `-- screeninfo
+`-- Core
+    `-- controller/presentation_controller.py
+\end{verbatim}
+
+\textbf{Componentes que probar:}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+        \hline
+        \textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+        Ventana de proyección (\texttt{projection\_gui.py}) & UI/Frontend & Crea la ventana secundaria sin bordes, incorpora el visor y controla su cierre. \\ \hline
+        Detección de monitores (\texttt{screeninfo}) & Infraestructura & Obtiene las coordenadas, la resolución y la disponibilidad de los monitores conectados. \\ \hline
+        Mecanismo de vigilancia (\texttt{presentation\_gui.py}) & Lógica & Verifica periódicamente que el dispositivo de salida permanezca conectado (actualmente deshabilitado). \\ \hline
+        Bloqueos de teclado (\texttt{projection\_gui.py}) & Lógica & Impide el cierre accidental mediante Alt+F4, Escape y \texttt{WM\_DELETE\_WINDOW}. \\ \hline
+    \end{tabular}
+    \caption{Componentes del módulo de proyección.}
+    \label{tab:componentes-modulo-proyeccion}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Proyección:}
+
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+PRY-01 & Ausencia de monitor secundario & Intentar presentar con un solo monitor conectado. & Se muestra una advertencia y no se inicia la proyección. & No & La comprobación \texttt{len(get\_monitors())} $<$ 2 está comentada en \texttt{cmd\_toggle\_proyeccion}. El formulario se abre igual y, al confirmar, la proyección se coloca en el único monitor o en la geometría de respaldo 800$\times$600. \\ \hline
+PRY-02 & Apertura de la proyección & Confirmar el formulario con un monitor secundario conectado. & La ventana se abre sin bordes en el monitor secundario. & Sí & Se crea un \texttt{CTkToplevel} con \texttt{geometry(ancho x alto + x + y)} y \texttt{overrideredirect(True)}; no tiene marco ni barra de título y respeta las coordenadas físicas del monitor. \\ \hline
+PRY-03 & Bloqueo de Escape & Presionar Escape en la ventana de proyección. & El evento se ignora y la proyección permanece activa. & Sí & El binding \texttt{Escape} devuelve \texttt{break} en la ventana de proyección y también en la raíz, por lo que la tecla no cierra ni dispara atajos. \\ \hline
+PRY-04 & Bloqueo de Alt+F4 & Presionar Alt+F4 en la proyección. & La solicitud de cierre se bloquea. & Sí & \texttt{WM\_DELETE\_WINDOW} se reemplaza por una función que solo imprime ``Bloqueado: Usa el panel de control para salir.''; la ventana no se destruye. \\ \hline
+PRY-05 & Bloqueo en la ventana principal & Presionar Escape en la ventana principal durante la proyección. & El evento se ignora mientras la sesión está activa. & Sí & \texttt{\_lanzar\_proyeccion} enlaza el evento Escape de la raíz con \texttt{break} y \texttt{al\_cerrar\_proyeccion} hace \texttt{unbind} al terminar. \\ \hline
+PRY-06 & Cierre desde los controles & Seleccionar ``Detener'' desde el panel de control. & La proyección se cierra y libera sus recursos. & Sí & El botón invoca \texttt{\_ventana\_proyeccion.cerrar()}, que cierra el documento PDF, destruye el Toplevel y ejecuta \texttt{on\_close}; se cancela el cronómetro y se guarda la sesión. \\ \hline
+PRY-07 & Sincronización inicial & Abrir la proyección con el visor en la diapositiva 7. & La proyección inicia en la diapositiva 7. & No & La proyección no toma la página actual del visor: \texttt{\_seleccionar\_monitor\_y\_proyectar} recalcula la página desde \texttt{grupos[grupo].ultima\_diapositiva}. Con un grupo nuevo inicia en la diapositiva 1, no en la 7. \\ \hline
+PRY-08 & Detección de desconexión & Desconectar el monitor secundario durante la sesión. & La proyección se cierra y se muestra una advertencia. & No & El watchdog está comentado en \texttt{presentation\_gui.py} (bloque ``WATCHDOG DE DESCONEXIÓN COMENTADO PARA EVITAR CIERRES INESPERADOS''). Al desconectar, la ventana permanece abierta y no aparece ningún aviso. \\ \hline
+PRY-09 & Reconexión del dispositivo & Reconectar rápidamente el monitor secundario. & El sistema mantiene un estado consistente y permite reiniciar la proyección. & No & Al no existir watchdog no hay cierre ni aviso, por lo que la reconexión no altera el estado. La ventana sigue mostrando la última diapositiva en la geometría original. \\ \hline
+PRY-10 & Resolución del monitor & Proyectar en un monitor de 1920$\times$1080 píxeles. & La ventana ocupa exactamente la resolución seleccionada. & Pendiente & La geometría se construye con \texttt{m.width} y \texttt{m.height} del monitor elegido y \texttt{overrideredirect} elimina el marco, por lo que debe cubrir el área completa del monitor. Falta verificarlo en el equipo de proyección. \\ \hline
+PRY-11 & Bloqueo de salida al menú & Usar el botón de regreso de la topbar durante una proyección activa. & La navegación se bloquea y se solicita detener primero la sesión. & Sí & \texttt{ir\_a\_principal} consulta \texttt{ui['proyeccion\_activa']} y cancela la transición. El aviso se escribe en consola (``[BLOQUEADO] No puedes regresar al menú mientras estás proyectando.''); no se muestra un modal. \\ \hline
+PRY-12 & Grupo nuevo en la proyección & Confirmar el formulario con un grupo sin sesiones previas. & La proyección inicia en la diapositiva 1. & Sí & Sin la clave del grupo en el JSON, \texttt{slide\_guardada} toma el valor 1 y el índice base 0 es 0; visor y proyección se posicionan en la primera diapositiva. \\ \hline
+PRY-13 & Restauración tras detener & Pulsar ``Detener'' y observar el panel. & La proyección se cierra y vuelve el botón ``Presentar''. & Sí & \texttt{set\_estado\_proyeccion(False)} cancela el reloj, llama a \texttt{generar\_reporte\_json()}, oculta ``Detener'' y vuelve a mostrar ``Presentar''. \\ \hline
+PRY-14 & Fondo de la proyección & Observar la ventana durante la exposición. & Se muestra la diapositiva sobre fondo negro y sin bordes. & Sí & El visor secundario se crea con \texttt{fg\_color='black'}, \texttt{corner\_radius=0} y \texttt{border\_width=0}; la imagen se ajusta al área disponible. \\ \hline
+PRY-15 & Cierre al abandonar la vista & Regresar al menú con la sesión detenida. & La proyección se cierra y se liberan los recursos. & Sí & \texttt{ocultar\_vista\_presentacion} ejecuta \texttt{\_ventana\_proyeccion.cerrar()} antes de destruir el visor y el panel, y deja \texttt{\_ventana\_proyeccion = None}. \\ \hline
+\caption{Casos de prueba del módulo de proyección.}
+\label{tab:casos-prueba-modulo-proyeccion}
+\end{longtable}
+}
+
+\clearpage
+\section*{Módulo: Sincronización entre Visor, Panel y Proyector}
+
+\textbf{Objetivo:} Validar que cualquier cambio de diapositiva se propague de manera consistente entre el visor principal, el panel de datos con contenido generado por la IA y la ventana de proyección.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+    \item El usuario solicita un cambio de página mediante los botones, el teclado o el campo de salto directo.
+    \item El visor actualiza \texttt{pagina\_actual} y renderiza la nueva diapositiva.
+    \item Se emite el evento \texttt{on\_pagina\_cambiada} hacia los componentes suscritos.
+    \item El panel de datos actualiza las notas, el contador y el cronómetro de la diapositiva.
+    \item La ventana de proyección sincroniza su visor cuando se encuentra activa.
+\end{enumerate}
+
+\textbf{Componentes que probar:}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+        \hline
+        \textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+        Visor principal (\texttt{slides\_viewer\_panel.py}) & UI/Frontend & Renderiza el PDF y emite el evento \texttt{on\_pagina\_cambiada}. \\ \hline
+        Panel de datos (\texttt{presentation\_data\_panel.py}) & UI/Frontend & Actualiza el contenido generado por la IA, el contador y los cronómetros. \\ \hline
+        Proyección (\texttt{projection\_gui.py}) & UI/Frontend & Expone \texttt{sincronizar\_pagina(numero)} para alinear el visor secundario. \\ \hline
+        Evento central (\texttt{presentation\_gui.py}) & Lógica & Conecta los componentes mediante el evento de cambio de página. \\ \hline
+    \end{tabular}
+    \caption{Componentes involucrados en la sincronización en vivo.}
+    \label{tab:componentes-modulo-sincronizacion}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Sincronización:}
+
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+SNC-01 & Visor a panel & Avanzar una diapositiva desde el visor. & El panel actualiza las notas y el contador. & Sí & \texttt{evento\_cambio\_pagina} llama a \texttt{\_datos\_panel.actualizar\_contenido\_por\_slide(indice)}; se refrescan las tarjetas de preguntas y datos curiosos. \\ \hline
+SNC-02 & Visor a proyección & Avanzar una diapositiva con la proyección activa. & La proyección muestra la nueva diapositiva. & Sí & Si la ventana existe, \texttt{evento\_cambio\_pagina} llama a \texttt{\_ventana\_proyeccion.sincronizar\_pagina(indice)} y el visor secundario se repinta. \\ \hline
+SNC-03 & Panel a visor & Utilizar ``Siguiente'' desde el panel. & El visor avanza y el contador se actualiza. & Sí & El botón llama a \texttt{panel.visor.avanzar\_pagina()} y devuelve el foco al visor; el event loop del visor emite el cambio. \\ \hline
+SNC-04 & Panel a proyección & Avanzar desde el panel con la proyección activa. & La proyección cambia de forma sincronizada. & Sí & La llamada al visor dispara \texttt{on\_pagina\_cambiada}, que llega a la proyección a través del contenedor principal. \\ \hline
+SNC-05 & Salto por índice & Ingresar el valor 15 en el campo de salto directo. & El visor, el panel y la proyección muestran la diapositiva 15. & Sí & El entry calcula el índice 14, renderiza y dispara el evento; el panel y la proyección se actualizan con el mismo índice. \\ \hline
+SNC-06 & Notas por diapositiva & Avanzar a una diapositiva con preguntas generadas por la IA. & El panel muestra las preguntas correspondientes. & Sí & Se lee \texttt{cached\_data['slides'][indice]} y se pintan las claves \texttt{preguntas} y \texttt{datos\_curiosos} de esa diapositiva. \\ \hline
+SNC-07 & Diapositiva sin notas & Mostrar una diapositiva sin preguntas ni datos de interés. & Se presenta un mensaje que indica la ausencia de anotaciones. & Sí & Se muestra el texto en cursiva ``Sin anotaciones de IA para esta slide.'' centrado en el panel. \\ \hline
+SNC-08 & Sincronización al reanudar & Reanudar una sesión desde la diapositiva 12. & Todos los componentes se posicionan en la diapositiva 12. & Sí & El orden de inicialización asigna \texttt{pagina\_actual}, renderiza y llama manualmente a \texttt{on\_pagina\_cambiada} para que el panel y la proyección se alineen. \\ \hline
+SNC-09 & Reinicio de la proyección & Cerrar y volver a abrir la proyección. & La nueva ventana inicia en la diapositiva actual. & Sí & Al cerrar se guarda la sesión; al reabrir, el formulario reanuda desde \texttt{ultima\_diapositiva}, que coincide con la última diapositiva vista. \\ \hline
+SNC-10 & Cambios rápidos & Solicitar diez cambios de diapositiva consecutivos. & Los tres componentes permanecen sincronizados. & Sí & \texttt{\_btn\_lock} bloquea 400 ms los botones y \texttt{saltar\_pagina\_cmd} devuelve \texttt{break} para evitar que el Enter se propague. \\ \hline
+SNC-11 & Sincronización al retroceder & Retroceder una diapositiva desde el visor. & El panel y la proyección retroceden junto con el visor. & Sí & \texttt{retroceder\_pagina} renderiza y emite \texttt{on\_pagina\_cambiada}, por lo que la sincronización es simétrica a la del avance. \\ \hline
+SNC-12 & Total de diapositivas & Abrir la vista y observar el contador. & El panel muestra el total real de páginas del PDF. & Sí & \texttt{label\_paginas\_total} se configura con ``/ total'', siendo \texttt{total = visor.total\_paginas} obtenido con \texttt{fitz}. \\ \hline
+\caption{Casos de prueba del módulo de sincronización.}
+\label{tab:casos-prueba-modulo-sincronizacion}
+\end{longtable}
+}
+
+\clearpage
+\section*{Módulo: Persistencia del Reporte de Tiempos}
+
+\textbf{Objetivo:} Validar la generación y el almacenamiento del reporte de tiempos, asegurando que el JSON producido al detener una sesión mantenga una estructura consistente, utilice índices en base uno, acumule la información por grupo y se almacene correctamente en la base de datos.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+    \item Ejecutar \texttt{generar\_reporte\_json} al detener la sesión, al salir de la vista o al cerrar la proyección.
+    \item Consultar en la base de datos el reporte previo del grupo seleccionado.
+    \item Acumular los tiempos totales y los tiempos por diapositiva utilizando índices en base uno.
+    \item Registrar la nueva sesión en \texttt{historial\_sesiones}.
+    \item Actualizar \texttt{ultima\_diapositiva} para permitir la reanudación posterior.
+    \item Enviar el JSON al controlador para su persistencia.
+\end{enumerate}
+
+\textbf{Componentes que probar:}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+        \hline
+        \textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+        Generador del JSON (\texttt{presentation\_data\_panel.py}) & Lógica & Empaqueta los datos de la sesión y acumula la información registrada previamente. \\ \hline
+        Controlador (\texttt{presentation\_controller.py}) & Backend/Controller & Coordina el almacenamiento mediante \texttt{orquestar\_guardado\_tiempos}. \\ \hline
+        Persistencia (\texttt{persistence.py}) & Base de datos & Actualiza el reporte almacenado en \texttt{Historial\_de\_Versiones}. \\ \hline
+    \end{tabular}
+    \caption{Componentes del módulo de persistencia del reporte de tiempos.}
+    \label{tab:componentes-modulo-reporte}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Reporte de tiempos:}
+
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+PRD-01 & Generación del JSON & Detener una sesión después de dos minutos. & Se genera un JSON con el grupo, el tiempo total y el desglose por diapositiva. & Sí & El JSON contiene \texttt{archivo}, \texttt{grupos}, \texttt{ultima\_diapositiva}, \texttt{tiempo\_total\_seg}, \texttt{tiempos\_por\_slide} e \texttt{historial\_sesiones}. Se validó contra el formato definido. \\ \hline
+PRD-02 & Sesión corta & Detener una sesión después de cinco segundos. & El reporte se genera y almacena correctamente. & Sí & Se registra \texttt{duracion\_seg = 5} y el desglose correspondiente; no se aplica ningún mínimo distinto de cero. \\ \hline
+PRD-03 & Sesión sin iniciar & Solicitar la detención sin haber iniciado una exposición. & No se genera un reporte cuando el tiempo total es cero. & Sí & La primera condición de \texttt{generar\_reporte\_json} es \texttt{if panel.segundos\_totales <= 0: return}; no se escribe nada en la base. \\ \hline
+PRD-04 & Acumulación por grupo & Guardar dos sesiones correspondientes al mismo grupo. & \texttt{tiempo\_total\_seg} contiene la suma de ambas sesiones. & Sí & El reporte previo se recupera con \texttt{orquestar\_obtener\_reporte\_tiempo} y se suma \texttt{panel.segundos\_totales} al valor existente. \\ \hline
+PRD-05 & Historial de sesiones & Guardar tres sesiones para un mismo grupo. & \texttt{historial\_sesiones} contiene tres entradas consecutivas. & Sí & La clave se calcula con \texttt{str(len(sesiones) + 1)}, por lo que las sesiones quedan numeradas 1, 2 y 3. \\ \hline
+PRD-06 & Índices en base uno & Revisar \texttt{tiempos\_por\_slide} en el JSON. & Las claves comienzan en 1 y no en 0. & Sí & La conversión se hace con \texttt{str(idx + 1)} al empaquetar y al acumular; el índice interno del visor sigue en base 0. \\ \hline
+PRD-07 & Última diapositiva & Detener la sesión en la diapositiva 20. & \texttt{ultima\_diapositiva} almacena el valor 20 en base uno. & Sí & Se guarda \texttt{panel.indice\_slide\_actual + 1}; el valor coincide con el número mostrado en el entry de página. \\ \hline
+PRD-08 & Prevención de doble guardado & Solicitar dos veces la detención de una misma sesión. & El segundo intento se ignora. & Sí & El indicador \texttt{\_reporte\_guardado} se activa tras un guardado exitoso y evita una segunda actualización. \\ \hline
+PRD-09 & Reanudación correcta & Seleccionar un grupo cuya última diapositiva registrada es la quinta. & La siguiente sesión inicia en la diapositiva 5. & Sí & Se lee \texttt{ultima\_diapositiva = 5}, se calcula el índice 4 y se valida contra \texttt{total\_paginas} antes de renderizar. \\ \hline
+PRD-10 & Persistencia en la base de datos & Consultar \texttt{reporte\_tiempo} después del guardado. & El campo contiene el JSON completo. & Sí & \texttt{actualizar\_reporte\_tiempo\_db} ejecuta un \texttt{UPDATE} sobre \texttt{Historial\_de\_Versiones} y guarda el texto con \texttt{indent=4} y \texttt{ensure\_ascii=False}. \\ \hline
+PRD-11 & Formato de los tiempos & Guardar una sesión y revisar el desglose por diapositiva. & Los segundos se conservan y se formatean solo para visualización. & Sí & El JSON almacena enteros de segundos; la conversión a \texttt{mm:ss} se hace en \texttt{formatear\_tiempo} únicamente para los labels de la interfaz. \\ \hline
+PRD-12 & Normalización del grupo & Ingresar un identificador de grupo en minúsculas. & El reporte almacena el identificador en mayúsculas. & Sí & \texttt{entry\_nuevo.get().strip().upper()} normaliza el valor antes de validar longitud y alfanumericidad. \\ \hline
+PRD-13 & Guardado al salir de la vista & Abandonar el modo presentación sin pulsar ``Detener''. & El avance se guarda antes de destruir la vista. & Sí & \texttt{ocultar\_vista\_presentacion} llama a \texttt{generar\_reporte\_json()} si el panel existe y ya hay segundos acumulados. \\ \hline
+PRD-14 & Cierre abrupto de la aplicación & Cerrar la aplicación durante la sesión sin pulsar ``Detener''. & El avance de la sesión se conserva. & No & No existe autoguardado periódico; si el proceso termina sin ejecutar \texttt{generar\_reporte\_json}, el reporte no se escribe y la sesión se pierde. Documentado como defecto en la prueba E2E \texttt{UHP-05}. \\ \hline
+PRD-15 & Preservación de otros grupos & Guardar una sesión de un grupo nuevo cuando ya existen otros. & Los grupos previos permanecen intactos. & Sí & El JSON se recupera completo y solo se crea o actualiza la clave del grupo en uso; los demás grupos conservan sus tiempos e historiales. \\ \hline
+PRD-16 & Tiempo planeado en segundos & Configurar 60 minutos y guardar la sesión. & \texttt{planeado\_seg} almacena 3600. & Sí & El formulario asigna \texttt{tiempo\_estimado\_seg = tiempo\_min * 60} y ese valor se copia a \texttt{planeado\_seg} en cada sesión. \\ \hline
+\caption{Casos de prueba del módulo de persistencia del reporte de tiempos.}
+\label{tab:casos-prueba-modulo-reporte}
+\end{longtable}
+}
+
+\clearpage
+\section*{Módulo: Estrés, Integridad y Usuario}
+
+\textbf{Objetivo:} Validar el comportamiento del prototipo 2 bajo condiciones de interacción intensiva y eventos inesperados, así como verificar la consistencia de los datos generados durante las sesiones de presentación.
+
+\textbf{Descripción del flujo:} Las pruebas de este módulo exploran los siguientes escenarios específicos:
+\begin{enumerate}
+    \item Interacción repetida con los controles críticos de la sesión.
+    \item Intentos de cierre forzado durante una proyección activa.
+    \item Desconexión abrupta del dispositivo de salida.
+    \item Navegación intensiva entre diapositivas.
+    \item Validación de la estructura acumulativa del reporte JSON.
+    \item Reanudación de sesiones a partir de información almacenada previamente.
+\end{enumerate}
+
+\textbf{Componentes que probar:}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+        \hline
+        \textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+        Bloqueo de interacciones repetidas (\texttt{presentation\_data\_panel.py}) & UI/Frontend & Impide que los controles para presentar y detener procesen varias solicitudes consecutivas. \\ \hline
+        Mecanismo de vigilancia (\texttt{presentation\_gui.py}) & Infraestructura & Supervisa periódicamente la disponibilidad del monitor secundario (actualmente deshabilitado). \\ \hline
+        Generador del JSON (\texttt{presentation\_data\_panel.py}) & Lógica & Mantiene la estructura acumulativa del reporte por grupo y sesión. \\ \hline
+        Persistencia (\texttt{persistence.py}) & Datos & Almacena y recupera de forma íntegra el contenido de \texttt{reporte\_tiempo}. \\ \hline
+    \end{tabular}
+    \caption{Componentes involucrados en las pruebas de estrés, integridad y usuario del prototipo 2.}
+    \label{tab:componentes-estres-prototipo-2}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Estrés, integridad y usuario:}
+
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+STR-01 & Clics repetidos en Presentar & Realizar diez clics en menos de un segundo. & Se procesa una única solicitud. & Sí & \texttt{\_is\_toggling} cambia a \texttt{True} en el primer clic y deshabilita ambos botones; se libera a los 1000 ms, por lo que los demás clics se descartan. \\ \hline
+STR-02 & Clics repetidos en Detener & Realizar diez clics consecutivos en ``Detener''. & Se procesa una única solicitud. & Sí & El mismo mecanismo protege ambas acciones; solo el primer clic cierra la proyección y dispara el guardado. \\ \hline
+STR-03 & Cierre forzado con proyección & Utilizar Alt+F4 durante una proyección activa. & La solicitud de cierre se bloquea. & Sí & \texttt{WM\_DELETE\_WINDOW} de la ventana de proyección está reemplazado por un mensaje en consola; el cierre no se ejecuta. \\ \hline
+STR-04 & Desconexión del proyector & Desconectar el dispositivo de salida durante la exposición. & El mecanismo de vigilancia detiene la proyección en un máximo de dos segundos. & No & El watchdog que consultaba \texttt{get\_monitors()} cada 2000 ms está comentado; no hay detección ni cierre automático. \\ \hline
+STR-05 & Navegación intensiva & Realizar 30 cambios de diapositiva en diez segundos. & No se presentan errores ni pérdida de sincronización. & Sí & \texttt{\_btn\_lock} serializa las pulsaciones y los eventos se emiten en el hilo de la interfaz; no se observaron colisiones ni diapositivas saltadas. \\ \hline
+STR-06 & Proyección prolongada & Mantener una proyección de 1920$\times$1080 durante 20 minutos. & El consumo de memoria permanece estable. & Pendiente & Cada render crea un \texttt{CTkImage} nuevo y reemplaza la referencia \texttt{label\_imagen.\_image}, pero no se ha instrumentado el consumo de memoria durante una sesión prolongada. \\ \hline
+INT-01 & Estructura del JSON & Inspeccionar el reporte después de una sesión. & Contiene los datos del archivo, los grupos y el historial de sesiones. & Sí & La raíz contiene \texttt{archivo} y \texttt{grupos}; cada grupo contiene \texttt{ultima\_diapositiva}, \texttt{tiempo\_total\_seg}, \texttt{tiempos\_por\_slide} e \texttt{historial\_sesiones}. \\ \hline
+INT-02 & Consistencia de los índices & Comparar los índices del JSON con las diapositivas de la presentación. & La diapositiva 1 corresponde a la clave 1. & Sí & La conversión base 0 a base 1 se validó con una presentación de 15 diapositivas; la última clave coincide con \texttt{total\_paginas}. \\ \hline
+INT-03 & Acumulación sin duplicados & Guardar tres sesiones para el mismo grupo. & El tiempo total equivale a la suma exacta de las tres sesiones. & Sí & El total se incrementa una sola vez por sesión y \texttt{\_reporte\_guardado} impide repetir la operación sobre la misma sesión. \\ \hline
+INT-04 & Persistencia entre ejecuciones & Cerrar y reabrir la aplicación después de guardar una sesión. & El reporte se recupera íntegramente. & Sí & La lectura desde \texttt{Historial\_de\_Versiones} devuelve el texto completo y \texttt{json.loads} reconstruye la estructura sin pérdida. \\ \hline
+INT-05 & Reporte inválido en la base de datos & Almacenar deliberadamente un JSON con formato inválido y presentar. & El sistema controla el error y genera una estructura nueva. & Sí & \texttt{json.loads} falla dentro de un \texttt{except}, se conserva la estructura base con \texttt{archivo} y \texttt{grupos} vacío, y el guardado sobrescribe el contenido inválido. \\ \hline
+INT-06 & Nombre del archivo en el reporte & Revisar la clave \texttt{archivo} del JSON. & Contiene el nombre de la presentación presentada. & Sí & \texttt{panel.nombre\_presentacion} se asigna al crear el panel y se escribe sin modificaciones en cada guardado. \\ \hline
+INT-07 & Consecutividad del historial & Guardar sesiones con huecos en la numeración previa. & Las claves de \texttt{historial\_sesiones} son consecutivas desde 1. & Sí & La clave se calcula con la longitud del diccionario, no con el máximo existente, por lo que no se generan huecos. \\ \hline
+USR-01 & Cancelación del formulario & Cerrar el formulario sin confirmar la configuración. & La proyección no se inicia. & Sí & El formulario devuelve \texttt{cancelado = True} y \texttt{\_seleccionar\_monitor\_y\_proyectar} retorna sin modificar el panel ni crear la ventana. \\ \hline
+USR-02 & Grupo con símbolos & Ingresar un grupo que contenga un guion. & El valor se rechaza por no ser alfanumérico. & Sí & \texttt{isalnum()} devuelve falso y se muestra ``Error: Grupo debe ser alfanumérico (máx 5 caracteres).''. \\ \hline
+USR-03 & Cierre mediante el botón de ventana & Seleccionar el control de cierre del formulario. & El formulario se cierra sin iniciar la sesión. & Sí & Al destruirse el Toplevel, \texttt{wait\_window} retorna con \texttt{cancelado = True} y \texttt{grupo = None}. \\ \hline
+USR-04 & Tiempo no numérico & Ingresar texto en el campo de tiempo estimado. & Se solicita un número entero válido. & Sí & \texttt{int()} lanza \texttt{ValueError} y se muestra ``Error: Ingresa un número entero válido para el tiempo.'' debajo de los campos. \\ \hline
+USR-05 & Selección del monitor principal & Seleccionar la pantalla principal como dispositivo de salida. & La configuración se rechaza antes de crear la proyección. & No & Mismo caso que PMD-07: el bloque de validación está comentado, por lo que la configuración se acepta y la proyección se crea en la pantalla principal. \\ \hline
+USR-06 & Índice fuera del intervalo & Ingresar el valor 999 en el campo de salto directo. & El campo recupera el índice de la diapositiva actual. & Sí & \texttt{saltar\_pagina\_cmd} valida que el objetivo esté dentro del total; ante un valor inválido restaura \texttt{indice\_slide\_actual + 1}. \\ \hline
+USR-07 & Rendimiento sin sesiones & Seleccionar ``Ver rendimiento'' sin haber presentado. & Se muestra un aviso y no se navega. & Sí & Aparece el modal ``Sin datos de rendimiento'' con el texto ``Aún no se ha presentado esta clase...''; \texttt{ir\_a\_rendimiento} no se invoca. \\ \hline
+USR-08 & Cancelar el formulario con Escape & Presionar Escape en el modal de configuración. & El modal se cierra sin iniciar la sesión. & Pendiente & El Toplevel no define un binding propio para Escape; el cierre depende del comportamiento por defecto de la ventana. Conviene verificarlo y, si no cierra, agregar el binding explícito. \\ \hline
+\caption{Cobertura de pruebas de estrés, integridad y usuario del prototipo 2.}
+\label{tab:cobertura-estres-prototipo-2}
+\end{longtable}
+}
+
+\clearpage
+\section*{Módulo: Rendimiento de la Exposición}
+
+\textbf{Objetivo:} Validar la vista de rendimiento, asegurando que el prototipo pueda comparar los tiempos reales registrados durante la exposición con los tiempos recomendados por la IA, filtrar la información por grupo y desplegar el reporte de desviaciones por diapositiva.
+
+\textbf{Descripción del flujo:}
+\begin{enumerate}
+    \item Acceder a ``Ver rendimiento'' desde el menú de la tarjeta, siempre que exista al menos una sesión registrada.
+    \item Cargar el análisis de IA y el reporte de tiempos de la versión activa.
+    \item Calcular el tiempo recomendado por la IA y el tiempo real acumulado por grupo.
+    \item Mostrar las tarjetas de resumen: calificación, tiempo IA, tiempo planeado, duración real y desviación global.
+    \item Dibujar la gráfica de tiempo por diapositiva con las series real y recomendada.
+    \item Cambiar de grupo mediante las pestañas y actualizar el resumen y la gráfica.
+    \item Abrir el reporte de desviaciones con las diapositivas que duraron muy poco o demasiado.
+\end{enumerate}
+
+\textbf{Arquitectura del módulo:}
+\begin{verbatim}
+Módulo de Rendimiento
+|-- Frontend
+|   |-- views/
+|   |   |-- performance_gui.py
+|   |   `-- navigator.py
+|   `-- widgets/performance_mode/
+|       |-- performance_summary_panel.py
+|       |-- performance_chart_panel.py
+|       `-- performance_deviations_panel.py
+`-- Data
+    `-- queries.py / persistence.py
+\end{verbatim}
+
+\textbf{Componentes que probar:}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|L{0.34\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+        \hline
+        \textbf{Componente} & \textbf{Tipo} & \textbf{Descripción} \\ \hline
+        Vista de rendimiento (\texttt{performance\_gui.py}) & UI/Frontend & Carga ambos JSON y ensambla el resumen y la gráfica. \\ \hline
+        Tarjetas de resumen (\texttt{performance\_summary\_panel.py}) & UI/Frontend & Calcula y muestra los cinco indicadores del grupo seleccionado. \\ \hline
+        Gráfica (\texttt{performance\_chart\_panel.py}) & UI/Frontend & Dibuja las series real e IA, las pestañas de grupo, el scroll y el tooltip. \\ \hline
+        Desviaciones (\texttt{performance\_deviations\_panel.py}) & UI/Frontend & Abre el modal con las diapositivas que se apartaron del tiempo recomendado. \\ \hline
+    \end{tabular}
+    \caption{Componentes del módulo de rendimiento.}
+    \label{tab:componentes-modulo-rendimiento}
+\end{table}
+
+\textbf{Cobertura de pruebas --- Rendimiento:}
+
+{\tiny
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{|L{1.1cm}|L{2.3cm}|L{3.2cm}|L{3.6cm}|L{1.2cm}|L{3.6cm}|}
+\hline
+\textbf{ID} & \textbf{Caso} & \textbf{Descripción} & \textbf{Resultado esperado} & \textbf{Aprobado} & \textbf{Observaciones} \\ \hline
+\endhead
+RFM-01 & Acceso con sesiones & Seleccionar ``Ver rendimiento'' con al menos una sesión registrada. & Se abre la vista de rendimiento de la presentación. & Sí & La topbar cambia a ``Rendimiento: archivo'' y se monta el contenedor con el resumen arriba y la gráfica ocupando el resto. \\ \hline
+RFM-02 & Acceso sin sesiones & Seleccionar ``Ver rendimiento'' sin sesiones. & Se muestra un aviso y no se navega. & Sí & El modal ``Sin datos de rendimiento'' indica que debe presentarse la clase al menos una vez; la vista principal permanece visible. \\ \hline
+RFM-03 & Tarjetas de resumen & Observar la fila superior de la vista. & Se muestran los cinco indicadores del grupo. & Sí & Se despliegan las tarjetas Calificación (zona global de la IA), Tiempo IA, Planeó docente, Duración real y Desviación (porcentaje vs IA). \\ \hline
+RFM-04 & Pestañas por grupo & Cambiar entre dos grupos registrados. & El resumen y la gráfica se actualizan al grupo elegido. & Sí & Cada pestaña recolorea su estado activo y dispara \texttt{on\_grupo\_cambiado}, que refresca las tarjetas dependientes del grupo. \\ \hline
+RFM-05 & Gráfica real vs IA & Observar la gráfica con una sesión registrada. & Se distingue la serie real de la recomendada por la IA. & Sí & La serie real es una línea guinda continua con área rellena; la serie IA es una línea dorada punteada. El eje X numera las diapositivas y la barra inferior permite recorrerlas. \\ \hline
+RFM-06 & Tooltip de la gráfica & Pasar el cursor sobre un punto. & Se muestra el detalle de la diapositiva. & Sí & Aparece un cuadro con ``Diapositiva N'', ``Real Xs'' y ``IA Ys''; si no se presentó, agrega ``(no presentada)''. \\ \hline
+RFM-07 & Reporte de desviaciones & Pulsar ``Desviaciones'' con un grupo seleccionado. & Se abre el modal con las dos categorías. & Sí & Se abre una ventana de 780$\times$560 con las columnas ``Diapositivas que duraron muy poco'' y ``Diapositivas que duraron mucho'', hasta tres por categoría, con porcentaje y zona de la diapositiva. \\ \hline
+RFM-08 & Grupo sin diapositivas presentadas & Seleccionar un grupo sin tiempos registrados. & Las tarjetas y la gráfica reflejan la ausencia de datos. & Pendiente & Se espera que las tarjetas muestren ``---'' y ``sin grupo'', y que la serie real caiga a 0 en todas las diapositivas. Falta verificarlo con un grupo creado sin sesión. \\ \hline
+RFM-09 & Umbral de desviación & Comparar sesiones con desviación menor a 20\%, menor a $-20$\% y mayor a $+20$\% & El color cambia según el umbral. & Sí & \texttt{UMBRAL\_DESV = 20}: dentro del rango se usa verde, por debajo se usa ámbar y por encima se usa naranja, tanto en ``Duración real'' como en ``Desviación''. \\ \hline
+\caption{Casos de prueba del módulo de rendimiento.}
+\label{tab:casos-prueba-modulo-rendimiento}
+\end{longtable}
+}
+
+\clearpage
+\section*{Notas de la ejecución}
+
+\begin{itemize}
+    \item Las validaciones de pantalla principal y de ausencia de monitor secundario se encuentran deshabilitadas en el código (\texttt{presentation\_gui.py}), por lo que los casos PMD-07, PRY-01 y USR-05 se registran como no aprobados.
+    \item El mecanismo de vigilancia de desconexión está comentado, por lo que PRY-08, PRY-09 y STR-04 no pueden cumplirse en la versión actual.
+    \item El widget \texttt{presentation\_controls.py} no se instancia en ninguna vista; la navegación y los controles de sesión viven en \texttt{presentation\_data\_panel.py}. Se conserva únicamente como referencia histórica.
+    \item El cierre abrupto de la aplicación no persiste el avance de la sesión (PRD-14), comportamiento documentado por la prueba E2E \texttt{UHP-05}.
+    \item Los casos marcados como \emph{Pendiente} requieren hardware de proyección o instrumentación adicional y no deben reportarse como aprobados sin evidencia.
+\end{itemize}
+
+\end{document}

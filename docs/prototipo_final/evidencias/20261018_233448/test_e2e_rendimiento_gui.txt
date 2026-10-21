@@ -1,0 +1,87 @@
+
+########## EJECUTANDO tests.e2e.test_e2e_rendimiento_gui ##########
+test_dvs01_apertura (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs01_apertura) ... ok
+test_dvs02_duracion_insuficiente (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs02_duracion_insuficiente) ... ok
+test_dvs03_duracion_excesiva (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs03_duracion_excesiva) ... ok
+test_dvs04_porcentaje_correcto (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs04_porcentaje_correcto) ... ok
+test_dvs05_diapositivas_no_presentadas_excluidas (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs05_diapositivas_no_presentadas_excluidas) ... ok
+test_dvs06_categoria_vacia (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs06_categoria_vacia) ... ok
+test_dvs07_cierre_con_entendido (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs07_cierre_con_entendido) ... ok
+test_dvs08_cierre_con_la_x (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs08_cierre_con_la_x) ... ok
+test_dvs09_reapertura (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs09_reapertura) ... ok
+test_dvs10_grupo_activo_en_el_encabezado (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs10_grupo_activo_en_el_encabezado) ... ok
+test_dvs11_cambio_de_grupo_previo (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs11_cambio_de_grupo_previo) ... ok
+test_dvs12_limite_de_tres_por_categoria (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs12_limite_de_tres_por_categoria) ... ok
+test_dvs13_referencia_ia_cero (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs13_referencia_ia_cero) ... ok
+test_dvs14_encabezado_y_detalle (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs14_encabezado_y_detalle) ... ok
+test_dvs15_sin_grupo (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs15_sin_grupo) ... ok
+test_grf01_dibujado_inicial (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf01_dibujado_inicial) ... ok
+test_grf02_area_real (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf02_area_real) ... ok
+test_grf03_serie_ia_discontinua (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf03_serie_ia_discontinua) ... ok
+test_grf04_tooltip_muestra_detalle (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf04_tooltip_muestra_detalle) ... ok
+test_grf05_cursor_lejos_del_punto (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf05_cursor_lejos_del_punto)
+Con puntos separados (>40 px) el detalle desaparece al alejarse. ... ok
+test_grf06_desplazamiento_entre_ventanas (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf06_desplazamiento_entre_ventanas) ... ok
+test_grf07_cambio_de_grupo_redibuja (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf07_cambio_de_grupo_redibuja) ... ok
+test_grf08_sincronizacion_con_el_resumen (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf08_sincronizacion_con_el_resumen) ... ok
+test_grf09_escala_vertical (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf09_escala_vertical) ... ok
+test_grf10_sin_grupos (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf10_sin_grupos) ... ok
+test_grf11_redimensionado (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf11_redimensionado) ... ok
+test_grf12_muchas_diapositivas (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf12_muchas_diapositivas) ... ok
+test_grf13_diapositiva_no_presentada (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf13_diapositiva_no_presentada) ... ok
+test_grf14_tiempo_ia_cero_no_rompe (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf14_tiempo_ia_cero_no_rompe) ... ok
+test_grf15_etiquetas_de_valor (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf15_etiquetas_de_valor) ... ok
+test_grf16_leyenda (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf16_leyenda) ... ok
+test_grf17_limites_del_desplazamiento (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf17_limites_del_desplazamiento) ... ok
+test_grf18_presentacion_corta (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf18_presentacion_corta) ... ok
+test_int01_base_uno (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int01_base_uno) ... ok
+test_int02_correspondencia_entre_json (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int02_correspondencia_entre_json) ... ok
+test_int03_suma_total (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int03_suma_total) ... ok
+test_int04_diapositiva_omitida (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int04_diapositiva_omitida) ... ok
+test_int05_pestanas_estables (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int05_pestanas_estables) ... ok
+test_int06_zona_por_diapositiva (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int06_zona_por_diapositiva) ... ok
+test_int07_total_derivado (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int07_total_derivado) ... ok
+test_int08_tiempo_ia_derivado (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int08_tiempo_ia_derivado) ... ok
+test_usr01_clic_repetido_en_desviaciones (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr01_clic_repetido_en_desviaciones) ... ok
+test_usr02_clic_repetido_en_volver (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr02_clic_repetido_en_volver) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_usr03_desplazamiento_veloz (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr03_desplazamiento_veloz) ... ok
+test_usr04_hover_repetido (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr04_hover_repetido) ... ok
+test_usr05_grupo_y_hover (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr05_grupo_y_hover) ... ok
+test_usr06_redimensionado_con_hover (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr06_redimensionado_con_hover) ... ok
+test_usr07_grupo_sin_excesos (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr07_grupo_sin_excesos) ... ok
+test_usr08_redimensionado_repetido (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr08_redimensionado_repetido) ... ok
+test_usr09_salir_con_modal_abierto (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr09_salir_con_modal_abierto)
+Documenta el comportamiento: el grab del modal bloquea la topbar. ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_prf01_entrada_a_la_vista (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf01_entrada_a_la_vista) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_prf02_carga_de_analisis (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf02_carga_de_analisis) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_prf03_carga_de_tiempos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf03_carga_de_tiempos) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_prf04_resumen_con_datos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf04_resumen_con_datos) ... ok
+test_prf05_resumen_sin_grupos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf05_resumen_sin_grupos) ... ok
+test_prf06_sin_analisis (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf06_sin_analisis) ... ok
+test_prf07_tiempo_ia_es_la_suma (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf07_tiempo_ia_es_la_suma) ... ok
+test_prf08_grupo_inicial (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf08_grupo_inicial) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_prf09_analisis_corrupto (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf09_analisis_corrupto) ... [performance_gui] análisis: Expecting property name enclosed in double quotes: line 1 column 3 (char 2)
+ok
+test_prf10_reporte_corrupto (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf10_reporte_corrupto) ... [performance_gui] reporte: Expecting value: line 1 column 1 (char 0)
+ok
+test_prf11_regreso_al_inicio (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf11_regreso_al_inicio) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_prf12_eliminacion_no_aplica (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf12_eliminacion_no_aplica) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_prf13_calificacion_por_etiqueta (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf13_calificacion_por_etiqueta) ... ok
+test_prf14_desviacion_global_por_umbral (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf14_desviacion_global_por_umbral) ... ok
+test_prf15_diapositivas_presentadas (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf15_diapositivas_presentadas) ... ok
+test_prf16_planeado_usa_la_ultima_sesion (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf16_planeado_usa_la_ultima_sesion) ... ok
+test_prf17_reapertura_sin_residuos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf17_reapertura_sin_residuos) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+
+----------------------------------------------------------------------
+Ran 67 tests in 171.480s
+
+OK

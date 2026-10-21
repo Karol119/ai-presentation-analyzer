@@ -1,0 +1,41 @@
+
+########## EJECUTANDO tests.e2e.test_e2e_gui ##########
+test_uhp03_proyeccion_activa_bloquea_regreso (tests.e2e.test_e2e_gui.BloqueoNavegacionGUI.test_uhp03_proyeccion_activa_bloquea_regreso) ... [TEMAS] Cobertura temática detectada por la IA
+[BLOQUEADO] No puedes regresar al menú mientras estás proyectando.
+ok
+test_uhp03b_bloqueo_ui_bloquea_regreso (tests.e2e.test_e2e_gui.BloqueoNavegacionGUI.test_uhp03b_bloqueo_ui_bloquea_regreso) ... [TEMAS] Cobertura temática detectada por la IA
+[BLOQUEADO] Espera a que termine el proceso actual para volver al inicio.
+ok
+test_hp01_hp05_cadena_completa_y_regreso (tests.e2e.test_e2e_gui.CadenaCompletaGUI.test_hp01_hp05_cadena_completa_y_regreso) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_defecto_archivo_corrupto_sin_retroalimentacion (tests.e2e.test_e2e_gui.CargaGUI.test_defecto_archivo_corrupto_sin_retroalimentacion)
+DEFECTO OBSERVADO: un .pptx ilegible no es ni duplicado ni pesado, por lo ... [text_extractor] Error al contar diapositivas: Package not found at 'C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\origenes\corrupto.pptx'
+ok
+test_uhp04_duplicado_muestra_modal_y_no_registra (tests.e2e.test_e2e_gui.CargaGUI.test_uhp04_duplicado_muestra_modal_y_no_registra) ... ok
+test_uhp04b_archivo_pesado_muestra_modal (tests.e2e.test_e2e_gui.CargaGUI.test_uhp04b_archivo_pesado_muestra_modal) ... ok
+test_uhp05_cierre_abrupto_no_persiste_avance (tests.e2e.test_e2e_gui.CierreInesperadoGUI.test_uhp05_cierre_abrupto_no_persiste_avance) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_uhp05b_salida_ordenada_si_persiste (tests.e2e.test_e2e_gui.CierreInesperadoGUI.test_uhp05b_salida_ordenada_si_persiste)
+Contraste: al abandonar la vista ordenadamente, el avance SÍ se guarda. ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_uhp08_eliminacion_grupo_conserva_los_demas (tests.e2e.test_e2e_gui.EliminacionGrupoGUI.test_uhp08_eliminacion_grupo_conserva_los_demas)
+Reproduce la lógica de persistencia que ejecuta el modal de ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_uhp01_presentar_sin_analisis_muestra_modal_y_no_navega (tests.e2e.test_e2e_gui.ExposicionSinAnalisisGUI.test_uhp01_presentar_sin_analisis_muestra_modal_y_no_navega) ... ok
+test_uhp01b_presentar_con_analisis_navega (tests.e2e.test_e2e_gui.ExposicionSinAnalisisGUI.test_uhp01b_presentar_con_analisis_navega) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_uhp02_ver_rendimiento_sin_sesiones_muestra_modal (tests.e2e.test_e2e_gui.RendimientoSinSesionesGUI.test_uhp02_ver_rendimiento_sin_sesiones_muestra_modal) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_uhp02b_ver_rendimiento_con_sesion_navega (tests.e2e.test_e2e_gui.RendimientoSinSesionesGUI.test_uhp02b_ver_rendimiento_con_sesion_navega) ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_hp03_acumulacion_de_sesiones_y_reenudo (tests.e2e.test_e2e_gui.SesionesYReexposicionGUI.test_hp03_acumulacion_de_sesiones_y_reenudo)
+HP-03: dos sesiones del mismo grupo se acumulan y la reexposición reanuda. ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_hp04_grupos_independientes (tests.e2e.test_e2e_gui.SesionesYReexposicionGUI.test_hp04_grupos_independientes)
+HP-04: dos grupos mantienen registros de sesión independientes. ... [TEMAS] Cobertura temática detectada por la IA
+ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 45.860s
+
+OK

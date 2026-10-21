@@ -1,0 +1,2104 @@
+
+########## EJECUTANDO tests.e2e.test_e2e_rendimiento_gui ##########
+test_dvs01_apertura (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs01_apertura) ... ERROR
+test_dvs02_duracion_insuficiente (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs02_duracion_insuficiente) ... ERROR
+test_dvs03_duracion_excesiva (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs03_duracion_excesiva) ... ERROR
+test_dvs04_porcentaje_correcto (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs04_porcentaje_correcto) ... ERROR
+test_dvs05_diapositivas_no_presentadas_excluidas (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs05_diapositivas_no_presentadas_excluidas) ... ERROR
+test_dvs06_categoria_vacia (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs06_categoria_vacia) ... ERROR
+test_dvs07_cierre_con_entendido (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs07_cierre_con_entendido) ... ERROR
+test_dvs08_cierre_con_la_x (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs08_cierre_con_la_x) ... ERROR
+test_dvs09_reapertura (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs09_reapertura) ... ERROR
+test_dvs10_grupo_activo_en_el_encabezado (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs10_grupo_activo_en_el_encabezado) ... ERROR
+test_dvs11_cambio_de_grupo_previo (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs11_cambio_de_grupo_previo) ... ERROR
+test_dvs12_limite_de_tres_por_categoria (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs12_limite_de_tres_por_categoria) ... ERROR
+test_dvs13_referencia_ia_cero (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs13_referencia_ia_cero) ... ERROR
+test_dvs14_encabezado_y_detalle (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs14_encabezado_y_detalle) ... ERROR
+test_dvs15_sin_grupo (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs15_sin_grupo) ... ERROR
+test_grf01_dibujado_inicial (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf01_dibujado_inicial) ... ERROR
+test_grf02_area_real (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf02_area_real) ... ERROR
+test_grf03_serie_ia_discontinua (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf03_serie_ia_discontinua) ... ERROR
+test_grf04_tooltip_muestra_detalle (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf04_tooltip_muestra_detalle) ... ERROR
+test_grf05_cursor_lejos_del_punto (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf05_cursor_lejos_del_punto)
+Con puntos separados (>40 px) el detalle desaparece al alejarse. ... ERROR
+test_grf06_desplazamiento_entre_ventanas (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf06_desplazamiento_entre_ventanas) ... ERROR
+test_grf07_cambio_de_grupo_redibuja (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf07_cambio_de_grupo_redibuja) ... ERROR
+test_grf08_sincronizacion_con_el_resumen (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf08_sincronizacion_con_el_resumen) ... ERROR
+test_grf09_escala_vertical (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf09_escala_vertical) ... ERROR
+test_grf10_sin_grupos (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf10_sin_grupos) ... ERROR
+test_grf11_redimensionado (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf11_redimensionado) ... ERROR
+test_grf12_muchas_diapositivas (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf12_muchas_diapositivas) ... ERROR
+test_grf13_diapositiva_no_presentada (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf13_diapositiva_no_presentada) ... ERROR
+test_grf14_tiempo_ia_cero_no_rompe (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf14_tiempo_ia_cero_no_rompe) ... ERROR
+test_grf15_etiquetas_de_valor (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf15_etiquetas_de_valor) ... ERROR
+test_grf16_leyenda (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf16_leyenda) ... ERROR
+test_grf17_limites_del_desplazamiento (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf17_limites_del_desplazamiento) ... ERROR
+test_grf18_presentacion_corta (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf18_presentacion_corta) ... ERROR
+test_int01_base_uno (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int01_base_uno) ... ERROR
+test_int02_correspondencia_entre_json (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int02_correspondencia_entre_json) ... ERROR
+test_int03_suma_total (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int03_suma_total) ... ERROR
+test_int04_diapositiva_omitida (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int04_diapositiva_omitida) ... ERROR
+test_int05_pestanas_estables (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int05_pestanas_estables) ... ERROR
+test_int06_zona_por_diapositiva (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int06_zona_por_diapositiva) ... ERROR
+test_int07_total_derivado (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int07_total_derivado) ... ERROR
+test_int08_tiempo_ia_derivado (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int08_tiempo_ia_derivado) ... ERROR
+test_usr01_clic_repetido_en_desviaciones (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr01_clic_repetido_en_desviaciones) ... ERROR
+test_usr02_clic_repetido_en_volver (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr02_clic_repetido_en_volver) ... ERROR
+test_usr03_desplazamiento_veloz (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr03_desplazamiento_veloz) ... ERROR
+test_usr04_hover_repetido (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr04_hover_repetido) ... ERROR
+test_usr05_grupo_y_hover (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr05_grupo_y_hover) ... ERROR
+test_usr06_redimensionado_con_hover (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr06_redimensionado_con_hover) ... ERROR
+test_usr07_grupo_sin_excesos (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr07_grupo_sin_excesos) ... ERROR
+test_usr08_redimensionado_repetido (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr08_redimensionado_repetido) ... ERROR
+test_usr09_salir_con_modal_abierto (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr09_salir_con_modal_abierto)
+Documenta el comportamiento: el grab del modal bloquea la topbar. ... ERROR
+test_prf01_entrada_a_la_vista (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf01_entrada_a_la_vista) ... ERROR
+test_prf02_carga_de_analisis (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf02_carga_de_analisis) ... ERROR
+test_prf03_carga_de_tiempos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf03_carga_de_tiempos) ... ERROR
+test_prf04_resumen_con_datos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf04_resumen_con_datos) ... ERROR
+test_prf05_resumen_sin_grupos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf05_resumen_sin_grupos) ... ERROR
+test_prf06_sin_analisis (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf06_sin_analisis) ... ERROR
+test_prf07_tiempo_ia_es_la_suma (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf07_tiempo_ia_es_la_suma) ... ERROR
+test_prf08_grupo_inicial (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf08_grupo_inicial) ... ERROR
+test_prf09_analisis_corrupto (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf09_analisis_corrupto) ... ERROR
+test_prf10_reporte_corrupto (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf10_reporte_corrupto) ... ERROR
+test_prf11_regreso_al_inicio (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf11_regreso_al_inicio) ... ERROR
+test_prf12_eliminacion_no_aplica (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf12_eliminacion_no_aplica) ... ERROR
+test_prf13_calificacion_por_etiqueta (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf13_calificacion_por_etiqueta) ... ERROR
+test_prf14_desviacion_global_por_umbral (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf14_desviacion_global_por_umbral) ... ERROR
+test_prf15_diapositivas_presentadas (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf15_diapositivas_presentadas) ... ERROR
+test_prf16_planeado_usa_la_ultima_sesion (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf16_planeado_usa_la_ultima_sesion) ... ERROR
+test_prf17_reapertura_sin_residuos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf17_reapertura_sin_residuos) ... ERROR
+
+======================================================================
+ERROR: test_dvs01_apertura (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs01_apertura)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs02_duracion_insuficiente (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs02_duracion_insuficiente)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs03_duracion_excesiva (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs03_duracion_excesiva)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs04_porcentaje_correcto (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs04_porcentaje_correcto)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs05_diapositivas_no_presentadas_excluidas (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs05_diapositivas_no_presentadas_excluidas)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs06_categoria_vacia (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs06_categoria_vacia)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs07_cierre_con_entendido (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs07_cierre_con_entendido)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs08_cierre_con_la_x (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs08_cierre_con_la_x)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs09_reapertura (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs09_reapertura)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs10_grupo_activo_en_el_encabezado (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs10_grupo_activo_en_el_encabezado)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs11_cambio_de_grupo_previo (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs11_cambio_de_grupo_previo)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs12_limite_de_tres_por_categoria (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs12_limite_de_tres_por_categoria)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs13_referencia_ia_cero (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs13_referencia_ia_cero)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs14_encabezado_y_detalle (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs14_encabezado_y_detalle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_dvs15_sin_grupo (tests.e2e.test_e2e_rendimiento_gui.DvsDesviaciones.test_dvs15_sin_grupo)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 551, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf01_dibujado_inicial (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf01_dibujado_inicial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf02_area_real (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf02_area_real)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf03_serie_ia_discontinua (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf03_serie_ia_discontinua)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf04_tooltip_muestra_detalle (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf04_tooltip_muestra_detalle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf05_cursor_lejos_del_punto (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf05_cursor_lejos_del_punto)
+Con puntos separados (>40 px) el detalle desaparece al alejarse.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf06_desplazamiento_entre_ventanas (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf06_desplazamiento_entre_ventanas)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf07_cambio_de_grupo_redibuja (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf07_cambio_de_grupo_redibuja)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf08_sincronizacion_con_el_resumen (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf08_sincronizacion_con_el_resumen)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf09_escala_vertical (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf09_escala_vertical)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf10_sin_grupos (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf10_sin_grupos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf11_redimensionado (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf11_redimensionado)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf12_muchas_diapositivas (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf12_muchas_diapositivas)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf13_diapositiva_no_presentada (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf13_diapositiva_no_presentada)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf14_tiempo_ia_cero_no_rompe (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf14_tiempo_ia_cero_no_rompe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf15_etiquetas_de_valor (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf15_etiquetas_de_valor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf16_leyenda (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf16_leyenda)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf17_limites_del_desplazamiento (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf17_limites_del_desplazamiento)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_grf18_presentacion_corta (tests.e2e.test_e2e_rendimiento_gui.GrfGrafica.test_grf18_presentacion_corta)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 383, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int01_base_uno (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int01_base_uno)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int02_correspondencia_entre_json (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int02_correspondencia_entre_json)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int03_suma_total (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int03_suma_total)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int04_diapositiva_omitida (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int04_diapositiva_omitida)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int05_pestanas_estables (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int05_pestanas_estables)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int06_zona_por_diapositiva (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int06_zona_por_diapositiva)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int07_total_derivado (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int07_total_derivado)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_int08_tiempo_ia_derivado (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_int08_tiempo_ia_derivado)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr01_clic_repetido_en_desviaciones (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr01_clic_repetido_en_desviaciones)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr02_clic_repetido_en_volver (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr02_clic_repetido_en_volver)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr03_desplazamiento_veloz (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr03_desplazamiento_veloz)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr04_hover_repetido (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr04_hover_repetido)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr05_grupo_y_hover (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr05_grupo_y_hover)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr06_redimensionado_con_hover (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr06_redimensionado_con_hover)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr07_grupo_sin_excesos (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr07_grupo_sin_excesos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr08_redimensionado_repetido (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr08_redimensionado_repetido)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_usr09_salir_con_modal_abierto (tests.e2e.test_e2e_rendimiento_gui.IntegridadYUsuario.test_usr09_salir_con_modal_abierto)
+Documenta el comportamiento: el grab del modal bloquea la topbar.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_rendimiento_gui.py", line 679, in setUp
+    super().setUp()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf01_entrada_a_la_vista (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf01_entrada_a_la_vista)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf02_carga_de_analisis (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf02_carga_de_analisis)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf03_carga_de_tiempos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf03_carga_de_tiempos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf04_resumen_con_datos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf04_resumen_con_datos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf05_resumen_sin_grupos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf05_resumen_sin_grupos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf06_sin_analisis (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf06_sin_analisis)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf07_tiempo_ia_es_la_suma (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf07_tiempo_ia_es_la_suma)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf08_grupo_inicial (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf08_grupo_inicial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf09_analisis_corrupto (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf09_analisis_corrupto)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf10_reporte_corrupto (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf10_reporte_corrupto)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf11_regreso_al_inicio (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf11_regreso_al_inicio)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf12_eliminacion_no_aplica (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf12_eliminacion_no_aplica)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf13_calificacion_por_etiqueta (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf13_calificacion_por_etiqueta)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf14_desviacion_global_por_umbral (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf14_desviacion_global_por_umbral)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf15_diapositivas_presentadas (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf15_diapositivas_presentadas)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf16_planeado_usa_la_ultima_sesion (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf16_planeado_usa_la_ultima_sesion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+======================================================================
+ERROR: test_prf17_reapertura_sin_residuos (tests.e2e.test_e2e_rendimiento_gui.PrfDashboard.test_prf17_reapertura_sin_residuos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 155, in setUp
+    self._refrescar_estado()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aldai\ai-presentation-analyzer\tests\e2e\test_e2e_gui.py", line 204, in _refrescar_estado
+    cp.create_panel(s, lambda: None)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\app\presentation\widgets\content_panel.py", line 64, in create_panel
+    panel = ctk.CTkFrame(ui["content_area"], fg_color="transparent", corner_radius=0)
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\ctk_frame.py", line 33, in __init__
+    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aldai\AppData\Roaming\Python\Python314\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 41, in __init__
+    tkinter.Frame.__init__(self, master=master, width=width, height=height, **pop_from_dict_by_set(kwargs, self._valid_tk_frame_attributes))
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 3368, in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\tkinter\__init__.py", line 2805, in __init__
+    self.tk.call(
+    ~~~~~~~~~~~~^
+        (widgetName, self._w) + extra + self._options(cnf))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "frame" command: application has been destroyed
+
+----------------------------------------------------------------------
+Ran 67 tests in 6.880s
+
+FAILED (errors=67)

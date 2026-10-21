@@ -1,0 +1,43 @@
+
+########## EJECUTANDO tests.e2e.test_e2e_negocio ##########
+test_hp01_analisis_persistencia (tests.e2e.test_e2e_negocio.AnalisisYReporteE2E.test_hp01_analisis_persistencia)
+HP-01: análisis simulado persiste JSON en BD y en disco y marca la versión. ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_metricas_locales_reales (tests.e2e.test_e2e_negocio.AnalisisYReporteE2E.test_metricas_locales_reales)
+N-10: las métricas locales (ICD/WPS) se calculan sobre un PPTX real. ... ok
+test_reporte_tiempos_persistencia (tests.e2e.test_e2e_negocio.AnalisisYReporteE2E.test_reporte_tiempos_persistencia)
+N-06: el reporte de tiempos se guarda y recupera desde la versión. ... ok
+test_uhp07_fallo_gemini_no_deja_parciales (tests.e2e.test_e2e_negocio.AnalisisYReporteE2E.test_uhp07_fallo_gemini_no_deja_parciales)
+UHP-07: si la IA falla, el análisis se cancela sin resultados parciales. ... Error en orquestar_analisis_ia: SIN CONEXIÓN A INTERNET: simulada en pruebas.
+ok
+test_hp02_versionado (tests.e2e.test_e2e_negocio.CargaYVersionadoE2E.test_hp02_versionado)
+HP-02: actualizar con un archivo distinto crea v2 sin alterar v1. ... ok
+test_ocultar_restaurar (tests.e2e.test_e2e_negocio.CargaYVersionadoE2E.test_ocultar_restaurar)
+RF-01.7: ocultar y restaurar conserva datos y archivos. ... ok
+test_pcv_carga_persistencia (tests.e2e.test_e2e_negocio.CargaYVersionadoE2E.test_pcv_carga_persistencia)
+N-01 (HP-01): carga válida registra Presentacion, v1 y archivos físicos. ... ok
+test_pcv_pptx_corrupto_o_vacio (tests.e2e.test_e2e_negocio.CargaYVersionadoE2E.test_pcv_pptx_corrupto_o_vacio)
+N-03: .pptx ilegible se rechaza sin registrar y sin excepción. ... [text_extractor] Error al contar diapositivas: Package not found at 'C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\origenes\corrupto.pptx'
+[text_extractor] Error al contar diapositivas: Package not found at 'C:\Users\Aldai\AppData\Local\Temp\opencode\e2e-aitest-dzmv0tqq\origenes\corrupto.pptx'
+ok
+test_pcv_validacion_tamano (tests.e2e.test_e2e_negocio.CargaYVersionadoE2E.test_pcv_validacion_tamano)
+N-02: archivo > 30 MB se rechaza antes de registrar nada. ... ok
+test_uhp04_duplicado_entre_materias (tests.e2e.test_e2e_negocio.CargaYVersionadoE2E.test_uhp04_duplicado_entre_materias)
+AÑADIDO: el hash es global; el duplicado se bloquea también en otra materia. ... ok
+test_uhp04_duplicado_misma_materia (tests.e2e.test_e2e_negocio.CargaYVersionadoE2E.test_uhp04_duplicado_misma_materia)
+UHP-04: carga duplicada por hash se rechaza y no crea registros. ... ok
+test_eliminacion_presentacion_cascada (tests.e2e.test_e2e_negocio.EliminacionE2E.test_eliminacion_presentacion_cascada)
+RF-01.7: eliminar presentación borra versiones, análisis y archivos. ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_uhp06_eliminacion_materia_cascada (tests.e2e.test_e2e_negocio.EliminacionE2E.test_uhp06_eliminacion_materia_cascada)
+UHP-06: eliminar materia con datos deja 0 registros operativos y conserva el catálogo. ... [TEMAS] Cobertura temática detectada por la IA
+ok
+test_uhp06b_eliminacion_materia_con_presentacion_subtema (tests.e2e.test_e2e_negocio.EliminacionE2E.test_uhp06b_eliminacion_materia_con_presentacion_subtema)
+INT: con una fila en Presentacion_Subtema, el borrado de Presentacion falla ... expected failure
+test_uhp06b_observacion_defecto_fk (tests.e2e.test_e2e_negocio.EliminacionE2E.test_uhp06b_observacion_defecto_fk)
+Observa y registra el fallo actual cuando Presentacion_Subtema tiene filas. ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 6.258s
+
+OK (expected failures=1)

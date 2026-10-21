@@ -1,0 +1,23 @@
+===== ENTORNO DE EJECUCION =====
+fecha            : 2026-10-18T23:34:22
+python           : 3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]
+ejecutable       : C:\Python314\python.exe
+plataforma       : Windows-11-10.0.26300-SP0
+sqlite (stdlib)  : 3.50.4
+tk               : 3.14.6 / Tk disponible en runtime
+raiz repo        : C:\Users\Aldai\ai-presentation-analyzer
+================================
+
+===== RESUMEN GLOBAL =====
+modulos          : tests.e2e.test_e2e_negocio, tests.e2e.test_e2e_gui, tests.e2e.test_e2e_rendimiento_gui
+pruebas totales  : 97
+fallos           : 0
+errores          : 67
+omitidas         : 0
+fallos esperados : 1
+resultado        : FALLIDO
+
+Detalle por modulo:
+  - tests.e2e.test_e2e_negocio: 15 pruebas, 0 fallos, 0 errores, 1 fallos esperados
+  - tests.e2e.test_e2e_gui: 15 pruebas, 0 fallos, 0 errores, 0 fallos esperados
+  - tests.e2e.test_e2e_rendimiento_gui: 67 pruebas, 0 fallos, 67 errores, 0 fallos esperados
