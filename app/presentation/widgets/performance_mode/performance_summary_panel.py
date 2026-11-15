@@ -7,7 +7,7 @@ Cinco tarjetas:
   - Tiempo que recomienda la IA                       [fija]
   - Tiempo que planeó el docente                      [depende del grupo]
   - Duración real de la sesión                        [depende del grupo]
-  - Desviación global vs IA                           [depende del grupo]
+  - Desviación: real vs lo planeado por el docente    [depende del grupo]
 
 actualizar(grupo) refresca las tarjetas dependientes del grupo.
 """
@@ -111,7 +111,7 @@ def crear_resumen_rendimiento(master, analisis: dict, grupos: dict, **kwargs):
     # Dependientes del grupo
     panel._lbl_doc, _ = _card(2, "#0E9AA8", "Planeó docente", "—", "estimado")
     panel._lbl_real, panel._lbl_real_sub = _card(3, COLOR_GUINDA, "Duración real", "—", "—")
-    panel._lbl_desv, _ = _card(4, "#64748B", "Desviación", "—", "vs IA")
+    panel._lbl_desv, _ = _card(4, "#64748B", "Desviación", "—", "vs planeado")
 
     def actualizar(grupo):
         if not grupo or grupo not in panel.grupos:
@@ -124,7 +124,13 @@ def crear_resumen_rendimiento(master, analisis: dict, grupos: dict, **kwargs):
         tps = gd.get("tiempos_por_slide", {}) or {}
         real_total = gd.get("tiempo_total_seg") or sum(v for v in tps.values() if v)
         plan_total = _planeado_grupo(gd)
-        dev = _dev_pct(real_total, ia_total) if ia_total else 0
+
+        # La desviación de rendimiento es SIEMPRE contra lo que planeó el docente,
+        # nunca contra la recomendación de la IA (esa es solo referencia informativa).
+        if plan_total > 0:
+            dev = _dev_pct(real_total, plan_total)
+        else:
+            dev = None  # sin planeación no hay contra qué comparar
 
         presentadas = 0
         for k, v in tps.items():
@@ -136,9 +142,12 @@ def crear_resumen_rendimiento(master, analisis: dict, grupos: dict, **kwargs):
                 presentadas += 1
 
         panel._lbl_doc.configure(text=_fmt(plan_total))
-        panel._lbl_real.configure(text=_fmt(real_total), text_color=_color_desv(dev))
+        panel._lbl_real.configure(text=_fmt(real_total), text_color=_color_desv(dev) if dev is not None else COLOR_GUINDA)
         panel._lbl_real_sub.configure(text=f"{presentadas}/{panel.total} diapositivas")
-        panel._lbl_desv.configure(text=f"{'+' if dev > 0 else ''}{dev}%", text_color=_color_desv(dev))
+        if dev is not None:
+            panel._lbl_desv.configure(text=f"{'+' if dev > 0 else ''}{dev}%", text_color=_color_desv(dev))
+        else:
+            panel._lbl_desv.configure(text="—", text_color="#64748B")
 
     panel.actualizar = actualizar
     return panel

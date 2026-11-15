@@ -49,8 +49,20 @@ def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
 
         try:
             page = panel.doc[panel.pagina_actual]
-            pixmap = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
+            # Zoom DINÁMICO por diapositiva: se calcula el zoom exacto para que
+            # la página llene el área disponible respetando SUS PROPIAS
+            # dimensiones (soporta presentaciones con diapositivas de distintos
+            # tamaños/formatos) y amplía las páginas que vienen pequeñas.
+            ancho_pag = page.rect.width
+            alto_pag  = page.rect.height
+            if ancho_pag > 0 and alto_pag > 0:
+                zoom = min(ancho_max / ancho_pag, alto_max / alto_pag)
+                zoom = max(0.1, min(zoom, 4.0))   # límites de nitidez/memoria
+            else:
+                zoom = 2.0
+            pixmap = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom))
             img_pil = Image.open(io.BytesIO(pixmap.tobytes("png")))
+            # Red de seguridad: solo encoge si por algún motivo excede el área
             img_pil.thumbnail((ancho_max, alto_max), Image.LANCZOS)
 
             escala = ctk.ScalingTracker.get_widget_scaling(panel)

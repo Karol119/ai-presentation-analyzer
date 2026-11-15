@@ -2,9 +2,15 @@
 """
 Reporte de desviaciones como VENTANA (modal), abierto desde un botón en la
 gráfica. Muestra, para el grupo seleccionado, dos categorías:
-  - "Duró muy poco"  (real << recomendado IA)
-  - "Duró mucho"     (real >> recomendado IA)
+  - "Duró muy poco"  (real << esperado)
+  - "Duró mucho"     (real >> esperado)
 Hasta 3 diapositivas por categoría; solo cuenta diapositivas presentadas (real > 0).
+
+REFERENCIA DE LA DESVIACIÓN:
+La desviación se mide SIEMPRE contra el tiempo que planeó el docente (nunca
+contra la recomendación de la IA). Como el docente planea un tiempo TOTAL de
+sesión, ese total se reparte entre las diapositivas de forma proporcional al
+recomendado por la IA para cada una (el reparto es solo interno del cálculo).
 
 Uso:
     from .performance_deviations_panel import abrir_reporte_desviaciones
@@ -37,6 +43,18 @@ def _dev_pct(real, ref):
     return int(round(((real - ref) / ref) * 100))
 
 
+def _planeado_grupo(gdata):
+    """Tiempo total que planeó el docente para la sesión más reciente del grupo."""
+    sesiones = (gdata or {}).get("historial_sesiones", {}) or {}
+    if sesiones:
+        try:
+            ultima = str(max(int(k) for k in sesiones.keys()))
+            return sesiones[ultima].get("planeado_seg", 0)
+        except Exception:
+            pass
+    return (gdata or {}).get("planeado_seg", 0)
+
+
 def abrir_reporte_desviaciones(parent, analisis: dict, grupos: dict, grupo):
     analisis = analisis or {}
     grupos = grupos or {}
@@ -51,19 +69,30 @@ def abrir_reporte_desviaciones(parent, analisis: dict, grupos: dict, grupo):
     def _zona(n):
         return slides_por_num.get(n, {}).get("zona_slide")
 
+    gdata = grupos.get(grupo, {}) or {}
+    plan_total = _planeado_grupo(gdata)
+    ia_total = sum(_ia(n) for n in slides_por_num)
+
+    def _esperado(n):
+        """Parte del tiempo planeado por el docente que corresponde a esta diapositiva."""
+        if plan_total <= 0 or ia_total <= 0:
+            return 0
+        return plan_total * (_ia(n) / ia_total)
+
     devs = []
-    tps = (grupos.get(grupo, {}) or {}).get("tiempos_por_slide", {}) or {}
+    tps = gdata.get("tiempos_por_slide", {}) or {}
     for k, v in tps.items():
         try:
             n = int(k)
         except (ValueError, TypeError):
             continue
         if n in slides_por_num and (v or 0) > 0:
-            ref = _ia(n)
+            ref = _esperado(n)
             devs.append({"n": n, "real": v, "ref": ref, "pct": _dev_pct(v, ref)})
     devs.sort(key=lambda d: d["pct"])
     poco = [d for d in devs if d["pct"] < 0][:3]
     mucho = list(reversed([d for d in devs if d["pct"] > 0]))[:3]
+    sin_referencia = plan_total <= 0 or ia_total <= 0
 
     try:
         raiz = parent.winfo_toplevel()
@@ -91,6 +120,12 @@ def abrir_reporte_desviaciones(parent, analisis: dict, grupos: dict, grupo):
                  text_color=COLOR_ORO).pack(anchor="w")
     ctk.CTkLabel(head, text="Desviaciones de tiempo por diapositiva",
                  font=ctk.CTkFont(size=17, weight="bold"), text_color="#1E293B").pack(anchor="w", pady=(2, 0))
+    if sin_referencia:
+        ctk.CTkLabel(head, text="Sin referencia: este grupo no registró tiempo planeado o el análisis no tiene tiempos.",
+                     font=ctk.CTkFont(size=10), text_color=COLOR_UNDER).pack(anchor="w", pady=(2, 0))
+    else:
+        ctk.CTkLabel(head, text=f"Referencia: lo planeado por el docente ({_fmt(plan_total)}) repartido entre las diapositivas.",
+                     font=ctk.CTkFont(size=10), text_color=TXT_SECOND).pack(anchor="w", pady=(2, 0))
     ctk.CTkFrame(modal, height=1, fg_color=BORDE).pack(fill="x")
 
     cuerpo = ctk.CTkFrame(modal, fg_color="transparent")
@@ -118,7 +153,7 @@ def abrir_reporte_desviaciones(parent, analisis: dict, grupos: dict, grupo):
             ctk.CTkLabel(izq, text=f"Diapositiva {d['n']}", font=ctk.CTkFont(size=13, weight="bold"),
                          text_color="#1E293B", anchor="w").pack(fill="x")
             zn = _zona(d["n"])
-            sub = f"Real {_fmt(d['real'])} · IA {_fmt(d['ref'])}"
+            sub = f"Real {_fmt(d['real'])} · Planeado {_fmt(d['ref'])}"
             if zn:
                 sub += f" · {zn.capitalize()}"
             ctk.CTkLabel(izq, text=sub, font=ctk.CTkFont(size=10), text_color=TXT_SECOND,

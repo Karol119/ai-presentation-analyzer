@@ -20,6 +20,7 @@ El controller lo lee para pasárselo al módulo de restructuración.
 
 import json
 import re
+import sys
 import concurrent.futures
 from typing import Dict, Any, List
 
@@ -40,6 +41,149 @@ from app.core.logic.metrics.narrative_thread import (
     _texto_completo,
     _determinar_estado_por_puntaje,
 )
+
+
+# ---------------------------------------------------------------------------
+# CLASIFICACIÓN LOCAL: PORTADA DE SECCIÓN (SEPARADOR DE TEMA)
+# ---------------------------------------------------------------------------
+
+# Títulos que abren un tema o subtema del temario: inician con numeración
+# jerárquica (ej. "2.3 El proceso de escritura", "2.3.1Elementos de la
+# redacción", con o sin espacio/tabulador tras el número) o con la palabra
+# unidad/tema/módulo seguida de número ("Unidad 3", "Tema 4.1").
+_RE_NUMERACION_TEMARIO = re.compile(r"^\s*\d+(?:\.\d+)+")
+_RE_UNIDAD_TEMARIO = re.compile(
+    r"^\s*(?:unidad|tema|m[oó]dulo|cap[ií]tulo|bloque|secci[oó]n)\s+\d", re.IGNORECASE
+)
+
+# Máximo de palabras en el cuerpo para considerarla separador de sección.
+# Coincide con el umbral de "texto_insuficiente" del Prompt 1: si el cuerpo
+# desarrolla el tema con 15 palabras o más, es "contenido" aunque el título
+# lleve numeración.
+MAX_PALABRAS_CUERPO_PORTADA_SECCION = 15
+
+
+def _es_portada_de_seccion(titulo: str, palabras_cuerpo: int) -> bool:
+    """
+    Detecta portadas de sección (separadores de tema) de forma determinista:
+    título con numeración de temario y cuerpo vacío o mínimo.
+
+    Ejemplo real: título '2.3	El proceso de escritura' con el subtítulo
+    '2.3.1	Elementos de la redacción' como único cuerpo (5 palabras) → portada.
+    """
+    if not titulo or palabras_cuerpo >= MAX_PALABRAS_CUERPO_PORTADA_SECCION:
+        return False
+    return bool(_RE_NUMERACION_TEMARIO.match(titulo) or _RE_UNIDAD_TEMARIO.match(titulo))
+
+
+# ---------------------------------------------------------------------------
+# ANCLA DETERMINISTA DEL HSS (CLARIDAD DE ENCABEZADO)
+# ---------------------------------------------------------------------------
+
+def _resolver_puntaje_hss(
+    puntaje_ia: Any,
+    titulo: str,
+    solapamiento: Any,
+):
+    """
+    Ancla determinista del HSS para eliminar el vaivén entre ejecuciones.
+
+    El veredicto "¿se corrige el título?" (estado BIEN si puntaje > 7) no puede
+    depender de la interpretación subjetiva del modelo, que oscila entre
+    ejecuciones con el mismo texto. Reglas objetivas con prioridad sobre la IA:
+
+      1. Diapositiva sin título → puntaje ≤ 4 (siempre MEJORAR).
+      2. El título comparte al menos un término clave con el contenido →
+         puntaje mínimo 8 (siempre BIEN): el título nombra el tema que el
+         cuerpo desarrolla. Es la regla que rompe el bucle de "corregir el
+         título" sobre el título que la propia IA sugirió en el análisis
+         anterior: si el título viene del contenido, el solapamiento existe.
+      3. Sin solapamiento → se respeta el juicio de la IA (puede haber
+         coherencia semántica por paráfrasis que el léxico no captura).
+
+    Devuelve (puntaje, feedback, anotacion_log); feedback None = usar el de la IA.
+    """
+    if not (titulo or "").strip():
+        puntaje = 4.0 if puntaje_ia is None else min(float(puntaje_ia), 4.0)
+        return puntaje, "La diapositiva no tiene título.", "sin título → HSS anclado a ≤4 (MEJORAR)"
+
+    if solapamiento:
+        puntaje = 8.0 if puntaje_ia is None else float(puntaje_ia)
+        if puntaje < 8.0:
+            terminos = ", ".join(list(solapamiento)[:3])
+            return 8.0, "", (
+                f"la IA dio {puntaje_ia:g} pero hay solapamiento léxico título-contenido "
+                f"({terminos}) → HSS anclado a 8 (coherente, no se corrige)"
+            )
+        return puntaje, "", ""
+
+    puntaje = 5.0 if puntaje_ia is None else float(puntaje_ia)
+    return puntaje, None, ""
+
+
+# ---------------------------------------------------------------------------
+# LOGS DE DEPURACIÓN (consola)
+# ---------------------------------------------------------------------------
+
+def _texto_seguro_para_log(texto: str) -> str:
+    """Evita UnicodeEncodeError al imprimir texto extraído en consolas de Windows."""
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    try:
+        texto.encode(encoding)
+        return texto
+    except UnicodeEncodeError:
+        return texto.encode(encoding, errors="replace").decode(encoding, errors="replace")
+
+
+def _cortar_para_log(texto: str, maximo: int = 120) -> str:
+    texto = _texto_seguro_para_log(texto)
+    return texto if len(texto) <= maximo else texto[:maximo] + "…"
+
+
+def _imprimir_resumen_carga(
+    carga_lote: List[Dict[str, Any]],
+    diapositivas: List[Dict[str, Any]],
+) -> None:
+    """
+    Imprime, por diapositiva, el texto extraído que recibirá la IA (Prompt 1).
+    Sirve para detectar fallos de extracción: si una diapositiva se ve llena de
+    texto pero aquí aparecen pocas palabras, el extractor no la capturó
+    (SmartArt, texto dentro de imágenes, etc.).
+    """
+    por_numero = {d.get("slide_number"): d for d in diapositivas}
+    print("\n[CLASIFICADOR] ── Texto extraído que se envía a la IA (Prompt 1) ──")
+    for item in carga_lote:
+        num = item.get("slide_number")
+        diap = por_numero.get(num, {})
+        contenido_enviado = item.get("contenido", "")
+        footer = " ".join(diap.get("footer", []))
+        print(
+            f"[CLASIFICADOR] Diap {num}: {len(contenido_enviado.split())} palabras enviadas | "
+            f"{diap.get('image_count', 0)} imágenes | "
+            f"{len(footer.split())} palabras excluidas como pie de página | "
+            f"título: '{_cortar_para_log(item.get('titulo', ''))}'"
+        )
+    print("[CLASIFICADOR] Si una diapositiva llena de texto muestra pocas palabras aquí, falló la extracción.")
+
+
+def _imprimir_texto_enviado(
+    num: int,
+    texto_enviado: str,
+    footer: str,
+) -> None:
+    """Detalle del texto enviado a la IA para las diapositivas no 'contenido'."""
+    print(
+        f"    Texto enviado a la IA ({len(texto_enviado.split())} palabras): "
+        f"'{_cortar_para_log(texto_enviado, 300)}'"
+    )
+    if footer:
+        print(
+            f"    Texto excluido como pie de página ({len(footer.split())} palabras): "
+            f"'{_cortar_para_log(footer, 200)}'"
+        )
+    if not texto_enviado.strip():
+        print("    >> ATENCIÓN: contenido vacío. Si la diapositiva se ve llena de texto, la extracción no lo captó")
+        print("       (SmartArt, texto dentro de imágenes o en el pie de página).")
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +209,9 @@ def calcular_metricas_ia_lote(
     # --- Construir la carga de datos compartida por Prompt 1 y Prompt 2 ---
     carga_lote = _construir_carga_lote(diapositivas)
 
+    # --- Log de depuración: qué texto extraído recibe la IA por diapositiva ---
+    _imprimir_resumen_carga(carga_lote, diapositivas)
+
     # --- Construir la carga resumida para Prompt 3 (solo título + contenido) ---
     carga_cobertura = _construir_carga_cobertura(diapositivas)
 
@@ -86,7 +233,7 @@ def calcular_metricas_ia_lote(
     mapa_p2 = {item.get("slide_number"): item for item in resultados_p2}
 
     # --- Consolidar resultados en el contrato esperado por el controller ---
-    return _consolidar_resultados(diapositivas, mapa_p1, mapa_p2, temas_presentacion)
+    return _consolidar_resultados(diapositivas, mapa_p1, mapa_p2, temas_presentacion, carga_lote)
 
 
 # ---------------------------------------------------------------------------
@@ -204,17 +351,30 @@ def _consolidar_resultados(
     mapa_p1: Dict[int, Dict],
     mapa_p2: Dict[int, Dict],
     temas_presentacion: List[Dict],
+    carga_lote: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
     Une los resultados de los 3 prompts con los cálculos locales ya existentes
     y construye el contrato de retorno idéntico al anterior.
     """
+    # Texto exacto que recibió la IA por diapositiva (para los logs de depuración)
+    texto_enviado = {
+        item.get("slide_number"): item.get("contenido", "") for item in carga_lote
+    }
+    # Solapamiento léxico título-contenido calculado localmente (ancla del HSS)
+    solapamientos = {
+        item.get("slide_number"): item.get("hss_diagnostico", {}).get("solapamiento_lexico", [])
+        for item in carga_lote
+    }
+
     resultados_hss = []
     resultados_nts = []
     clasificaciones = {}
 
     puntajes_hss_validos = []
     puntajes_nts_validos = []
+
+    print("\n[CLASIFICADOR] ── Decisión de tipo por diapositiva ──")
 
     for i, diap in enumerate(diapositivas):
         num = diap.get("slide_number")
@@ -223,21 +383,41 @@ def _consolidar_resultados(
         datos_p2 = mapa_p2.get(num, {})
 
         # ── Clasificación ──────────────────────────────────────────────────
-        texto_completo_diap = (
-            diap.get("title", "") + " " + " ".join(diap.get("content", []))
-        )
+        titulo_diap = diap.get("title", "").strip()
+        cuerpo_diap = " ".join(diap.get("content", []))
+        palabras_cuerpo = len(cuerpo_diap.split())
+        texto_completo_diap = titulo_diap + " " + cuerpo_diap
         palabras_totales = len(texto_completo_diap.split())
         imagenes = diap.get("image_count", 0)
+        tipo_ia = (datos_p1.get("tipo") or "contenido").lower()
 
         # Anulaciones locales que siempre tienen prioridad sobre la IA
-        if imagenes > 0 and palabras_totales < 15:
-            tipo_detectado = "visual"
+        if _es_portada_de_seccion(titulo_diap, palabras_cuerpo):
+            tipo_detectado = "portada"
             datos_p1 = {}  # ignorar datos de la IA para esta diapositiva
+        elif imagenes > 0 and palabras_totales < 15:
+            tipo_detectado = "visual"
+            datos_p1 = {}
         elif palabras_totales < 5:
             tipo_detectado = "sin_contenido"
             datos_p1 = {}
         else:
-            tipo_detectado = datos_p1.get("tipo", "contenido").lower()
+            tipo_detectado = tipo_ia
+
+        # ── Log de depuración: quién decidió el tipo y qué texto vio la IA ──
+        anulada = (tipo_detectado != tipo_ia)
+        origen = f"anulación local — la IA dijo '{tipo_ia}'" if anulada else "IA"
+        print(
+            f"[CLASIFICADOR] Diap {num} → '{tipo_detectado}' ({origen}) | "
+            f"título: '{_cortar_para_log(titulo_diap, 60)}' | "
+            f"cuerpo: {palabras_cuerpo} palabras | total: {palabras_totales} | img: {imagenes}"
+        )
+        if tipo_detectado == "texto_insuficiente" or anulada:
+            _imprimir_texto_enviado(
+                num,
+                texto_enviado.get(num, ""),
+                " ".join(diap.get("footer", [])),
+            )
 
         tiempo_diap    = datos_p1.get("tiempo_estimado_segundos", 10)
         tipo_retorico  = datos_p1.get("tipo_retorico")  # puede ser None
@@ -251,14 +431,21 @@ def _consolidar_resultados(
         es_contenido = (tipo_detectado == "contenido")
 
         # ── HSS ────────────────────────────────────────────────────────────
+        # El puntaje pasa por el ancla determinista antes de decidir si la
+        # métrica falla: elimina el vaivén 7/8 del modelo entre ejecuciones.
         puntaje_hss_crudo = datos_p1.get("hss_score")
-        puntaje_hss = (
-            float(puntaje_hss_crudo)
-            if puntaje_hss_crudo is not None and es_contenido
-            else 5.0
-        )
         if es_contenido:
+            puntaje_hss, feedback_hss, anotacion_hss = _resolver_puntaje_hss(
+                puntaje_hss_crudo, titulo_diap, solapamientos.get(num, [])
+            )
+            if anotacion_hss:
+                print(f"[HSS-ANCLA] Diap {num}: {anotacion_hss}")
+            if feedback_hss is None:
+                feedback_hss = datos_p1.get("hss_feedback", "")
             puntajes_hss_validos.append(puntaje_hss)
+        else:
+            puntaje_hss = 5.0
+            feedback_hss = None
 
         resultados_hss.append({
             "slide_number": num,
@@ -266,7 +453,7 @@ def _consolidar_resultados(
             "titulo":       diap.get("title", ""),
             "hss_score":    puntaje_hss if es_contenido else None,
             "coherencia":   _clasificar_puntaje_hss(puntaje_hss) if es_contenido else "no_aplica",
-            "feedback_ai":  datos_p1.get("hss_feedback", "") if es_contenido else None,
+            "feedback_ai":  feedback_hss if es_contenido else None,
         })
 
         # ── NTS ────────────────────────────────────────────────────────────

@@ -16,6 +16,11 @@ def crear_ventana_proyeccion(master, ruta_pdf, pos_x=0, pos_y=0, ancho=800, alto
     
     # 2. BLOQUEAR ESCAPE en la ventana de proyección
     ventana.bind("<Escape>", lambda e: "break")
+
+    # --- [DEMO] Salida temporal: al proyectar en la pantalla principal, esta
+    # ventana fullscreen tapa los controles de la app (y Esc/Alt+F4 están
+    # bloqueados). F11 permite cerrar la proyección. Retirar para la versión final.
+    ventana.bind("<F11>", lambda e: cerrar_ventana())
     
     from app.presentation.widgets.presentation_mode.slides_viewer_panel import crear_visor_diapositivas
     

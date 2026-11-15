@@ -24,6 +24,7 @@ import os
 import re
 import zipfile
 from typing import List, Dict, Any, Optional
+from lxml import etree
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
@@ -31,6 +32,11 @@ UMBRAL_SUPERIOR_TITULO = 0.5
 UMBRAL_SUPERIOR_PIE    = 0.75
 MAX_PALABRAS_TITULO    = 25
 MAX_CARACTERES_TITULO  = 180
+
+# Namespaces para leer diagramas SmartArt (python-pptx no los expone como texto)
+_NS_A   = "http://schemas.openxmlformats.org/drawingml/2006/main"
+_NS_DGM = "http://schemas.openxmlformats.org/drawingml/2006/diagram"
+_NS_R   = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 
 _RE_SOLO_NUMEROS = re.compile(r'^\d{1,3}$')
 
@@ -219,6 +225,11 @@ def _procesar_forma(
             _procesar_forma(hijo, info, candidatos_titulo, altura_diap)
         return
 
+    # SmartArt (diagramas): python-pptx no expone su texto como text_frame.
+    if _es_smartart(forma):
+        _extraer_texto_smartart(forma, info)
+        return
+
     # Imágenes y tablas (tratadas como visuales)
     es_imagen = (
         forma.shape_type == MSO_SHAPE_TYPE.PICTURE
@@ -273,6 +284,69 @@ def _procesar_forma(
 
     # Para los módulos de IA, van los bloques con su estructura
     info["content_blocks"].extend(bloques)
+
+
+# ---------------------------------------------------------------------------
+# EXTRACCIÓN DE TEXTO DE SMARTART
+# ---------------------------------------------------------------------------
+
+def _es_smartart(forma: Any) -> bool:
+    """
+    Detecta si la forma es un diagrama SmartArt: un graphicFrame cuyo
+    graphicData declara el URI de diagrama de DrawingML.
+    """
+    try:
+        datos_graficos = forma._element.find(f".//{{{_NS_A}}}graphicData")
+        return (
+            datos_graficos is not None
+            and "diagram" in (datos_graficos.get("uri") or "")
+        )
+    except Exception:
+        return False
+
+
+def _extraer_texto_smartart(forma: Any, info: Dict[str, Any]) -> None:
+    """
+    Extrae el texto de un diagrama SmartArt y lo agrega como bloque de lista.
+
+    python-pptx no da acceso directo al texto de los diagramas: se lee la parte
+    de datos del diagrama (ppt/diagrams/data*.xml) a través de la relación
+    r:dm declarada en el graphicData del shape. Cada punto del modelo de datos
+    (dgm:pt) con texto se convierte en un ítem de lista.
+    """
+    textos: List[str] = []
+    try:
+        datos_graficos = forma._element.find(f".//{{{_NS_A}}}graphicData")
+        if datos_graficos is None:
+            return
+        relaciones = datos_graficos.find(f"{{{_NS_DGM}}}relIds")
+        if relaciones is None:
+            return
+        id_modelo = relaciones.get(f"{{{_NS_R}}}dm")
+        if not id_modelo or id_modelo not in forma.part.rels:
+            return
+        parte_datos = forma.part.rels[id_modelo].target_part
+        raiz = etree.fromstring(parte_datos.blob)
+        for punto in raiz.iter(f"{{{_NS_DGM}}}pt"):
+            trozos = [
+                t.text.strip()
+                for t in punto.iter(f"{{{_NS_A}}}t")
+                if t.text and t.text.strip()
+            ]
+            texto = " ".join(trozos).strip()
+            if texto and texto not in textos:
+                textos.append(texto)
+    except Exception as e:
+        print(f"[text_extractor] No se pudo extraer texto de un SmartArt: {e}")
+        return
+
+    if textos:
+        info["content"].extend(textos)
+        info["content_blocks"].append({"tipo": "lista", "items": textos})
+        print(
+            f"[text_extractor] SmartArt en diapositiva {info['slide_number']}: "
+            f"{len(textos)} bloques de texto extraídos"
+        )
 
 
 # ---------------------------------------------------------------------------

@@ -21,7 +21,11 @@ Estos prompts solo mejoran la calidad del contenido que llena esa estructura.
 SI_CLASIFICACION = """Eres un evaluador de presentaciones académicas universitarias.
 Responde SIEMPRE con un arreglo JSON válido siguiendo exactamente el esquema indicado.
 Sin markdown, sin texto fuera del JSON, sin comentarios, sin explicaciones previas.
-Cada campo del esquema es obligatorio. Nunca omitas campos aunque el valor sea null."""
+Cada campo del esquema es obligatorio. Nunca omitas campos aunque el valor sea null.
+Califica de forma reproducible: ante el mismo texto, el mismo puntaje, siempre.
+Aplica los criterios del prompt de forma mecánica y prioriza la evidencia objetiva
+(los diagnósticos numéricos incluidos en los datos) sobre impresiones subjetivas.
+Ante duda entre dos valores posibles, elige SIEMPRE el más alto."""
 
 SI_HILO_NARRATIVO = """Eres un evaluador de coherencia discursiva en presentaciones académicas.
 Responde SIEMPRE con un arreglo JSON válido siguiendo exactamente el esquema indicado.
@@ -68,13 +72,26 @@ PASO 1 — CLASIFICACIÓN
 ==========================================
 Asigna UNO de los siguientes tipos evaluando en este orden de prioridad:
 
-1. "portada"           → Primera diapositiva con título de la presentación, autor, institución o curso.
-2. "indice"            → Lista de temas, agenda o tabla de contenidos.
+1. "portada"           → Cubre dos casos:
+                         (a) Portada principal: la primera diapositiva con título de la presentación,
+                             autor, institución, curso o materia.
+                         (b) Portada de sección (separador): la diapositiva que ABRE un tema o subtema
+                             nuevo. Se reconoce porque su título inicia con la numeración del temario
+                             (ejemplos: "2.3 El proceso de escritura", "2.3.1 Elementos de la redacción",
+                             "Unidad 3", "Tema 4.1") y el cuerpo está vacío o tiene muy poco texto.
+                             El número NO es un ítem de lista: es la referencia a la unidad del temario.
+                             NO la confundas con "indice": el índice ENLISTA varios temas juntos en la
+                             misma diapositiva; la portada de sección muestra UN solo tema con su número.
+2. "indice"            → Lista de VARIOS temas, agenda o tabla de contenidos (típicamente varios títulos
+                         enumerados juntos en viñetas o columnas).
 3. "referencias"       → Bibliografía, fuentes o citas.
 4. "cierre"            → Diapositiva final tipo "gracias", "preguntas", "fin" o conclusiones cerradas sin contenido sustantivo.
 5. "visual"            → El peso principal es una imagen, gráfico, diagrama o tabla, con poco texto descriptivo.
 6. "texto_insuficiente"→ El contenido (SIN contar el título) tiene MENOS de 15 palabras y NO encaja en ninguna categoría anterior.
 7. "contenido"         → Texto sustantivo de 15 palabras o más (sin contar el título) que desarrolla un concepto, idea o tema.
+                         ATENCIÓN: que el título lleve numeración de temario (ej. "2.3 El proceso de escritura")
+                         NO hace que la diapositiva sea portada si el cuerpo desarrolla el tema con texto
+                         sustantivo; en ese caso es "contenido".
 
 Asigna la PRIMERA categoría que coincida según el orden anterior.
 
@@ -95,22 +112,33 @@ PASO 3 — HSS (COHERENCIA TÍTULO-CONTENIDO)
 HSS aplica SOLO al tipo "contenido".
 Para cualquier otro tipo: "hss_score": null, "hss_feedback": ""
 
-Antes de puntuar, lee el campo "hss_diagnostico" que viene en los datos del lote.
-Ese campo ya calculó el solapamiento léxico entre título y contenido.
-Úsalo como evidencia objetiva y combínalo con tu lectura semántica del texto.
+Antes de puntuar, aplica estas DOS REGLAS OBJETIVAS (tienen prioridad sobre tu lectura):
+- Si "solapamiento_lexico" contiene AL MENOS UN término, el título nombra el tema que
+  el contenido desarrolla: el puntaje NO puede ser menor a 8. NO lo bajes porque el
+  título te parezca genérico, parcial o poco elaborado.
+- Si la diapositiva NO tiene título: el puntaje NO puede ser mayor a 4.
 
-Escala de puntuación:
+Después, completa con tu lectura semántica SOLO cuando no haya solapamiento léxico.
+No penalices la paráfrasis: título y contenido que hablan del mismo tema con palabras
+distintas es coherencia alta (9-10), no relación marginal.
+
+Escala de puntuación (alineada con la decisión del sistema: 8 o más = no se corrige;
+7 o menos = se sugiere corregir el título):
 - 9-10: El título describe con precisión el tema desarrollado en el contenido.
-        El solapamiento léxico es alto o el título captura la idea central aunque con otras palabras.
-- 7-8:  El título se relaciona pero es genérico, parcial o introduce un ángulo que el contenido no desarrolla completamente.
-        Solapamiento léxico moderado.
-- 5-6:  Relación marginal. El título nombra un tema pero el contenido va por otro camino.
-        Solapamiento léxico bajo.
-- 1-4:  El título no corresponde al contenido, o la diapositiva no tiene título.
-        Solapamiento léxico nulo o casi nulo.
+        Solapamiento léxico alto, o paráfrasis clara del mismo tema.
+- 8:    El título nombra correctamente el tema del contenido, aunque sea genérico
+        o parcial. Es un título aceptable: NO requiere corrección.
+- 6-7:  El título anuncia un ángulo distinto: el contenido se va por otro camino
+        respecto a lo que el título promete.
+- 1-5:  El título no corresponde al contenido (trata otro tema), o la diapositiva
+        no tiene título.
+
+REGLA DE FRONTERA: el 8 significa "no corregir" y el 7 significa "corregir".
+Ante la duda entre 8 y 7, asigna 8: solo corrige títulos con un desajuste REAL y
+observable, nunca por matices de estilo.
 
 REGLAS DE FEEDBACK para HSS:
-- Si el puntaje es 9 o 10: devuelve "" (cadena vacía).
+- Si el puntaje es 8 o más: devuelve "" (cadena vacía).
 - Si el puntaje es menor: describe en máximo 20 palabras qué aspecto del título no corresponde al contenido.
 - Describe lo que se observa en el texto, no juicios sobre valor educativo.
 - Prohibido usar: pedagogía, pedagógico, didáctico, optimiza, optimización,
@@ -403,6 +431,11 @@ REGLA TITULO — Si "requiere_reestructuracion" es true Y "metricas_que_fallan" 
     El campo "contenido_a_incluir" y "terminos_tecnicos_obligatorios" van vacíos.
   → Justificación: el cuerpo de la diapositiva está bien. Solo el título necesita
     ser más descriptivo del contenido que ya existe. No se reescribe el cuerpo.
+  → REQUISITO del "titulo_propuesto": constrúyelo con 2 a 4 palabras significativas
+    que aparezcan LITERALMENTE en el contenido de la diapositiva. No uses sinónimos
+    ni vocabulario ajeno al cuerpo: si el título no comparte palabras con el
+    contenido, la siguiente evaluación de HSS lo volverá a marcar como incoherente
+    y el docente entraría en un ciclo de correcciones sin fin.
 
 REGLA A — Si "palabras_count" <= 50:
   → accion: "reescribir_una"
@@ -443,6 +476,9 @@ QUÉ DEBE CONTENER CADA ENTRADA DEL PLAN
 Para cada diapositiva planificada indica:
 - "titulo_propuesto": título descriptivo de 3 a 8 palabras que capture el contenido de esa parte.
   NO uses títulos genéricos como "Parte 1", "Continuación", "Concepto principal".
+  En TODOS los casos (solo_titulo, reescribir_una, dividir) el título debe incluir
+  al menos DOS palabras significativas que aparezcan literalmente en el contenido
+  de esa parte o en "terminos_tecnicos_obligatorios".
 - "contenido_a_incluir": descripción de QUÉ información del original irá en esa diapositiva.
   Sé específico: nombra los conceptos, términos técnicos o ejemplos que corresponden.
   No escribas el texto final, solo describe su contenido.
@@ -657,6 +693,13 @@ TÍTULO — "titulo_sugerido":
   - Usa el "titulo_propuesto" del plan como base.
   - Ajústalo si al escribir el contenido descubres que describe mejor otro ángulo.
   - Entre 3 y 8 palabras. Prohibido: "Concepto", "Información", "Tema N", "Parte N".
+  - REQUISITO DE COHERENCIA LÉXICA (obligatorio, aplica a TODAS las diapositivas
+    generadas): incluye al menos DOS palabras significativas que aparezcan
+    LITERALMENTE en el "contenido_optimizado" que escribiste (o en los
+    "terminos_tecnicos_obligatorios"). No las cambies por sinónimos: al volver a
+    evaluar la presentación, la métrica HSS comprueba el solapamiento léxico entre
+    el título y el contenido. Un título con vocabulario ajeno al cuerpo vuelve a
+    marcarse como incoherente y el docente tendría que corregirlo otra vez.
 
 HILO NARRATIVO entre diapositivas generadas:
   - Si generas varias diapositivas para una misma original, ordénalas de modo que
@@ -699,6 +742,8 @@ Para cada diapositiva generada, verifica EN ESTE ORDEN:
 3. TIPO RETÓRICO: ¿La redacción respeta el registro del tipo indicado?
 4. TÍTULO: ¿Describe con precisión el contenido en 3 a 8 palabras?
 5. CONECTORES: ¿Hay al menos 2 conectores o palabras función en el texto?
+6. COHERENCIA LÉXICA DEL TÍTULO: ¿"titulo_sugerido" comparte al menos 2 palabras
+   significativas con "contenido_optimizado"? Si no, ajústalo antes de responder.
 
 Si la verificación 2 falla porque para cumplir el límite de 50 palabras tuviste
 que omitir información: añade una diapositiva más al arreglo, NO elimines información.

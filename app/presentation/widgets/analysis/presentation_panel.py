@@ -1,8 +1,9 @@
 # app/presentation/widgets/analysis/presentation_panel.py
 """
 Panel izquierdo de la vista de análisis.
-Renderiza el PDF de la presentación página por página usando PyMuPDF.
-Permite navegar con botones < > o teclado.
+Renderiza el PDF de la presentación página por página usando PyMuPDF,
+adaptando el tamaño a las dimensiones de cada diapositiva.
+Permite navegar con botones < >, teclado o tecleando el número de diapositiva.
 """
 
 import fitz  # PyMuPDF
@@ -22,7 +23,8 @@ _visor = {
     "pagina_actual": 0,
     "total_paginas": 0,
     "label_imagen": None,
-    "label_contador": None,
+    "entry_pagina": None,   # Campo manual "ir a diapositiva N" (como en la vista docente)
+    "label_total":   None,  # Etiqueta "/ N" junto al campo
     "on_pagina_cambiada": None,  # Callback para notificar a results_panel
     "btn_lock": False,     # Bloqueo anti-multiclic en la navegación
 }
@@ -111,7 +113,11 @@ def _build_slide_area(parent):
 
 
 def _build_navigation(parent):
-    """Barra inferior con botones < > y contador de páginas."""
+    """Barra inferior con botones < > y navegación manual por número.
+
+    Mismo diseño que la vista del docente: se puede teclear un número y
+    <Return> lleva directo a esa diapositiva.
+    """
     nav = ctk.CTkFrame(parent, fg_color="transparent")
     nav.pack(pady=16)
 
@@ -130,14 +136,25 @@ def _build_navigation(parent):
     )
     btn_prev.pack(side="left", padx=(0, 12))
 
-    _visor["label_contador"] = ctk.CTkLabel(
-        nav,
-        text="",
-        font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
-        text_color="#475569",
-        width=70,
+    # --- Campo manual "ir a diapositiva N" (mismo diseño de la vista docente) ---
+    _visor["entry_pagina"] = ctk.CTkEntry(
+        nav, width=35, height=26, justify="center",
+        font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
     )
-    _visor["label_contador"].pack(side="left")
+    _visor["entry_pagina"].pack(side="left")
+
+    _visor["label_total"] = ctk.CTkLabel(
+        nav, text="/ -",
+        font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+        text_color="#334155",
+    )
+    _visor["label_total"].pack(side="left", padx=(4, 0))
+
+    _visor["entry_pagina"].bind("<Return>", _saltar_pagina)
+    # Mientras se teclea en el campo, las teclas del clicker/teclado no deben
+    # cambiar de diapositiva ni insertar caracteres ajenos al número.
+    for tecla in ("<space>", "<Left>", "<Right>", "<Prior>", "<Next>"):
+        _visor["entry_pagina"].bind(tecla, lambda e: "break")
 
     btn_next = ctk.CTkButton(
         nav,
@@ -213,31 +230,61 @@ def _mostrar_pagina(indice: int):
     ancho_max = max(container.winfo_width()  - 40, 400)
     alto_max  = max(container.winfo_height() - 40, 300)
 
-    # Renderizar página con PyMuPDF
-    page   = doc[indice]
-    matriz = fitz.Matrix(2.0, 2.0)          # Escala 2x para buena resolución
-    pixmap = page.get_pixmap(matrix=matriz)
+    # Renderizar página con PyMuPDF usando zoom DINÁMICO: se calcula el zoom
+    # exacto para que la diapositiva llene el área disponible respetando SUS
+    # PROPIAS dimensiones (soporta presentaciones con diapositivas de distintos
+    # tamaños/formatos) y amplía las páginas que vienen pequeñas.
+    page = doc[indice]
+    ancho_pag = page.rect.width
+    alto_pag  = page.rect.height
+    if ancho_pag > 0 and alto_pag > 0:
+        zoom = min(ancho_max / ancho_pag, alto_max / alto_pag)
+        zoom = max(0.1, min(zoom, 4.0))   # límites de nitidez/memoria
+    else:
+        zoom = 2.0
+    pixmap = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom))
 
     # Convertir a PIL Image
     img_pil = Image.open(io.BytesIO(pixmap.tobytes("png")))
 
-    # Escalar manteniendo proporción
+    # Red de seguridad: solo encoge si por algún motivo excede el área
     img_pil.thumbnail((ancho_max, alto_max), Image.LANCZOS)
 
     img_ctk = ctk.CTkImage(light_image=img_pil, size=img_pil.size)
     label.configure(image=img_ctk, text="")
     label._image = img_ctk  # Evitar garbage collection
 
-    # Actualizar contador visual
+    # Actualizar campo manual y total de páginas
     total = _visor["total_paginas"]
-    if _visor["label_contador"]:
-        _visor["label_contador"].configure(
-            text=f"{indice + 1} / {total}"
-        )
+    if _visor["entry_pagina"]:
+        _visor["entry_pagina"].delete(0, "end")
+        _visor["entry_pagina"].insert(0, str(indice + 1))
+    if _visor["label_total"]:
+        _visor["label_total"].configure(text=f"/ {total}")
 
     # Notificar a results_panel para que actualice las métricas de la diapositiva
     if _visor["on_pagina_cambiada"]:
         _visor["on_pagina_cambiada"](indice)
+
+
+def _saltar_pagina(event=None):
+    """Toma el número tecleado en el campo y lleva directo a esa diapositiva."""
+    entry = _visor.get("entry_pagina")
+    if entry is None:
+        return "break"
+    try:
+        objetivo = int(entry.get()) - 1
+        total = _visor["total_paginas"]
+        if 0 <= objetivo < total:
+            _mostrar_pagina(objetivo)
+        else:
+            raise ValueError
+    except ValueError:
+        entry.delete(0, "end")
+        entry.insert(0, str(_visor["pagina_actual"] + 1))
+    ui["root"].focus_set()
+    # Evita que el <Return> burbujee al binding global que avanza una diapositiva
+    return "break"
 
 
 def _pagina_anterior():

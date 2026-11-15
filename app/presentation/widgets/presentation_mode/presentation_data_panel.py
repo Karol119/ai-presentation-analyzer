@@ -12,6 +12,7 @@ COLOR_GUINDA = "#6A1B31"
 COLOR_ORO = "#BC955C"
 COLOR_TIEMPO = "#1E293B"
 
+
 def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: str, visor_referencia=None, cmd_toggle_proyeccion=None, tiempo_estimado=0, **kwargs):
     panel = ctk.CTkFrame(master, fg_color="white", corner_radius=14, width=320, border_width=1, border_color="#E8ECF2", **kwargs)
     panel.pack_propagate(False)
@@ -40,6 +41,18 @@ def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: 
         except Exception as e: 
             print(f"Error parseando análisis: {e}")
 
+    # Referencia de la IA por diapositiva (base 1) para la mini-etiqueta "rec:"
+    panel.t_ref_por_slide = {}
+    if isinstance(panel.cached_data, dict) and isinstance(panel.cached_data.get("slides"), list):
+        for s in panel.cached_data["slides"]:
+            n = s.get("slide_number")
+            try:
+                n = int(n)
+            except (TypeError, ValueError):
+                n = None
+            if n is not None and n >= 1:
+                panel.t_ref_por_slide[n] = s.get("tiempo_exposicion") or 0
+
     # --- HEADER ---
     header_frame = ctk.CTkFrame(panel, fg_color="transparent")
     header_frame.pack(fill="x", padx=16, pady=(18, 5))
@@ -60,6 +73,10 @@ def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: 
     ctk.CTkLabel(slide_frame, text="📄 ESTA SLIDE", font=ctk.CTkFont(size=10, weight="bold"), text_color="#64748B").pack(side="left")
     panel.label_timer_slide = ctk.CTkLabel(slide_frame, text="00:00", font=ctk.CTkFont(family="Consolas", size=16, weight="bold"), text_color=COLOR_TIEMPO)
     panel.label_timer_slide.pack(side="right")
+
+    # Mini-etiqueta: tiempo recomendado por la IA para la diapositiva en curso
+    panel.label_rec_slide = ctk.CTkLabel(slide_frame, text="", font=ctk.CTkFont(family="Segoe UI", size=10, weight="bold"), text_color=COLOR_ORO)
+    panel.label_rec_slide.pack(side="left", padx=(10, 0))
 
     # --- SCROLL CENTRAL ---
     scroll_frame = ctk.CTkScrollableFrame(panel, fg_color="transparent")
@@ -136,6 +153,18 @@ def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: 
         m, s = divmod(segundos, 60)
         return f"{int(m):02d}:{int(s):02d}"
 
+    # --- Texto del tiempo recomendado por la IA (mini-etiqueta en la fila "ESTA SLIDE") ---
+    def _texto_rec(slide_num):
+        t = panel.t_ref_por_slide.get(slide_num, 0)
+        if t <= 0:
+            return ""
+        if t < 60:
+            return f"rec: {t}s"
+        m, s = divmod(t, 60)
+        return f"rec: {m}m {s:02d}s"
+
+    panel.label_rec_slide.configure(text=_texto_rec(1))
+
     def actualizar_reloj():
         if not panel.winfo_exists() or panel.cronometro_id is None: 
             return
@@ -148,7 +177,7 @@ def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: 
         
         panel.label_timer_total.configure(text=formatear_tiempo(panel.segundos_totales))
         panel.label_timer_slide.configure(text=formatear_tiempo(panel.tiempos_por_slide[idx]))
-        
+
         if panel.tiempo_estimado_seg > 0 and panel.segundos_totales > panel.tiempo_estimado_seg:
             panel.label_timer_total.configure(text_color="#EF4444")
         else:
@@ -267,6 +296,8 @@ def crear_panel_datos(master, subject: str, nombre_presentacion: str, ruta_pdf: 
         panel.label_paginas_total.configure(text=f"/ {total}")
         
         panel.label_timer_slide.configure(text=formatear_tiempo(panel.tiempos_por_slide[indice_slide]))
+
+        panel.label_rec_slide.configure(text=_texto_rec(indice_slide + 1))
 
         if panel.visor:
             btn_ant.configure(state="disabled" if indice_slide == 0 else "normal")

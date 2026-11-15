@@ -196,9 +196,12 @@ def _obtener_configuracion_clase(root, json_reporte_raw, subject, nombre_present
             return
 
         monitor_seleccionado_str = combo_monitores.get()
-        if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
-            lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
-            return
+        # --- [DEMO] Comentado temporalmente: se bloqueaba presentar en la
+        # pantalla principal. Ahora se permite elegir la pantalla principal
+        # (o simulada) cuando no hay proyector. Descomentar para la versión final.
+        # if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
+        #     lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
+        #     return
 
         resultado["grupo"] = grupo_final
         resultado["tiempo"] = t_val
@@ -378,17 +381,20 @@ def mostrar_vista_presentacion(root, subject: str, nombre_presentacion: str, rut
         if _ventana_proyeccion is not None and _ventana_proyeccion.winfo_exists():
             _ventana_proyeccion.cerrar()
         else:
-            try:
-                from screeninfo import get_monitors
-                if len(get_monitors()) < 2:
-                    messagebox.showwarning(
-                        "Proyector no detectado",
-                        "No se puede iniciar la clase.\nDebe conectar un proyector o monitor secundario para presentar."
-                    )
-                    return
-            except Exception as e:
-                print(f"Error leyendo monitores (librería no disponible): {e}")
-                pass
+            # --- [DEMO] Comentado temporalmente: se exigía un proyector/monitor
+            # secundario para poder iniciar la clase. Ahora se permite presentar
+            # en la pantalla principal. Descomentar para la versión final.
+            # try:
+            #     from screeninfo import get_monitors
+            #     if len(get_monitors()) < 2:
+            #         messagebox.showwarning(
+            #             "Proyector no detectado",
+            #             "No se puede iniciar la clase.\nDebe conectar un proyector o monitor secundario para presentar."
+            #         )
+            #         return
+            # except Exception as e:
+            #     print(f"Error leyendo monitores (librería no disponible): {e}")
+            #     pass
 
             _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pdf, _visor_panel.pagina_actual)
 

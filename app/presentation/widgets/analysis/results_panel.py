@@ -70,8 +70,15 @@ def _build_footer(parent):
         if estado.get("bloqueo_ui"): return
         data = _widgets["cached_data"]
         if not data: return
-        
-        hay_mejoras = any(s.get("requiere_reestructuracion") for s in data.get("slides", []))
+
+        # MISMA regla del historial (presentation_controller._necesita_mejoras_segun_datos):
+        # hay mejoras si alguna diapositiva requiere reestructuración o trae
+        # sugerencias generadas. Sin mejoras -> aviso de nivel óptimo.
+        hay_mejoras = any(
+            s.get("requiere_reestructuracion")
+            or (s.get("reestructuracion") or {}).get("diapositivas_generadas")
+            for s in data.get("slides", [])
+        )
         if not hay_mejoras:
             messagebox.showinfo("Aviso", "Esta presentación ya está en un nivel óptimo. No requiere reestructuración.")
             return
@@ -118,10 +125,26 @@ def _build_footer(parent):
     except Exception:
         pass
 
+    # Estado "óptima" (igual que en el historial de versiones): cuando el
+    # análisis no tiene mejoras pendientes, el botón se muestra en verde como
+    # '✔ Óptima'; al presionarlo aparece el aviso de que no requiere
+    # reestructuración (el mismo mensaje que ya existía).
+    data = _widgets["cached_data"]
+    hay_mejoras = bool(data) and any(
+        s.get("requiere_reestructuracion")
+        or (s.get("reestructuracion") or {}).get("diapositivas_generadas")
+        for s in data.get("slides", [])
+    )
+    es_optima = bool(data) and not hay_mejoras
+    if es_optima:
+        texto_btn = "✔ Óptima"
+
     btn_aplicar = ctk.CTkButton(
         footer,
         text=texto_btn,
-        fg_color="#6A1B31", hover_color="#4D1324", text_color="white",
+        fg_color="#10B981" if es_optima else "#6A1B31",
+        hover_color="#0B815F" if es_optima else "#4D1324",
+        text_color="white",
         font=("Inter", 13, "bold"), height=40, corner_radius=10,
         command=exportar_mejoras
     )
@@ -166,6 +189,7 @@ def _on_pagina_cambiada(indice: int):
         ).pack(pady=40)
         return
 
+    _renderizar_tiempo_recomendado(container, slide_data)
     _renderizar_calificacion(container, slide_data)
     _renderizar_metricas(container, slide_data)
     _renderizar_boton_reestructuracion(container, slide_data)
@@ -184,6 +208,37 @@ def _renderizar_tipo(parent, slide_data):
         alerta_box = ctk.CTkFrame(parent, fg_color="#FFFBEB", corner_radius=8, border_width=1, border_color="#FEF3C7")
         alerta_box.pack(fill="x", pady=10, padx=5)
         ctk.CTkLabel(alerta_box, text="⚠️ Advertencia:\nActualmente el prototipo no es capaz de analizar imágenes.", text_color="#92400E", wraplength=250, font=("Inter", 10, "bold"), justify="center").pack(pady=10, padx=10)
+
+def _renderizar_tiempo_recomendado(parent, slide_data):
+    """
+    Muestra el tiempo de exposición recomendado por la IA para esta diapositiva,
+    para que el docente lo consulte antes de exponer.
+    """
+    try:
+        t = int(slide_data.get("tiempo_exposicion") or 0)
+    except (TypeError, ValueError):
+        t = 0
+    if t <= 0:
+        return  # La IA no dio recomendación de tiempo para esta diapositiva
+
+    if t < 60:
+        texto = f"{t}s"
+    else:
+        m, s = divmod(t, 60)
+        texto = f"{m}m {s:02d}s"
+
+    frame = ctk.CTkFrame(parent, fg_color="#F1F5F9", corner_radius=8)
+    frame.pack(fill="x", pady=10)
+
+    ctk.CTkLabel(
+        frame, text="⏱ Tiempo sugerido por la IA:",
+        font=("Inter", 13, "bold"), text_color="#1E293B"
+    ).pack(side="left", padx=10, pady=8)
+    ctk.CTkLabel(
+        frame, text=texto,
+        font=("Inter", 12, "bold"), text_color=COLOR_GUINDA
+    ).pack(side="right", padx=10)
+
 
 def _renderizar_calificacion(parent, slide_data):
     zona = slide_data.get("zona_slide", "N/A")
@@ -247,6 +302,14 @@ def _renderizar_boton_reestructuracion(parent, slide_data):
         )
         btn.configure(command=lambda: _abrir_modal_reestructuracion(reest["diapositivas_generadas"], btn))
         btn.pack(pady=20, fill="x", padx=10)
+    elif not slide_data.get("requiere_reestructuracion"):
+        # Sin mejoras para esta diapositiva: estado "óptima",
+        # igual que se muestra en el historial de versiones.
+        ctk.CTkLabel(
+            parent, text="✔ Óptima",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#10B981",
+        ).pack(pady=20)
 
 def _abrir_modal_reestructuracion(sugerencias, boton_disparador):
     if _widgets.get("modal_abierto"): return
