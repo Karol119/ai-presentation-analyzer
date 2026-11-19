@@ -196,12 +196,9 @@ def _obtener_configuracion_clase(root, json_reporte_raw, subject, nombre_present
             return
 
         monitor_seleccionado_str = combo_monitores.get()
-        # --- [DEMO] Comentado temporalmente: se bloqueaba presentar en la
-        # pantalla principal. Ahora se permite elegir la pantalla principal
-        # (o simulada) cuando no hay proyector. Descomentar para la versión final.
-        # if "[Principal]" in monitor_seleccionado_str or "Simulada" in monitor_seleccionado_str:
-        #     lbl_error.configure(text="Error: Seleccione el Proyector/Ext, no la pantalla principal.")
-        #     return
+        # Elegir la pantalla principal/simulada es válido: abre la MINI VENTANA
+        # de proyección simulada (vista del alumno) en lugar de fullscreen.
+        # Ver _seleccionar_monitor_y_proyectar para la decisión de modo.
 
         resultado["grupo"] = grupo_final
         resultado["tiempo"] = t_val
@@ -315,6 +312,45 @@ def _lanzar_proyeccion(root, ruta_pdf, indice_actual, pos_x, pos_y, ancho, alto)
     # ------------------------------------------------------------------------
 
 
+def _lanzar_mini_proyeccion(root, ruta_pdf, indice_actual):
+    """Proyección en modo SIMULACIÓN (sin proyector real).
+
+    Abre una mini ventana flotante siempre visible que muestra la vista del
+    alumno — lo que saldría por el dispositivo de salida — sincronizada con
+    la vista del docente. Pensada para demostrar/grabar la doble vista
+    sincronizada (DVS) con una sola pantalla.
+    """
+    global _ventana_proyeccion
+    if _ventana_proyeccion is not None:
+        _ventana_proyeccion.cerrar()
+
+    ui["proyeccion_activa"] = True
+
+    def al_cerrar_mini():
+        global _ventana_proyeccion
+        _ventana_proyeccion = None
+        ui["proyeccion_activa"] = False
+
+        if _datos_panel is not None and _datos_panel.winfo_exists():
+            _datos_panel.set_estado_proyeccion(False)
+            if _visor_panel is not None and _visor_panel.winfo_exists():
+                _visor_panel.focus_set()
+
+    from app.presentation.views.projection_gui import crear_mini_proyeccion
+    _ventana_proyeccion = crear_mini_proyeccion(root, ruta_pdf=ruta_pdf, on_close=al_cerrar_mini)
+    _ventana_proyeccion.sincronizar_pagina(indice_actual)
+
+    if _datos_panel is not None:
+        _datos_panel.set_estado_proyeccion(True)
+
+    # El foco vuelve al visor del docente: teclado/clicker siguen controlando
+    # la clase y la mini ventana se sincroniza sola.
+    if _visor_panel is not None and _visor_panel.winfo_exists():
+        _visor_panel.focus_set()
+
+    print("[PROYECCION] Modo simulacion: mini ventana de salida (vista del alumno)")
+
+
 def _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pdf, indice_actual):
     id_materia = obtener_id_materia_controlador(subject)
     json_reporte_raw = orquestar_obtener_reporte_tiempo(nombre_presentacion, id_materia)
@@ -359,13 +395,22 @@ def _seleccionar_monitor_y_proyectar(root, subject, nombre_presentacion, ruta_pd
     try:
         from screeninfo import get_monitors
         monitores = get_monitors()
-        if not monitores: raise ImportError
-        m = monitores[monitor_idx]
-        pos_x, pos_y, ancho, alto = m.x, m.y, m.width, m.height
     except Exception:
-        pos_x, pos_y, ancho, alto = 0, 0, 800, 600
+        monitores = []
 
-    _lanzar_proyeccion(root, ruta_pdf, indice_actual, pos_x, pos_y, ancho, alto)
+    # Dispositivo de salida elegido en el diálogo:
+    #   - [Proyector/Ext] → proyección REAL fullscreen en ese monitor.
+    #   - [Principal] / (Simulada) o sin monitores detectados → SIMULACIÓN con
+    #     la mini ventana flotante (vista del alumno), para grabar/demostrar
+    #     la doble vista sincronizada con una sola pantalla.
+    def _es_pantalla_principal(m):
+        return m.x == 0 and m.y == 0  # mismo criterio con el que se etiquetó en el diálogo
+
+    if monitor_idx < len(monitores) and not _es_pantalla_principal(monitores[monitor_idx]):
+        m = monitores[monitor_idx]
+        _lanzar_proyeccion(root, ruta_pdf, indice_actual, m.x, m.y, m.width, m.height)
+    else:
+        _lanzar_mini_proyeccion(root, ruta_pdf, indice_actual)
 
 
 def mostrar_vista_presentacion(root, subject: str, nombre_presentacion: str, ruta_pdf: str):

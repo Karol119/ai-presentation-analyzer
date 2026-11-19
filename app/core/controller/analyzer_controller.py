@@ -218,7 +218,30 @@ def analizar_presentacion(
         if callback_estado:
             callback_estado("[SISTEMA] Generando Material Didáctico y Reestructurando...")
 
+        # Preparar carga para el Prompt 6 (material de apoyo para TODAS).
+        # IMPORTANTE: debe construirse ANTES de la limpieza destructiva de
+        # abajo. Si se hace después, las diapositivas que NO se reestructuran
+        # ya perdieron "content"/"content_blocks"/"titulo_original" y el
+        # Prompt 6 recibe contenido vacío, generando preguntas/datos genéricos
+        # ("El contenido original de esta diapositiva se encuentra vacío.")
+        # en lugar de material basado en el texto real.
+        carga_material = [
+            {
+                "slide_number":   s["slide_number"],
+                "content":        s.get("content", []),
+                "content_blocks": s.get("content_blocks", []),
+                "titulo":         s.get("titulo_original", ""),
+            }
+            for s in diapositivas_para_enriquecer
+        ]
+        con_contenido = sum(
+            1 for c in carga_material if c["content"] or c["content_blocks"]
+        )
+        print(f"[MATERIAL] Prompt 6: {con_contenido}/{len(carga_material)} "
+              f"diapositivas de contenido con texto original disponible")
+
         # Limpiar campos temporales de diapositivas que NO se reestructuran
+        # (SOLO después de haber extraído la carga del material)
         nums_a_reestructurar = {s["slide_number"] for s in diapositivas_para_reestructurar}
         for s in diapositivas_para_enriquecer:
             if s["slide_number"] not in nums_a_reestructurar:
@@ -229,18 +252,6 @@ def analizar_presentacion(
                 s.pop("tipo_retorico", None)
                 s.pop("icd_valor", None)
                 s.pop("palabras_count", None)
-
-        # Preparar carga para el Prompt 6 (material de apoyo para TODAS)
-        # Necesita contenido original antes de que los pops lo eliminen
-        carga_material = [
-            {
-                "slide_number":   s["slide_number"],
-                "content":        s.get("content", []),
-                "content_blocks": s.get("content_blocks", []),
-                "titulo":         s.get("titulo_original", ""),
-            }
-            for s in diapositivas_para_enriquecer
-        ]
 
         # Ejecutar en paralelo:
         #   - Prompt 6: material de apoyo para TODAS las diapositivas de contenido

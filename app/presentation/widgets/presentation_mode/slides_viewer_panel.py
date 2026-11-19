@@ -6,7 +6,11 @@ import io
 
 COLOR_GUINDA = "#6A1B31"
 
-def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
+def crear_visor_diapositivas(master, ruta_pdf: str, capturar_teclas: bool = True, **kwargs):
+    """capturar_teclas=False para visores que SOLO siguen al docente
+    (proyección fullscreen / mini simulada): no registran ni liberan los
+    atajos globales (clicker/teclado), que deben seguir controlando la
+    vista del docente incluso después de cerrar la proyección."""
     # Extraer estilos o usar defaults
     bg_color = kwargs.pop("fg_color", "white")
     radius = kwargs.pop("corner_radius", 14)
@@ -102,15 +106,16 @@ def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
         if panel.doc:
             panel.doc.close()
             panel.doc = None
-            
-        # Limpieza de eventos globales
-        root = panel.winfo_toplevel()
-        root.unbind("<Left>")
-        root.unbind("<Right>")
-        root.unbind("<space>")
-        root.unbind("<Return>")
-        root.unbind("<Next>")
-        root.unbind("<Prior>")
+
+        # Solo libera los atajos globales el visor que los registró
+        if capturar_teclas:
+            root = panel.winfo_toplevel()
+            root.unbind("<Left>")
+            root.unbind("<Right>")
+            root.unbind("<space>")
+            root.unbind("<Return>")
+            root.unbind("<Next>")
+            root.unbind("<Prior>")
 
     # Exponer las funciones anexándolas al panel
     panel.renderizar_slide_actual = renderizar_slide_actual
@@ -121,25 +126,27 @@ def crear_visor_diapositivas(master, ruta_pdf: str, **kwargs):
     # Bindings al redimensionar
     panel.bind("<Configure>", al_redimensionar)
     
-    # BINDINGS GLOBALES (Resistentes a pérdida de foco)
-    root = master.winfo_toplevel()
-    
-    # Limpiamos antes por si hay algún residuo
-    root.unbind("<Left>")
-    root.unbind("<Right>")
-    root.unbind("<space>")
-    root.unbind("<Return>")
-    root.unbind("<Next>")
-    root.unbind("<Prior>")
-    
-    # Flechas y controles retroceder
-    root.bind("<Left>",  retroceder_pagina)
-    root.bind("<Prior>", retroceder_pagina) # Re Pág (Clickers)
-    
-    # Flechas y controles avanzar
-    root.bind("<Right>",  avanzar_pagina)
-    root.bind("<space>",  avanzar_pagina)
-    root.bind("<Return>", avanzar_pagina)
-    root.bind("<Next>",   avanzar_pagina) # Av Pág (Clickers)
+    # BINDINGS GLOBALES (Resistentes a pérdida de foco) — solo el visor
+    # del docente los registra; los visores de proyección no tocan atajos.
+    if capturar_teclas:
+        root = master.winfo_toplevel()
+
+        # Limpiamos antes por si hay algún residuo
+        root.unbind("<Left>")
+        root.unbind("<Right>")
+        root.unbind("<space>")
+        root.unbind("<Return>")
+        root.unbind("<Next>")
+        root.unbind("<Prior>")
+
+        # Flechas y controles retroceder
+        root.bind("<Left>",  retroceder_pagina)
+        root.bind("<Prior>", retroceder_pagina) # Re Pág (Clickers)
+
+        # Flechas y controles avanzar
+        root.bind("<Right>",  avanzar_pagina)
+        root.bind("<space>",  avanzar_pagina)
+        root.bind("<Return>", avanzar_pagina)
+        root.bind("<Next>",   avanzar_pagina) # Av Pág (Clickers)
 
     return panel
