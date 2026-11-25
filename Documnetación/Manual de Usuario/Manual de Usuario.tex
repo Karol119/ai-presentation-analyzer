@@ -1,0 +1,993 @@
+% ============================================================================
+%  MANUAL DE USUARIO — AI Presentation Analyzer
+%  Trabajo Terminal II · 2026-B127 · ESCOM — IPN
+%
+%  Compilación: pdflatex (dos pasadas, para resolver índices y referencias).
+%
+%  RECURSOS GRÁFICOS
+%  Todas las imágenes se guardan en la carpeta  img/  (junto a este archivo),
+%  en formato PNG y con el nombre exacto indicado. Mientras una captura no
+%  exista, el manual muestra un recuadro con el nombre del archivo esperado;
+%  al guardarla en  img/  se incluye automáticamente al recompilar.
+%
+%  Logotipos de la portada: img/IPN.png e img/ESCOM.png.
+%
+%  LISTA DE CAPTURAS (nombre del archivo en img/ · sección):
+%   api-01-ai-studio ........ Pantalla principal de Google AI Studio (2.4)
+%   api-02-create ........... Opciones Get API key y Create API key (2.4)
+%   api-03-copiar ........... Clave generada y botón de copia (2.4)
+%   p-engranaje ............. Botón de configuración en la barra superior (2.5)
+%   p-config-ia ............. Ventana Configuración de IA (2.5)
+%   p-modelo ................ Selector Modelo de IA (2.5)
+%   p-guardar ............... Confirmación de configuración guardada (2.5)
+%   p-principal ............. Pantalla principal con sus cuatro zonas (3.1)
+%   p-menu .................. Menú Ver opciones de la tarjeta (3.1)
+%   p-agregar-btn ........... Botón + Agregar materia (3.2)
+%   p-agregar-modal ......... Catálogo de materias de la ESCOM (3.2)
+%   p-mis-materias .......... Lista Mis Materias con una materia agregada (3.2)
+%   p-subir ................. Tarjeta Subir presentación (3.3)
+%   p-cargando .............. Modal Cargando presentación... (3.3)
+%   p-tarjeta ............... Tarjeta de una presentación cargada (3.3)
+%   p-limite-tamano ......... Modal Límite de tamaño excedido (3.3)
+%   p-duplicado ............. Modal Archivo Duplicado (3.3)
+%   p-analizando ............ Modal Analizando presentación... (3.4)
+%   p-error-ia .............. Modal Error de Conexión IA (3.4)
+%   p-analisis .............. Vista de análisis completa (3.5)
+%   p-visual ................ Aviso de diapositiva sin texto analizable (3.5)
+%   p-sugerencias ........... Modal Sugerencias de Mejora (3.5)
+%   p-generar ............... Botón Generar y aplicar cambios (3.6)
+%   p-generado .............. Mensaje de generación exitosa y botón Abrir (3.6)
+%   p-contenido-btn ......... Botón Contenido de la barra superior (3.7)
+%   p-temario ............... Panel Contenido del curso (3.7)
+%   p-historial ............. Vista Historial de la presentación (3.9)
+%   p-analisis-requerido .... Modal Análisis requerido (3.10)
+%   p-docente ............... Vista del docente antes de presentar (3.10)
+%   p-iniciar-clase ......... Formulario Iniciar Clase (3.10)
+%   p-proyeccion ............ Pantalla de proyección para el grupo (3.10)
+%   p-docente-activa ........ Vista del docente con la sesión en curso (3.10)
+%   p-sin-rendimiento ....... Modal Sin datos de rendimiento (3.11)
+%   p-rendimiento ........... Informe de rendimiento completo (3.11)
+%   p-pestanas .............. Pestañas de grupo del informe (3.11)
+%   p-desviaciones .......... Reporte de desviaciones (3.11)
+%   p-ocultas-btn ........... Botón Ocultas del área central (3.12)
+%   p-ocultas-modal ......... Modal Presentaciones ocultas (3.12)
+%   p-confirmar-eliminar .... Modal Confirmar eliminación (3.12)
+%   p-materia-dialog ........ Ventana ¿Ocultar o eliminar materia? (3.12)
+%   p-materias-ocultas ...... Modal Materias ocultas (3.12)
+% ============================================================================
+\documentclass[11pt,letterpaper]{article}
+
+% ---------- Codificación e idioma ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-noshorthands]{babel}
+
+% ---------- Página ----------
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.15}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{3em}
+\raggedbottom
+
+% ---------- Color, gráficos, tablas y listas ----------
+\usepackage[table]{xcolor}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{mdframed}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+% Paleta del documento
+\definecolor{azul}{HTML}{003B70}        % color principal
+\definecolor{azulclaro}{HTML}{0077A8}   % color de acento
+\definecolor{fondo}{HTML}{EEF4F8}       % fondo suave de encabezados y notas
+\definecolor{grisnota}{HTML}{5F6B7A}    % texto secundario
+\definecolor{bordegris}{HTML}{CBD5DF}   % filas de tablas y recuadros
+
+% ---------- Enlaces ----------
+\PassOptionsToPackage{hyphens}{url}
+\usepackage{url}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=azulclaro,citecolor=black]{hyperref}
+\hypersetup{
+  pdftitle={Manual de Usuario — AI Presentation Analyzer},
+  pdfauthor={Escobar Segura Brandon Aldair, Gonzalez Ruiz Karol},
+  pdfsubject={Manual de usuario del prototipo de análisis de presentaciones impulsado por inteligencia artificial},
+}
+
+% ---------- Nombres en español ----------
+\addto\captionsspanish{%
+  \renewcommand{\tablename}{Tabla}%
+  \renewcommand{\listtablename}{Índice de tablas}%
+  \renewcommand{\listfigurename}{Índice de figuras}%
+  \renewcommand{\contentsname}{Contenido}%
+}
+
+% ---------- Pies de figura y de tabla ----------
+\captionsetup{font=small,labelfont={bf,color=azul},labelsep=period,skip=6pt}
+\captionsetup[table]{position=above}
+
+% ---------- Encabezados de sección ----------
+\titleformat{\section}{\sffamily\Large\bfseries\color{azul}}{\thesection}{0.8em}{}
+  [{\color{azulclaro}\titlerule[0.7pt]}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}{\sffamily\large\bfseries\color{azul}}{\thesubsection}{0.7em}{}
+\titlespacing*{\subsection}{0pt}{16pt}{6pt}
+\titleformat{\subsubsection}{\sffamily\normalsize\bfseries\color{azulclaro}}{\thesubsubsection}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{12pt}{4pt}
+\setcounter{tocdepth}{2}
+
+% ---------- Encabezado y pie de página ----------
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{15pt}
+\fancyhead[L]{\small\sffamily\color{azul}Manual de Usuario}
+\fancyhead[R]{\small\sffamily\color{grisnota}AI Presentation Analyzer}
+\fancyfoot[L]{\small\sffamily\color{grisnota}Trabajo Terminal 2026-B127 \textperiodcentered{} ESCOM — IPN}
+\fancyfoot[R]{\small\sffamily\color{azul}\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{azulclaro}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+% ============================================================================
+%  ELEMENTOS DE REDACCIÓN
+% ============================================================================
+% Nombre de un botón o control de la interfaz
+\newcommand{\boton}[1]{\textbf{#1}}
+% Mensaje o texto que aparece en pantalla
+\newcommand{\msg}[1]{«#1»}
+% Tecla del teclado
+\newcommand{\tecla}[1]{\fbox{\footnotesize\texttt{#1}}}
+% Ruta o nombre de archivo
+\newcommand{\ruta}[1]{\texttt{#1}}
+% Símbolos (se definen como macros para no depender de la codificación)
+\newcommand{\fizq}{\ensuremath{\leftarrow}}
+\newcommand{\fder}{\ensuremath{\rightarrow}}
+% Nombre del ejecutable y carpeta de exportación
+\newcommand{\nombreexe}{\ruta{AI Presentation Analyzer.exe}}
+\newcommand{\carpetainterna}{\ruta{\_internal}}
+\newcommand{\carpetadoc}{\texttt{Documentos\textbackslash AI Presentation Analyzer}}
+
+% Lista de pasos numerados
+\newlist{pasos}{enumerate}{1}
+\setlist[pasos]{label=\textcolor{azul}{\bfseries\arabic*.},leftmargin=*,labelsep=0.6em,itemsep=6pt,topsep=4pt}
+\setlist[itemize,1]{leftmargin=*,itemsep=3pt,topsep=4pt,label=\textcolor{azulclaro}{\textbullet}}
+
+% Notas
+\newmdenv[topline=false,bottomline=false,rightline=false,linewidth=2pt,
+  linecolor=azulclaro,backgroundcolor=fondo,innerleftmargin=10pt,
+  innerrightmargin=8pt,innertopmargin=6pt,innerbottommargin=6pt,
+  skipabove=10pt,skipbelow=10pt]{cajanota}
+\newmdenv[topline=false,bottomline=false,rightline=false,linewidth=2pt,
+  linecolor=azul,backgroundcolor=fondo,innerleftmargin=10pt,
+  innerrightmargin=8pt,innertopmargin=6pt,innerbottommargin=6pt,
+  skipabove=10pt,skipbelow=10pt]{cajaimportante}
+\newenvironment{nota}[1][Nota.]{\begin{cajanota}\textbf{\color{azulclaro}#1}\ }{\end{cajanota}}
+\newenvironment{importante}[1][Importante.]{\begin{cajaimportante}\textbf{\color{azul}#1}\ }{\end{cajaimportante}}
+
+% ---------- Tablas ----------
+\renewcommand{\arraystretch}{1.3}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+% Encabezado de columna
+\newcommand{\hdr}[1]{\textcolor{azul}{\sffamily\bfseries #1}}
+% Reglas: superior, bajo el encabezado, entre filas e inferior
+\newcommand{\tini}{\arrayrulecolor{azul}\toprule[1.1pt]\rowcolor{fondo}}
+\newcommand{\tmed}{\arrayrulecolor{azul}\midrule[0.6pt]}
+\newcommand{\tsep}{\arrayrulecolor{bordegris}\midrule[0.3pt]}
+\newcommand{\tfin}{\arrayrulecolor{azul}\bottomrule[1.1pt]}
+
+% ----------------------------------------------------------------------------
+%  Captura de pantalla:  \captura[ancho]{archivo-sin-extension}{descripción}
+%  Incluye img/<archivo>.png; si no existe, muestra un recuadro con el nombre
+%  y la carpeta donde debe guardarse.
+% ----------------------------------------------------------------------------
+\newcommand{\captura}[3][0.8\linewidth]{%
+  \par\medskip
+  \begin{minipage}{\linewidth}
+    \centering
+    \IfFileExists{img/#2.png}%
+      {\includegraphics[width=#1,height=9.5cm,keepaspectratio]{img/#2.png}}%
+      {\fcolorbox{azulclaro}{fondo}{\parbox[c][3.2cm][c]{0.8\linewidth}{\centering\small
+        \textbf{Captura pendiente}\\[3pt]
+        Guardar en la carpeta \texttt{img/} con el nombre\\[2pt]
+        \texttt{#2.png}}}}\par\smallskip
+    \captionof{figure}{#3}\label{fig:#2}
+  \end{minipage}
+  \par\medskip}
+
+% Logotipo de la portada:  \logoportada{ancho}{archivo}
+\newcommand{\logoportada}[2]{%
+  \IfFileExists{img/#2}%
+    {\includegraphics[width=#1,height=3cm,keepaspectratio]{img/#2}}%
+    {\mbox{}}}
+
+% ============================================================================
+\begin{document}
+
+% ============================================================================
+%  PORTADA
+% ============================================================================
+\pagenumbering{gobble}
+\begin{titlepage}
+  \thispagestyle{empty}
+
+  % ---- Encabezado institucional ----
+  \noindent
+  \begin{minipage}[c]{0.18\textwidth}
+    \centering
+    \logoportada{2.0cm}{IPN.png}
+  \end{minipage}\hfill
+  \begin{minipage}[c]{0.60\textwidth}
+    \centering
+    {\sffamily\bfseries\large\color{azul}INSTITUTO POLITÉCNICO NACIONAL}\\[0.15cm]
+    {\sffamily\bfseries\large\color{azul}ESCUELA SUPERIOR DE CÓMPUTO}
+  \end{minipage}\hfill
+  \begin{minipage}[c]{0.18\textwidth}
+    \centering
+    \logoportada{2.8cm}{ESCOM.png}
+  \end{minipage}
+
+  \vspace{0.5cm}
+  {\color{azul}\rule{\linewidth}{1.2pt}}
+
+  \vfill
+
+  % ---- Título ----
+  \begin{center}
+    {\sffamily\large Trabajo Terminal II \quad\textperiodcentered\quad Número: \textbf{2026-B127}}\\[1.4cm]
+    {\sffamily\bfseries\fontsize{34}{40}\selectfont\color{azul}Manual de Usuario}\\[0.5cm]
+    {\color{azulclaro}\rule{0.25\linewidth}{1.5pt}}\\[0.6cm]
+    {\sffamily\LARGE\color{azulclaro}Prototipo de Análisis de Presentaciones\\[0.3cm]
+    Impulsado por Inteligencia Artificial}\\[1.2cm]
+    {\sffamily\large\bfseries Ingeniería en Sistemas Computacionales}
+  \end{center}
+
+  \vfill
+
+  % ---- Autores y directores ----
+  \noindent
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    {\sffamily\bfseries\color{azul}Presentan}\\[0.3cm]
+    Escobar Segura Brandon Aldair\\[0.15cm]
+    Gonzalez Ruiz Karol
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    {\sffamily\bfseries\color{azul}Directores de Trabajo Terminal}\\[0.3cm]
+    Camacho Vázquez Vanessa Alejandra\\[0.15cm]
+    Rosas Carrillo Ary Shared
+  \end{minipage}
+
+  \vspace{1.6cm}
+  {\color{azul}\rule{\linewidth}{1.2pt}}\\[0.3cm]
+  \begin{center}
+    {\sffamily Ciudad de México \quad\textperiodcentered\quad Diciembre 2026}
+  \end{center}
+\end{titlepage}
+
+% ============================================================================
+%  ÍNDICES
+% ============================================================================
+\pagenumbering{roman}
+\pdfbookmark[1]{Contenido}{contenido}
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+
+\pagenumbering{arabic}
+
+% ============================================================================
+%  1. DESCRIPCIÓN GENERAL
+% ============================================================================
+\section{Descripción general}
+\label{sec:overview}
+
+\subsection{Propósito del prototipo}
+\label{sec:proposito}
+
+AI Presentation Analyzer es un prototipo de escritorio desarrollado como Trabajo Terminal en la Escuela Superior de Cómputo (ESCOM) del Instituto Politécnico Nacional. Está dirigido a los profesores de la ESCOM que utilizan presentaciones en formato \ruta{.pptx} como material de apoyo en el aula.
+
+El prototipo evalúa la calidad de cada diapositiva mediante cuatro métricas cuantitativas, emplea la API de Google Gemini para generar recomendaciones específicas de mejora y produce una versión optimizada del archivo con los cambios sugeridos. Además, acompaña al docente durante la exposición mediante un panel de apoyo con cronómetros, preguntas de comprensión y datos de interés, y le entrega al finalizar un informe que contrasta el tiempo real de la sesión con el tiempo estimado por el propio docente y con el tiempo recomendado por la inteligencia artificial.
+
+\subsection{Flujo general de uso}
+\label{sec:flujo}
+
+El trabajo del docente con el prototipo se organiza en cuatro etapas consecutivas, resumidas en la Tabla~\ref{tab:etapas}. Cada etapa depende de la anterior: la exposición requiere que la presentación haya sido analizada, y el informe de rendimiento requiere que la presentación haya sido expuesta al menos una vez.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Etapas del flujo general de uso.}\label{tab:etapas}
+\begin{tabularx}{\linewidth}{L{3.2cm}YC{2.4cm}}
+\tini \hdr{Etapa} & \hdr{Qué realiza el docente} & \hdr{Secciones} \\ \tmed
+1. Preparar & Registra las materias que imparte y carga en cada una sus presentaciones en formato \ruta{.pptx}. & \ref{sec:agregar}, \ref{sec:cargar} \\ \tsep
+2. Analizar y mejorar & Ejecuta el análisis, revisa los resultados por diapositiva y genera la versión optimizada del archivo. & \ref{sec:analizar}--\ref{sec:optimizada} \\ \tsep
+3. Exponer & Proyecta la presentación al grupo desde el prototipo y consulta en su pantalla el panel de apoyo con los cronómetros. & \ref{sec:clase} \\ \tsep
+4. Dar seguimiento & Consulta el informe de rendimiento de cada grupo y el historial de versiones de la presentación. & \ref{sec:historial}, \ref{sec:rendimiento} \\ \tfin
+\end{tabularx}
+\end{table}
+
+\subsection{Funciones que ofrece}
+\label{sec:funciones}
+
+La Tabla~\ref{tab:funciones} enumera las funciones del prototipo y la sección del manual en la que se describe el procedimiento de cada una.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Funciones del prototipo.}\label{tab:funciones}
+\begin{tabularx}{\linewidth}{L{3.6cm}YC{2.4cm}}
+\tini \hdr{Función} & \hdr{Descripción} & \hdr{Sección} \\ \tmed
+Gestión de materias & Registro de las unidades de aprendizaje que imparte el docente a partir del catálogo de la ESCOM, con opciones para ocultarlas, restaurarlas o eliminarlas. & \ref{sec:agregar}, \ref{sec:ocultar} \\ \tsep
+Carga de presentaciones & Registro de archivos \ruta{.pptx} de hasta 30~MB organizados por materia, con miniatura y control de versiones. & \ref{sec:cargar}, \ref{sec:actualizar} \\ \tsep
+Análisis con IA & Evaluación de cada diapositiva con cuatro métricas, tiempo sugerido de exposición y recomendaciones de redacción. & \ref{sec:analizar}, \ref{sec:resultados} \\ \tsep
+Versión optimizada & Generación de un nuevo archivo \ruta{.pptx} con las mejoras sugeridas ya aplicadas. & \ref{sec:optimizada} \\ \tsep
+Cobertura del temario & Identificación, mediante IA, de los temas y subtemas del temario oficial que se abordan en el contenido de las presentaciones analizadas. & \ref{sec:temario} \\ \tsep
+Historial de versiones & Registro de cada versión de la presentación con su evaluación y recomendaciones. & \ref{sec:historial} \\ \tsep
+Sesión en vivo & Proyección al grupo con panel de apoyo para el docente: cronómetros, preguntas y datos de interés por diapositiva. & \ref{sec:clase} \\ \tsep
+Informe de rendimiento & Comparación del tiempo real de exposición con el tiempo estimado por el docente y con el recomendado por la IA, por diapositiva y por grupo. & \ref{sec:rendimiento} \\ \tsep
+Ocultar y eliminar & Retiro temporal o permanente de presentaciones y materias. & \ref{sec:ocultar} \\ \tfin
+\end{tabularx}
+\end{table}
+
+\subsection{Métricas de evaluación}
+\label{sec:metricas}
+
+El análisis revisa cada diapositiva en cuatro aspectos, descritos en la Tabla~\ref{tab:metricas}. Los resultados se presentan con etiquetas cualitativas.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Métricas de evaluación de cada diapositiva.}\label{tab:metricas}
+\begin{tabularx}{\linewidth}{L{4.2cm}YL{2.8cm}}
+\tini \hdr{Métrica} & \hdr{Qué verifica} & \hdr{Etiquetas} \\ \tmed
+Complejidad de Lectura & Que el lenguaje de la diapositiva sea adecuado para estudiantes de nivel superior. & Bien / Mejorar \\ \tsep
+Cantidad de Palabras & Que el texto no sature la diapositiva ni resulte insuficiente para explicar el tema. & Bien / Mejorar \\ \tsep
+Claridad del Encabezado & Que la diapositiva cuente con un encabezado y que este se relacione con su contenido. & Bien / Mejorar \\ \tsep
+Flujo Narrativo & Que exista continuidad temática entre la diapositiva y sus adyacentes. & Bien / Revisar \\ \tfin
+\end{tabularx}
+\end{table}
+
+El desempeño de cada diapositiva y de la presentación completa se expresa con las etiquetas \msg{Excelente}, \msg{Bueno}, \msg{Regular} y \msg{Deficiente}. Cuando una diapositiva no requiere cambios, el prototipo la identifica como \msg{Óptima}.
+
+\begin{nota}[Tiempo sugerido.]
+Junto con las métricas, la inteligencia artificial calcula el tiempo recomendado para exponer cada diapositiva. Este valor sirve como referencia durante la clase y como elemento de comparación en el informe de rendimiento (sección~\ref{sec:rendimiento}).
+\end{nota}
+
+\begin{nota}[Alcance del análisis.]
+Las diapositivas compuestas principalmente por imágenes, sin texto analizable, no reciben evaluación de métricas; en su lugar, el prototipo muestra un aviso indicando que las imágenes no se analizan.
+\end{nota}
+
+\subsection{Requisitos del equipo}
+\label{sec:requisitos}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Requisitos del equipo para utilizar el prototipo.}\label{tab:requisitos}
+\begin{tabularx}{\linewidth}{L{4.8cm}Y}
+\tini \hdr{Requisito} & \hdr{Detalle} \\ \tmed
+Windows & Windows 10 u 11 de 64 bits. \\ \tsep
+Microsoft PowerPoint & Instalado en el equipo; el prototipo lo utiliza para generar la copia en PDF y la versión optimizada de las presentaciones. \\ \tsep
+Conexión a internet & Necesaria durante el análisis, ya que los resultados dependen del servicio de Google Gemini. \\ \tsep
+Clave de Google Gemini & Se obtiene una sola vez y se registra desde el propio prototipo (sección~\ref{sec:configurar}). \\ \tsep
+Proyector o segunda pantalla & Necesario para exponer la clase en vivo (sección~\ref{sec:clase}); el prototipo no permite iniciar la exposición si no detecta una segunda pantalla. \\ \tsep
+Presentaciones \ruta{.pptx} & Archivos de hasta 30~MB cada uno. \\ \tfin
+\end{tabularx}
+\end{table}
+
+\subsection{Convenciones del manual}
+\label{sec:convenciones}
+
+Para facilitar la lectura, el manual emplea las siguientes convenciones:
+
+\begin{itemize}
+  \item Los nombres de botones y controles de la interfaz se escriben en \boton{negritas}.
+  \item Los mensajes y textos que el prototipo muestra en pantalla se escriben entre comillas angulares, por ejemplo \msg{Archivo Duplicado}.
+  \item Las teclas del teclado se indican con un recuadro, por ejemplo \tecla{Enter}.
+  \item Las rutas y los nombres de archivo se escriben en tipo monoespaciado, por ejemplo \ruta{.pptx}.
+  \item Cada procedimiento se presenta como una lista de pasos numerados, acompañados de la captura de pantalla que permite identificar el elemento descrito.
+  \item Las figuras y las tablas cuentan con numeración consecutiva y con su propio índice, al inicio del documento.
+  \item Las referencias del tipo «sección~\ref{sec:cargar}» remiten al apartado donde se explica el tema con mayor detalle.
+\end{itemize}
+
+% ============================================================================
+%  2. MANUAL DE INSTALACIÓN
+% ============================================================================
+\section{Manual de instalación}
+\label{sec:instalacion}
+
+El prototipo se entrega como una carpeta que contiene el archivo ejecutable de Windows y el directorio \carpetainterna, donde se encuentran los componentes que requiere para funcionar. No necesita un instalador, la instalación de programas adicionales ni la edición de archivos de configuración: basta con guardar la carpeta en el equipo y abrir el ejecutable. El único elemento externo es la clave de Google Gemini, que se obtiene desde el navegador y se registra desde el propio prototipo.
+
+\subsection{Requisitos previos}
+\label{sec:previos}
+
+Antes de iniciar, verifique que se cuenta con lo siguiente:
+
+\begin{itemize}
+  \item Equipo con Windows 10 u 11 de 64 bits.
+  \item Microsoft PowerPoint instalado.
+  \item Conexión a internet.
+  \item Una cuenta de Google, necesaria para obtener la clave de Gemini (sección~\ref{sec:clave}).
+  \item Proyector o segunda pantalla, necesarios para exponer la clase en vivo (sección~\ref{sec:clase}).
+\end{itemize}
+
+\subsection{Obtención del prototipo}
+\label{sec:obtener}
+
+\begin{pasos}
+  \item Solicite al equipo del Trabajo Terminal la carpeta del prototipo, que contiene el ejecutable \nombreexe{} y el directorio \carpetainterna.
+  \item Guarde la carpeta completa en la ubicación del equipo que prefiera. No es necesario aislarla de otros archivos; el prototipo funciona con independencia de lo que se encuentre junto a ella.
+\end{pasos}
+
+\begin{nota}
+El ejecutable y el directorio \carpetainterna{} deben permanecer siempre juntos. El directorio contiene los componentes del prototipo y los datos que este registra (presentaciones, análisis e historial), por lo que no debe moverse, renombrarse ni eliminarse de forma independiente.
+\end{nota}
+
+\subsection{Primera ejecución}
+\label{sec:iniciar}
+
+\begin{pasos}
+  \item Abra el archivo \nombreexe{} con doble clic.
+  \item Espere a que se muestre la pantalla principal (sección~\ref{sec:principal}). En la primera ejecución el arranque puede tardar algunos segundos, mientras el prototipo prepara sus datos.
+  \item Para cerrar el prototipo, presione el botón \boton{$\times$} de la ventana. Si hay una proyección en curso, el cierre permanece bloqueado y el prototipo muestra el aviso \msg{Proyección activa} hasta que la sesión se detenga (sección~\ref{sec:clase}).
+\end{pasos}
+
+\begin{nota}
+Al ejecutar el archivo por primera vez, Windows puede mostrar el aviso \msg{Windows protegió su PC}. En ese caso, seleccione \boton{Más información} y después \boton{Ejecutar de todas formas}.
+\end{nota}
+
+\subsection{Obtención de la clave de Google Gemini}
+\label{sec:clave}
+
+El análisis de las presentaciones se realiza con la inteligencia artificial de Google Gemini, para lo cual se requiere una clave personal denominada \msg{API Key}. La clave se obtiene una sola vez desde el navegador.
+
+\begin{pasos}
+  \item Ingrese a \url{https://aistudio.google.com} con su cuenta de Google.
+  \captura[0.85\linewidth]{api-01-ai-studio}{Pantalla principal de Google AI Studio.}
+  \item Seleccione la opción \boton{Get API key} y después \boton{Create API key}.
+  \captura[0.85\linewidth]{api-02-create}{Opciones Get API key y Create API key.}
+  \item Copie la clave generada con el botón de copia y consérvela; se utilizará en la sección~\ref{sec:configurar}.
+  \captura[0.85\linewidth]{api-03-copiar}{Clave generada y botón de copia.}
+\end{pasos}
+
+\begin{importante}
+La clave es personal e intransferible. No debe compartirse ni publicarse, ya que quien la posea puede consumir el servicio de Gemini a nombre de su titular.
+\end{importante}
+
+\subsection{Configuración de la clave y del modelo}
+\label{sec:configurar}
+
+La clave se registra únicamente desde el prototipo; no existen archivos que editar ni configuraciones adicionales.
+
+\begin{pasos}
+  \item Inicie el prototipo (sección~\ref{sec:iniciar}) y presione el botón del engranaje, ubicado en la esquina superior derecha de la barra superior.
+  \captura[0.5\linewidth]{p-engranaje}{Botón de configuración en la barra superior.}
+  \item Se abre la ventana \msg{Configuración de IA}. Pegue la clave en el campo \boton{API Key de Gemini}. El botón \boton{Mostrar / ocultar} permite comprobar que la clave se copió completa.
+  \captura[0.65\linewidth]{p-config-ia}{Ventana Configuración de IA.}
+  \item En el selector \boton{Modelo de IA}, elija el modelo que se utilizará. La lista se carga de forma automática; si no aparece, presione \boton{Actualizar}. El modelo recomendado (\ruta{gemini-3.5-flash-lite}) se muestra preseleccionado.
+  \captura[0.65\linewidth]{p-modelo}{Selector Modelo de IA con la lista de modelos disponibles.}
+  \item Presione \boton{Guardar}. El prototipo muestra el mensaje \msg{Configuración guardada correctamente.} en color verde y cierra la ventana. La configuración se aplica de inmediato, sin necesidad de reiniciar.
+  \captura[0.65\linewidth]{p-guardar}{Confirmación de configuración guardada.}
+\end{pasos}
+
+\begin{nota}
+Si se intenta guardar sin escribir la clave, el prototipo muestra el mensaje \msg{La API Key no puede estar vacía.} en color rojo y no modifica la configuración. La clave y el modelo seleccionados se conservan entre sesiones.
+\end{nota}
+
+\subsection{Verificación de la instalación}
+\label{sec:verificacion}
+
+Una vez configurada la clave, la Tabla~\ref{tab:verificacion} permite confirmar que el prototipo quedó listo para utilizarse.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Verificación de la instalación.}\label{tab:verificacion}
+\begin{tabularx}{\linewidth}{L{5.2cm}Y}
+\tini \hdr{Verificación} & \hdr{Resultado esperado} \\ \tmed
+Abrir el archivo \ruta{.exe} & Se muestra la pantalla principal con el panel \msg{Mis Materias} a la izquierda. \\ \tsep
+Presionar el engranaje & Se abre \msg{Configuración de IA} con la clave guardada (enmascarada) y el modelo seleccionado. \\ \tsep
+Presionar \boton{+ Agregar materia} & Se despliega el catálogo de materias de la ESCOM con su buscador. \\ \tfin
+\end{tabularx}
+\end{table}
+
+\subsection{Actualización y desinstalación}
+\label{sec:desinstalacion}
+
+\textbf{Actualización.} Cuando exista una versión posterior, el equipo del Trabajo Terminal entregará una nueva carpeta del prototipo. La actualización no conserva los análisis realizados con la versión anterior; por ello, después de sustituir la carpeta, el análisis de cada presentación debe ejecutarse nuevamente (sección~\ref{sec:analizar}). Antes de actualizar, conserve una copia de los archivos \ruta{.pptx} originales y de las versiones optimizadas generadas, que se guardan fuera de la carpeta del prototipo, en \carpetadoc.
+
+\textbf{Desinstalación.} Cierre el prototipo y elimine la carpeta que contiene el ejecutable y el directorio \carpetainterna. Esta acción borra de forma permanente las presentaciones, los análisis y el historial registrados. Las versiones optimizadas generadas no se ven afectadas, ya que se almacenan en \carpetadoc{} y permanecen allí hasta que el usuario las elimine.
+
+% ============================================================================
+%  3. GUÍA PASO A PASO POR FUNCIÓN
+% ============================================================================
+\section{Guía paso a paso por función}
+\label{sec:guia}
+
+Esta sección describe el procedimiento de cada función del prototipo en el orden en que normalmente se utilizan. Antes de comenzar, la clave de Gemini debe estar registrada (sección~\ref{sec:configurar}).
+
+% ----------------------------------------------------------------------------
+\subsection{Pantalla principal}
+\label{sec:principal}
+
+Al abrir el prototipo se muestra la pantalla principal, organizada en cuatro zonas:
+
+\begin{itemize}
+  \item \textbf{Panel izquierdo:} contiene la lista \msg{Mis Materias} y los botones \boton{+ Agregar materia} y \boton{Materias ocultas}.
+  \item \textbf{Área central:} muestra las tarjetas de las presentaciones de la materia seleccionada y la tarjeta \boton{Subir presentación}.
+  \item \textbf{Panel derecho:} presenta el \msg{Contenido del curso}, es decir, el temario oficial de la materia (sección~\ref{sec:temario}).
+  \item \textbf{Barra superior:} incluye el botón \boton{$\equiv$ Contenido}, que muestra u oculta el panel derecho, y el botón del engranaje para la configuración de la IA.
+\end{itemize}
+
+\captura[0.9\linewidth]{p-principal}{Pantalla principal con sus cuatro zonas.}
+
+Cada presentación cargada se representa mediante una tarjeta que muestra la miniatura de su primera diapositiva, su nombre y el botón \boton{Ver opciones}. Este botón despliega el menú de acciones disponibles para esa presentación, descritas en la Tabla~\ref{tab:menu}.
+
+\captura[0.5\linewidth]{p-menu}{Menú Ver opciones de la tarjeta de una presentación.}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Opciones del menú de una presentación.}\label{tab:menu}
+\begin{tabularx}{\linewidth}{L{4.6cm}YC{2cm}}
+\tini \hdr{Opción del menú} & \hdr{Función} & \hdr{Sección} \\ \tmed
+Analizar presentación / Ver análisis & Ejecuta el análisis de la presentación o abre los resultados cuando ya fue analizada. & \ref{sec:analizar}, \ref{sec:resultados} \\ \tsep
+Actualizar presentación & Registra un archivo modificado como una nueva versión. & \ref{sec:actualizar} \\ \tsep
+Presentar clase & Abre el módulo de exposición en aula. & \ref{sec:clase} \\ \tsep
+Ver rendimiento & Abre el informe de rendimiento de la presentación. & \ref{sec:rendimiento} \\ \tsep
+Ver historial & Muestra las versiones registradas de la presentación. & \ref{sec:historial} \\ \tsep
+Ocultar / Eliminar & Retira la presentación de la vista o la borra de forma permanente. & \ref{sec:ocultar} \\ \tfin
+\end{tabularx}
+\end{table}
+
+% ----------------------------------------------------------------------------
+\subsection{Agregar una materia}
+\label{sec:agregar}
+
+Las presentaciones se organizan por materia. Antes de cargar una presentación es necesario registrar la materia a la que pertenece, seleccionándola del catálogo de unidades de aprendizaje de la ESCOM.
+
+\begin{pasos}
+  \item En el panel izquierdo, presione \boton{+ Agregar materia}.
+  \captura[0.45\linewidth]{p-agregar-btn}{Botón + Agregar materia en el panel izquierdo.}
+  \item Se abre el catálogo \msg{Agregar materia}. Escriba en el buscador \msg{Buscar materia...} parte del nombre para filtrar la lista, seleccione la materia deseada y presione \boton{Agregar}. El botón permanece deshabilitado hasta que se selecciona una materia.
+  \captura[0.7\linewidth]{p-agregar-modal}{Catálogo de materias de la ESCOM con buscador.}
+  \item La materia aparece en la lista \msg{Mis Materias}, queda seleccionada y su área central se muestra lista para recibir presentaciones.
+  \captura[0.45\linewidth]{p-mis-materias}{Lista Mis Materias con una materia agregada.}
+\end{pasos}
+
+\begin{nota}
+Se pueden registrar todas las materias del catálogo que el docente imparta. Cuando todas ellas ya fueron agregadas, el catálogo muestra el mensaje \msg{Todas las materias ya están agregadas.} y el botón \boton{Cerrar}. Al iniciar, el prototipo selecciona siempre la primera materia de la lista.
+\end{nota}
+
+\begin{nota}[Materias optativas y presentaciones ajenas a la materia.]
+El catálogo no incluye las unidades de aprendizaje optativas. Las presentaciones de una materia optativa pueden analizarse dentro de otra materia del catálogo que sea afín. En ese caso, el análisis, la sesión en vivo, el informe de rendimiento y el historial funcionan con normalidad; la única diferencia es que los temas del panel \msg{Contenido del curso} no se marcan, ya que el temario de esa materia no corresponde al contenido de la presentación y, por tanto, no se da seguimiento a la cobertura temática. Lo mismo ocurre cuando se agrega una presentación que no pertenece a la materia seleccionada: todo funciona correctamente, excepto el alcance temático.
+\end{nota}
+
+% ----------------------------------------------------------------------------
+\subsection{Cargar una presentación}
+\label{sec:cargar}
+
+\begin{pasos}
+  \item En \msg{Mis Materias}, seleccione la materia en la que se trabajará.
+  \item En el área central, presione la tarjeta \boton{Subir presentación}.
+  \captura[0.45\linewidth]{p-subir}{Tarjeta Subir presentación del área central.}
+  \item En el explorador de archivos de Windows, que muestra únicamente archivos con extensión \ruta{.pptx}, seleccione el archivo y confirme.
+  \item Aparece el modal \msg{Cargando presentación...} con una barra de progreso. Mientras permanece visible, la interfaz queda bloqueada; espere a que concluya sin intentar cerrar la ventana.
+  \captura[0.5\linewidth]{p-cargando}{Modal Cargando presentación... durante el proceso de carga.}
+  \item Al finalizar, el prototipo agrega a la cuadrícula la tarjeta de la presentación, con la miniatura de su primera diapositiva, su nombre y el botón \boton{Ver opciones}.
+  \captura[0.45\linewidth]{p-tarjeta}{Tarjeta de una presentación cargada.}
+\end{pasos}
+
+\textbf{Restricciones de la carga.} El prototipo valida cada archivo antes de registrarlo. Si alguna condición de la Tabla~\ref{tab:restricciones} no se cumple, la carga se cancela y no se genera ningún registro.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Restricciones para la carga de presentaciones.}\label{tab:restricciones}
+\begin{tabularx}{\linewidth}{L{3.4cm}Y}
+\tini \hdr{Restricción} & \hdr{Comportamiento del prototipo} \\ \tmed
+Formato & Solo se pueden seleccionar archivos \ruta{.pptx}. \\ \tsep
+Tamaño máximo & Un archivo mayor a 30~MB se rechaza con el modal \msg{Límite de tamaño excedido}, que indica que la presentación supera el límite de 30~MB y no fue cargada. \\ \tsep
+Duplicados & Un archivo con contenido idéntico a una presentación ya registrada se rechaza con el modal \msg{Archivo Duplicado}, que indica que la presentación ya se encuentra registrada. \\ \tsep
+Nombre del archivo & Se recomienda utilizar nombres breves; los nombres demasiado largos pueden impedir la carga debido a las limitaciones de longitud de ruta de Windows. \\ \tfin
+\end{tabularx}
+\end{table}
+
+\captura[0.5\linewidth]{p-limite-tamano}{Modal Límite de tamaño excedido.}
+
+\captura[0.5\linewidth]{p-duplicado}{Modal Archivo Duplicado.}
+
+% ----------------------------------------------------------------------------
+\subsection{Ejecutar el análisis con IA}
+\label{sec:analizar}
+
+\begin{importante}[Requisitos.]
+Para ejecutar el análisis se requiere conexión a internet y la clave de Gemini registrada (sección~\ref{sec:configurar}).
+\end{importante}
+
+\begin{pasos}
+  \item En la tarjeta de la presentación, presione \boton{Ver opciones} (Figura~\ref{fig:p-menu}).
+  \item Seleccione \boton{Analizar presentación}.
+  \item Aparece el modal \msg{Analizando presentación...} con una barra de progreso, mientras el prototipo extrae el contenido de cada diapositiva y consulta a Gemini. El proceso puede tardar algunos minutos en presentaciones extensas. La interfaz permanece bloqueada y no responde al intento de cierre hasta que el análisis concluya.
+  \captura[0.5\linewidth]{p-analizando}{Modal Analizando presentación... durante el análisis.}
+  \item Al terminar, el prototipo abre de forma automática la vista de análisis, descrita en la sección~\ref{sec:resultados}.
+\end{pasos}
+
+Si ocurre un fallo en la conexión con Gemini, el prototipo muestra el modal \msg{Error de Conexión IA} con un mensaje que indica la causa específica del problema, cancela el análisis sin guardar resultados parciales y permite reintentarlo una vez corregida la causa (sección~\ref{sec:mensajes}).
+
+\captura[0.55\linewidth]{p-error-ia}{Modal Error de Conexión IA.}
+
+\begin{nota}
+Una presentación que ya fue analizada muestra en su menú la opción \boton{Ver análisis} en lugar de \boton{Analizar presentación}. Al seleccionarla se abren directamente los resultados guardados, sin repetir el análisis.
+\end{nota}
+
+% ----------------------------------------------------------------------------
+\subsection{Consultar los resultados del análisis}
+\label{sec:resultados}
+
+La vista de análisis se divide en dos zonas: a la izquierda, el visor de diapositivas; a la derecha, el panel \msg{Análisis de IA}, que muestra los resultados de la diapositiva que se está visualizando.
+
+\begin{pasos}
+  \item Observe en el panel derecho el número de la diapositiva, el tiempo sugerido por la IA para exponerla, su desempeño general y las cuatro métricas (\msg{Cantidad de Palabras}, \msg{Complejidad de Lectura}, \msg{Claridad del Encabezado} y \msg{Flujo Narrativo}), cada una con su etiqueta y su retroalimentación específica.
+  \captura[0.95\linewidth]{p-analisis}{Vista de análisis: visor de diapositivas y panel Análisis de IA.}
+  \item Cambie de diapositiva con los botones \tecla{<} y \tecla{>} del visor o con las teclas \tecla{\fizq} y \tecla{\fder}. El panel derecho se actualiza de forma sincronizada con la diapositiva mostrada.
+  \item Si la diapositiva no contiene texto analizable, el panel muestra el aviso \msg{Advertencia: Actualmente el prototipo no es capaz de analizar imágenes.} en lugar de las métricas.
+  \captura[0.6\linewidth]{p-visual}{Aviso mostrado en una diapositiva sin texto analizable.}
+  \item Cuando una diapositiva presenta recomendaciones de redacción, el panel incluye el botón \boton{Ver sugerencias de reestructuración}. Al presionarlo se abre el modal \msg{Sugerencias de Mejora} con el contenido optimizado propuesto, que puede incluir la recomendación de dividir la diapositiva en varias. Presione \boton{Entendido} para cerrarlo.
+  \captura[0.6\linewidth]{p-sugerencias}{Modal Sugerencias de Mejora.}
+\end{pasos}
+
+% ----------------------------------------------------------------------------
+\subsection{Generar la versión optimizada}
+\label{sec:optimizada}
+
+Una vez revisado el análisis, el prototipo puede producir un nuevo archivo \ruta{.pptx} que incorpora las mejoras sugeridas.
+
+\begin{pasos}
+  \item En el panel de resultados, presione \boton{Generar y aplicar cambios}.
+  \captura[0.5\linewidth]{p-generar}{Botón Generar y aplicar cambios.}
+  \item El prototipo muestra el mensaje \msg{Generando archivo PPTX...} mientras elabora el archivo.
+  \item Al concluir, aparece el mensaje \msg{Presentación generada con éxito.} y el botón cambia a \boton{Abrir presentación}. Al presionarlo, el archivo se abre con PowerPoint.
+  \captura[0.5\linewidth]{p-generado}{Mensaje de generación exitosa y botón Abrir presentación.}
+\end{pasos}
+
+Si la presentación ya se encuentra en un nivel óptimo, el prototipo muestra el aviso \msg{Esta presentación ya está en un nivel óptimo. No requiere reestructuración.} y no genera ningún archivo.
+
+\begin{nota}[Ubicación del archivo generado.]
+La versión optimizada se guarda dentro de la carpeta de exportación del prototipo, en una subcarpeta con el nombre de la materia:
+
+\begin{center}
+\texttt{Documentos\textbackslash AI Presentation Analyzer\textbackslash <materia>}
+\end{center}
+
+El archivo se nombra con el formato \ruta{<nombre>\_v<versión>.pptx}. Por ejemplo, la versión~2 de una presentación llamada \msg{Unidad1} se guarda como \ruta{Unidad1\_v2.pptx} dentro de la carpeta de su materia. El archivo original que se cargó nunca se modifica.
+\end{nota}
+
+% ----------------------------------------------------------------------------
+\subsection{Consultar la cobertura del temario}
+\label{sec:temario}
+
+Esta función permite identificar qué temas del temario oficial de la materia se abordan en las presentaciones, para detectar los contenidos pendientes. La identificación no se limita a comparar los encabezados de las diapositivas: durante el análisis, la inteligencia artificial examina el contenido completo de la presentación y determina qué temas y subtemas del temario se están tratando en ella.
+
+\begin{pasos}
+  \item Seleccione la materia en \msg{Mis Materias}.
+  \item Presione el botón \boton{$\equiv$ Contenido} de la barra superior para mostrar el panel derecho.
+  \captura[0.3\linewidth]{p-contenido-btn}{Botón Contenido de la barra superior.}
+  \item El panel \msg{Contenido del curso} lista las unidades, temas y subtemas oficiales de la materia e indica con una marca visual cuáles fueron identificados por la IA en las presentaciones analizadas. Al seleccionar un tema, el prototipo muestra las presentaciones que lo cubren. Los temas sin marca corresponden a contenidos que aún no se han abordado.
+  \captura[0.5\linewidth]{p-temario}{Panel Contenido del curso con el temario de la materia.}
+\end{pasos}
+
+\begin{nota}
+Como la identificación de los temas se realiza durante el análisis, una presentación solo contribuye a la cobertura del temario después de haber sido analizada (sección~\ref{sec:analizar}).
+\end{nota}
+
+% ----------------------------------------------------------------------------
+\subsection{Actualizar una presentación}
+\label{sec:actualizar}
+
+Cuando el docente modifica el archivo \ruta{.pptx} de una presentación ya registrada, no es necesario cargarlo como una presentación nueva.
+
+\begin{pasos}
+  \item En la tarjeta de la presentación, presione \boton{Ver opciones} y seleccione \boton{Actualizar presentación}.
+  \item Elija el archivo modificado en el explorador de Windows.
+  \item El prototipo registra el archivo como una versión nueva (v2, v3, etc.) y conserva las versiones anteriores con sus análisis. El historial se consulta en la sección~\ref{sec:historial}.
+\end{pasos}
+
+Si el archivo seleccionado es idéntico a una versión ya existente, el prototipo muestra el modal \msg{Archivo Duplicado} con el mensaje \msg{El archivo seleccionado es idéntico a una versión que ya existe.} y no crea la versión.
+
+% ----------------------------------------------------------------------------
+\subsection{Consultar el historial de versiones}
+\label{sec:historial}
+
+\begin{pasos}
+  \item En la tarjeta de la presentación, presione \boton{Ver opciones} y seleccione \boton{Ver historial}.
+  \item Se abre la vista \msg{Historial} de la presentación, con una fila por cada versión registrada y las columnas \msg{VER}, \msg{FECHA}, \msg{LÁMINAS}, \msg{ANÁLISIS}, \msg{EVALUACIÓN}, \msg{RECOMENDACIONES} y \msg{EXPORTAR}.
+  \captura[0.95\linewidth]{p-historial}{Vista Historial con las versiones de una presentación.}
+  \item Por cada versión analizada, el botón \boton{Ver Evaluación} permite consultar su evaluación y el botón \boton{Sugerencias IA} muestra sus recomendaciones.
+  \item En la columna \msg{EXPORTAR}, cada versión indica su estado: \msg{Óptima} cuando no requiere cambios; el botón \boton{Generar}, que produce la versión optimizada; o el botón \boton{Abrir}, cuando el archivo ya fue generado (sección~\ref{sec:optimizada}).
+\end{pasos}
+
+\begin{nota}
+Las versiones que aún no han sido analizadas muestran \msg{---} en las columnas \msg{EVALUACIÓN} y \msg{EXPORTAR}, y el texto \msg{Sin análisis} en \msg{RECOMENDACIONES}. Si una presentación no tiene versiones registradas, la vista muestra el mensaje \msg{No se encontraron versiones para esta presentación.}
+\end{nota}
+
+% ----------------------------------------------------------------------------
+\subsection{Presentar la clase en vivo}
+\label{sec:clase}
+
+Este módulo permite exponer la presentación al grupo directamente desde el prototipo. Durante la sesión se utilizan dos pantallas: la del docente, que contiene el panel de apoyo, y la de proyección, que muestra a los alumnos únicamente la diapositiva, sin ningún dato adicional.
+
+\begin{importante}[Requisitos.]
+Para exponer una presentación se requiere (1) que haya sido analizada previamente y (2) un proyector o una segunda pantalla conectados al equipo. Si la presentación no ha sido analizada, el prototipo muestra el modal \msg{Análisis requerido} con el mensaje \msg{Para poder presentar la clase, primero debes ejecutar el Análisis de IA sobre esta versión.} y no abre el módulo. Si no detecta una segunda pantalla, muestra el aviso \msg{Proyector no detectado}, que indica que debe conectarse un proyector o monitor secundario para presentar.
+\end{importante}
+
+\captura[0.5\linewidth]{p-analisis-requerido}{Modal Análisis requerido.}
+
+\subsubsection{Abrir la vista del docente}
+
+\begin{pasos}
+  \item En la tarjeta de la presentación, presione \boton{Ver opciones} y seleccione \boton{Presentar clase}.
+  \item Se abre la vista del docente, con el visor de diapositivas a la izquierda y el panel \msg{Apoyo de Clase} a la derecha. El panel incluye los cronómetros \msg{TOTAL (Sesión)} y \msg{ESTA SLIDE}, junto con las preguntas de comprensión y los datos de interés de la diapositiva mostrada. Los cronómetros permanecen en 00:00 hasta que se inicia la proyección.
+  \captura[0.95\linewidth]{p-docente}{Vista del docente antes de iniciar la proyección.}
+\end{pasos}
+
+\subsubsection{Configurar e iniciar la sesión}
+
+\begin{pasos}
+  \item Presione el botón \boton{Presentar}. Se abre el formulario \msg{Iniciar Clase}, que bloquea el resto de la interfaz mientras permanece abierto.
+  \item Complete los tres campos del formulario:
+  \begin{itemize}
+    \item \textbf{Grupo Escolar:} seleccione un grupo existente con la opción \boton{Seleccionar}, o registre uno nuevo con \boton{Crear Nuevo}. El nombre del grupo admite hasta 5~caracteres alfanuméricos (por ejemplo, \msg{3CV2}) y se convierte automáticamente a mayúsculas.
+    \item \textbf{Tiempo Estimado:} duración prevista de la exposición, en minutos, entre 1 y 90. El campo propone 60~minutos de forma predeterminada.
+    \item \textbf{Dispositivo de Salida:} proyector o pantalla externa donde se proyectará la presentación. No puede seleccionarse la pantalla principal del equipo.
+  \end{itemize}
+  \captura[0.6\linewidth]{p-iniciar-clase}{Formulario Iniciar Clase.}
+  \item Presione \boton{Iniciar Proyección}. En el proyector o la segunda pantalla se presenta la vista del alumno, que contiene únicamente la diapositiva, sin ningún dato adicional: no se muestran cronómetros, preguntas ni elementos del panel de apoyo.
+  \captura[0.6\linewidth]{p-proyeccion}{Pantalla de proyección que observa el grupo.}
+  \item En la pantalla del docente permanece visible el panel \msg{Apoyo de Clase}, con los cronómetros en marcha y el botón \boton{Detener}, que sustituye al botón \boton{Presentar} mientras la sesión está activa.
+  \captura[0.95\linewidth]{p-docente-activa}{Vista del docente con la sesión en curso.}
+\end{pasos}
+
+Si algún campo del formulario no es válido, el prototipo no inicia la sesión y muestra en rojo el mensaje correspondiente (sección~\ref{sec:mensajes}).
+
+\begin{nota}[Reanudación de la clase.]
+Cuando se selecciona un grupo que ya cuenta con sesiones registradas para esa presentación, la exposición se reanuda desde la última diapositiva que se alcanzó con ese grupo. Cada nueva sesión inicia sus cronómetros en cero; el tiempo de las sesiones previas se acumula en el informe de rendimiento.
+\end{nota}
+
+\subsubsection{Conducir la exposición}
+
+La navegación entre diapositivas se realiza desde el teclado, un presentador remoto o los controles del panel, como se resume en la Tabla~\ref{tab:navegacion}. Todos producen el mismo efecto y mantienen sincronizados el visor, el panel de apoyo y la pantalla de proyección.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Controles de navegación durante la exposición.}\label{tab:navegacion}
+\begin{tabularx}{0.95\linewidth}{L{4.6cm}Y}
+\tini \hdr{Tecla o control} & \hdr{Acción} \\ \tmed
+\tecla{\fizq} & Diapositiva anterior. \\ \tsep
+\tecla{\fder}, \tecla{Espacio} o \tecla{Enter} & Diapositiva siguiente. \\ \tsep
+\tecla{Re Pág} / \tecla{Av Pág} & Diapositiva anterior / siguiente (botones de un presentador remoto). \\ \tsep
+Botones \boton{Anterior} y \boton{Siguiente} & Diapositiva anterior / siguiente desde el panel. \\ \tsep
+Campo de número de página & Salto directo: escriba el número de la diapositiva y presione \tecla{Enter}. Si el número no existe, el campo recupera la diapositiva actual. \\ \tfin
+\end{tabularx}
+\end{table}
+
+Durante la sesión, el cronómetro \msg{TOTAL (Sesión)} cambia a color rojo cuando se supera el tiempo estimado ingresado en el formulario. El cronómetro \msg{ESTA SLIDE} conserva el tiempo acumulado de cada diapositiva: al regresar a una diapositiva ya visitada, continúa sumando desde su valor previo.
+
+\subsubsection{Detener la exposición}
+
+\begin{pasos}
+  \item Al terminar la exposición, presione \boton{Detener}. La pantalla de proyección se cierra, los cronómetros se detienen y los tiempos de la sesión quedan registrados para el informe de rendimiento. El botón vuelve a mostrar \boton{Presentar}.
+  \item Para salir de la vista del docente, presione \boton{\fizq{} Volver a inicio} en la barra superior.
+\end{pasos}
+
+\begin{importante}
+Mientras la proyección está activa, el prototipo no permite regresar al menú ni cerrar la ventana. Al intentarlo, la vista del docente muestra el aviso \msg{Proyección activa} (\msg{No puedes regresar al menú mientras estás proyectando.} o \msg{No puedes cerrar la aplicación mientras estás proyectando.}) y la proyección continúa sin interrupción. Las teclas \tecla{Esc} y \tecla{Alt+F4} también permanecen bloqueadas. Para salir, presione primero \boton{Detener}. Los tiempos de la sesión solo se registran al detener la proyección: si el prototipo se cierra de forma abrupta durante la exposición, esa sesión no se conserva.
+\end{importante}
+
+Si el proyector se desconecta durante la clase, la presentación se detiene por seguridad y el prototipo lo notifica. Reconecte el dispositivo e inicie de nuevo la sesión con el mismo grupo: la exposición se reanuda en la última diapositiva registrada.
+
+% ----------------------------------------------------------------------------
+\subsection{Consultar el informe de rendimiento}
+\label{sec:rendimiento}
+
+El informe de rendimiento contrasta el tiempo real que el docente dedicó a la exposición con el tiempo que estimó al iniciar la sesión y con el tiempo que la inteligencia artificial recomendó para la presentación.
+
+\begin{importante}[Requisito.]
+El informe solo está disponible para presentaciones con al menos una sesión de exposición registrada. De lo contrario, al seleccionar \boton{Ver rendimiento}, el prototipo muestra el modal \msg{Sin datos de rendimiento} con el mensaje \msg{Aún no se ha presentado esta clase. Debes presentarla al menos una vez para generar el informe de rendimiento.} y no abre el informe.
+\end{importante}
+
+\captura[0.5\linewidth]{p-sin-rendimiento}{Modal Sin datos de rendimiento.}
+
+\begin{pasos}
+  \item En la tarjeta de la presentación, presione \boton{Ver opciones} y seleccione \boton{Ver rendimiento}.
+  \item En la parte superior del informe se muestran cinco indicadores del grupo seleccionado, descritos en la Tabla~\ref{tab:indicadores}.
+  \captura[0.95\linewidth]{p-rendimiento}{Informe de rendimiento con indicadores y gráfica de tendencia.}
+  \item Debajo de los indicadores, la gráfica \msg{Tendencia de tiempo por diapositiva} compara, para cada diapositiva, el tiempo real (línea continua color guinda con el área inferior sombreada) contra el tiempo recomendado por la IA (línea punteada dorada). El eje horizontal indica el número de diapositiva y el vertical el tiempo en segundos. Al colocar el cursor sobre un punto, aparece el detalle de esa diapositiva; las diapositivas que no se expusieron se marcan con la indicación \msg{(no presentada)}. En presentaciones de más de doce diapositivas, una barra de desplazamiento inferior permite recorrerlas todas.
+  \item Cada grupo escolar cuenta con su propia pestaña. Seleccione la pestaña del grupo que desee consultar: los indicadores y la gráfica se actualizan con los datos exclusivos de ese grupo.
+  \captura[0.6\linewidth]{p-pestanas}{Pestañas de grupo del informe de rendimiento.}
+  \item Para ver el detalle de las diferencias, presione \boton{Desviaciones}. Se abre el reporte \msg{Desviaciones de tiempo por diapositiva}, que toma como referencia el tiempo estimado por el docente, repartido entre las diapositivas en proporción al tiempo que la IA recomienda para cada una. El reporte se organiza en dos columnas: \msg{Diapositivas que duraron muy poco} y \msg{Diapositivas que duraron mucho}. Cada columna lista hasta tres diapositivas con su número, el tiempo real, el tiempo planeado y el porcentaje de desviación. Si una columna no tiene casos, muestra el mensaje \msg{Sin diapositivas en esta categoría.} Presione \boton{Entendido} para cerrar el reporte.
+  \captura[0.7\linewidth]{p-desviaciones}{Reporte de desviaciones de tiempo por diapositiva.}
+  \item Para regresar a la pantalla principal, presione \boton{\fizq{} Volver a inicio}.
+\end{pasos}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Indicadores del informe de rendimiento.}\label{tab:indicadores}
+\begin{tabularx}{\linewidth}{L{3.4cm}Y}
+\tini \hdr{Indicador} & \hdr{Qué muestra} \\ \tmed
+Calificación & Etiqueta de desempeño de la presentación (\msg{Excelente}, \msg{Bueno}, \msg{Regular} o \msg{Deficiente}), derivada del análisis. \\ \tsep
+Tiempo IA & Tiempo total que la inteligencia artificial recomienda para exponer la presentación. \\ \tsep
+Planeó Docente & Tiempo estimado que el docente ingresó en el formulario al iniciar la última sesión del grupo. \\ \tsep
+Duración Real & Tiempo total registrado durante la exposición, junto con la cantidad de diapositivas presentadas respecto al total (por ejemplo, \msg{7/7 diapositivas}). \\ \tsep
+Desviación & Diferencia porcentual entre la duración real total de la sesión y el tiempo estimado por el docente. \\ \tfin
+\end{tabularx}
+\end{table}
+
+\begin{nota}[Colores de la desviación.]
+Las tarjetas \msg{Duración Real} y \msg{Desviación} cambian de color según la diferencia respecto al tiempo estimado por el docente: verde cuando se encuentra dentro del rango aceptable ($\pm$20\,\%), ámbar cuando el tiempo fue significativamente menor y naranja cuando fue significativamente mayor. Si el grupo no registró tiempo estimado, no existe referencia de comparación y la desviación se muestra como \msg{---}.
+\end{nota}
+
+% ----------------------------------------------------------------------------
+\subsection{Ocultar, restaurar y eliminar}
+\label{sec:ocultar}
+
+El prototipo ofrece dos formas de retirar elementos de la vista, comparadas en la Tabla~\ref{tab:ocultar}: \textbf{ocultar}, que es reversible y conserva todos los datos, y \textbf{eliminar}, que es permanente.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Diferencias entre ocultar y eliminar.}\label{tab:ocultar}
+\begin{tabularx}{\linewidth}{L{2.6cm}YC{2.8cm}}
+\tini \hdr{Acción} & \hdr{Efecto} & \hdr{¿Reversible?} \\ \tmed
+Ocultar & Retira el elemento de la vista; conserva archivos, versiones y análisis. & Sí \\ \tsep
+Eliminar & Borra de forma permanente el elemento con todos sus archivos, versiones, análisis y sesiones. & No \\ \tfin
+\end{tabularx}
+\end{table}
+
+\subsubsection{Presentaciones}
+
+\begin{pasos}
+  \item En la tarjeta de la presentación, presione \boton{Ver opciones} y seleccione \boton{Ocultar} o \boton{Eliminar}.
+  \item Al seleccionar \boton{Eliminar}, el prototipo muestra el modal \msg{Confirmar eliminación}, que advierte que se eliminarán todos los datos, versiones y análisis del archivo. Presione \boton{Eliminar} para confirmar o \boton{Cancelar} para conservar la presentación.
+  \captura[0.5\linewidth]{p-confirmar-eliminar}{Modal Confirmar eliminación.}
+  \item Para consultar las presentaciones ocultas, presione el botón \boton{Ocultas} del encabezado del área central.
+  \captura[0.3\linewidth]{p-ocultas-btn}{Botón Ocultas del área central.}
+  \item En el modal \msg{Presentaciones ocultas} se lista cada presentación con los botones \boton{Restaurar}, que la devuelve a su materia con todas sus versiones y análisis, y \boton{Eliminar}, que la borra de forma permanente tras una confirmación adicional.
+  \captura[0.55\linewidth]{p-ocultas-modal}{Modal Presentaciones ocultas.}
+\end{pasos}
+
+\subsubsection{Materias}
+
+\begin{pasos}
+  \item En el panel izquierdo, presione el ícono de la papelera de la materia.
+  \item Se abre la ventana \msg{¿Ocultar o eliminar materia?}, que describe el efecto de cada opción. \boton{Ocultar} retira la materia del panel y conserva todos sus archivos y análisis; \boton{Eliminar todo} borra de forma permanente sus archivos y su historial; \boton{Cancelar} cierra la ventana sin realizar cambios.
+  \captura[0.6\linewidth]{p-materia-dialog}{Ventana ¿Ocultar o eliminar materia?}
+  \item Para consultar las materias ocultas, presione \boton{Materias ocultas} en la parte inferior del panel izquierdo. El modal las lista con el botón \boton{Mostrar}, que devuelve la materia al panel con todos sus datos.
+  \captura[0.55\linewidth]{p-materias-ocultas}{Modal Materias ocultas.}
+\end{pasos}
+
+% ============================================================================
+%  4. PROBLEMAS PRINCIPALES
+% ============================================================================
+\section{Problemas principales}
+\label{sec:problemas}
+
+Esta sección describe los mensajes que puede mostrar el prototipo, las situaciones más frecuentes y la acción recomendada en cada caso.
+
+\subsection{Mensajes del prototipo}
+\label{sec:mensajes}
+
+La Tabla~\ref{tab:mensajes} reúne los mensajes que el prototipo presenta al usuario, el momento en que aparecen y la acción recomendada.
+
+\begin{longtable}{L{5.2cm}L{4.4cm}L{5.2cm}}
+\caption{Mensajes del prototipo.}\label{tab:mensajes}\\
+\tini \hdr{Mensaje en pantalla} & \hdr{Cuándo aparece} & \hdr{Qué hacer} \\ \tmed
+\endfirsthead
+\multicolumn{3}{l}{\small\itshape\color{grisnota}Tabla~\thetable{} (continuación)}\\
+\tini \hdr{Mensaje en pantalla} & \hdr{Cuándo aparece} & \hdr{Qué hacer} \\ \tmed
+\endhead
+\tsep\endfoot
+\tfin\endlastfoot
+\msg{La API Key no puede estar vacía.} & Al guardar la configuración de IA sin escribir la clave. & Pegue la clave de Gemini en el campo correspondiente (sección~\ref{sec:configurar}). \\ \tsep
+\msg{No se pudo cargar la lista: ...} & Al actualizar la lista de modelos con una clave incorrecta o sin conexión. & Verifique la clave y la conexión a internet, y presione \boton{Actualizar}. \\ \tsep
+\msg{Error de Conexión IA}: \msg{SIN CONEXIÓN A INTERNET...} & Al analizar sin acceso a internet. & Verifique la conexión y reintente el análisis; no se guardó ningún resultado parcial. \\ \tsep
+\msg{Error de Conexión IA}: \msg{CLAVE INVÁLIDA...} & Al analizar con una clave de Gemini incorrecta. & Revise la clave en \msg{Configuración de IA} o genere una nueva (secciones~\ref{sec:clave} y~\ref{sec:configurar}). \\ \tsep
+\msg{Error de Conexión IA}: \msg{LÍMITE DE CUOTA GEMINI...} & Al superar el límite de peticiones por minuto del servicio. & Espere el tiempo que indica el mensaje (por ejemplo, 37 segundos) y reintente. \\ \tsep
+\msg{Límite de tamaño excedido} & Al cargar un archivo mayor a 30~MB. & Reduzca el peso del archivo comprimiendo las imágenes desde PowerPoint, o divida el contenido en dos presentaciones. \\ \tsep
+\msg{Archivo Duplicado} & Al cargar un archivo cuyo contenido ya está registrado, o al actualizar con un archivo idéntico a la última versión. & Verifique que no se trate del mismo archivo; si se modificó el contenido, use \boton{Actualizar presentación} (sección~\ref{sec:actualizar}). \\ \tsep
+\msg{Análisis requerido} & Al intentar presentar una clase con una versión sin analizar. & Ejecute primero el análisis de esa versión (sección~\ref{sec:analizar}). \\ \tsep
+\msg{Proyector no detectado} & Al intentar presentar una clase sin proyector ni segunda pantalla conectados. & Conecte un proyector o monitor secundario y presione de nuevo \boton{Presentar}. \\ \tsep
+\msg{Error: Seleccione el Proyector/Ext, no la pantalla principal.} & Al iniciar la proyección con la pantalla principal como dispositivo de salida. & En \msg{Dispositivo de Salida}, elija el proyector o la pantalla externa. \\ \tsep
+\msg{Proyección activa} & Al intentar regresar al menú o cerrar la ventana mientras hay una proyección en curso. & Presione \boton{Detener} y después repita la acción (sección~\ref{sec:clase}). \\ \tsep
+\msg{Sin datos de rendimiento} & Al abrir el informe de una presentación sin sesiones registradas. & Exponga la presentación al menos una vez y deténgala con \boton{Detener} (sección~\ref{sec:clase}). \\ \tsep
+\msg{Error: El campo de grupo no puede estar vacío.} & Al iniciar la proyección sin indicar el grupo. & Seleccione un grupo existente o escriba el nombre de uno nuevo. \\ \tsep
+\msg{Error: Grupo debe ser alfanumérico (máx 5 caracteres).} & Al escribir un grupo con símbolos o con más de 5 caracteres. & Use únicamente letras y números, con un máximo de 5 caracteres. \\ \tsep
+\msg{Error: El tiempo debe ser mayor a 0 y máximo 90 min.} & Al ingresar un tiempo fuera del intervalo permitido. & Ingrese un valor entre 1 y 90 minutos. \\ \tsep
+\msg{Error: Ingresa un número entero válido para el tiempo.} & Al escribir texto o decimales en el campo de tiempo. & Ingrese un número entero de minutos. \\ \tsep
+\msg{Advertencia: Actualmente el prototipo no es capaz de analizar imágenes.} & Al consultar una diapositiva sin texto analizable. & No requiere acción; la diapositiva no recibe evaluación de métricas. \\
+\end{longtable}
+
+\subsection{Situaciones frecuentes}
+\label{sec:situaciones}
+
+La Tabla~\ref{tab:situaciones} describe las situaciones que se presentan con mayor frecuencia, su causa probable y el procedimiento para resolverlas.
+
+\begin{longtable}{L{4.4cm}L{4.8cm}L{5.6cm}}
+\caption{Situaciones frecuentes y su solución.}\label{tab:situaciones}\\
+\tini \hdr{Situación} & \hdr{Causa probable} & \hdr{Qué hacer} \\ \tmed
+\endfirsthead
+\multicolumn{3}{l}{\small\itshape\color{grisnota}Tabla~\thetable{} (continuación)}\\
+\tini \hdr{Situación} & \hdr{Causa probable} & \hdr{Qué hacer} \\ \tmed
+\endhead
+\tsep\endfoot
+\tfin\endlastfoot
+El prototipo no abre. & El archivo \ruta{.exe} se separó del directorio \carpetainterna, o el antivirus o Windows bloquearon su ejecución. & Verifique que el ejecutable y el directorio \carpetainterna{} se encuentren en la misma carpeta y ábralo de nuevo; si Windows muestra \msg{Windows protegió su PC}, seleccione \boton{Más información} y \boton{Ejecutar de todas formas}. Si persiste, repórtelo al equipo del Trabajo Terminal. \\ \tsep
+El prototipo se cierra al cargar una presentación. & El archivo \ruta{.pptx} está dañado o no contiene diapositivas. & Abra el archivo en PowerPoint para verificar que se visualice correctamente, guárdelo de nuevo y repita la carga. \\ \tsep
+La carga falla con un archivo de nombre muy largo. & Windows limita la longitud de las rutas de archivo. & Renombre el archivo con un nombre más breve y vuelva a cargarlo. \\ \tsep
+La tarjeta se creó, pero la miniatura tarda en aparecer. & La miniatura se genera al finalizar la carga. & Espere unos segundos y vuelva a seleccionar la materia en \msg{Mis Materias}. \\ \tsep
+La interfaz no responde mientras se carga o analiza. & El prototipo bloquea la interfaz durante estos procesos para evitar operaciones simultáneas. & Espere a que el modal de progreso concluya. El análisis puede tardar varios minutos en presentaciones extensas; no cierre la ventana. \\ \tsep
+No aparece \boton{Analizar presentación} en el menú. & La presentación ya fue analizada. & Seleccione \boton{Ver análisis} para abrir los resultados guardados. \\ \tsep
+La versión aparece como \msg{Sin análisis} en el historial. & La versión se cargó pero aún no se ha analizado. & Ejecute el análisis de esa versión (sección~\ref{sec:analizar}). \\ \tsep
+No se puede iniciar la proyección. & No hay un proyector o una segunda pantalla conectados, o la presentación no ha sido analizada. & Conecte el dispositivo, ejecute el análisis si hace falta y abra de nuevo el formulario \msg{Iniciar Clase}. \\ \tsep
+La proyección se detuvo sola durante la clase. & El proyector o la segunda pantalla se desconectaron. & Reconecte el dispositivo e inicie de nuevo la sesión con el mismo grupo; se reanuda en la última diapositiva registrada. \\ \tsep
+No es posible regresar al menú ni cerrar la ventana. & Hay una proyección activa; el prototipo bloquea esas acciones y muestra el aviso \msg{Proyección activa}. & Presione \boton{Detener} y después \boton{\fizq{} Volver a inicio}. \\ \tsep
+Los tiempos de una clase no aparecen en el informe. & La sesión no se detuvo con \boton{Detener}, o el prototipo se cerró de forma abrupta durante la exposición. & Detenga siempre la proyección con \boton{Detener}. La sesión interrumpida no puede recuperarse. \\ \tsep
+En el informe aparecen más pestañas de grupo de las esperadas. & Se inició una sesión sin seleccionar un grupo y quedó registrado un grupo adicional con muy poco tiempo. & Considere ese grupo como un registro de prueba e ignórelo en la lectura del informe. \\
+\end{longtable}
+
+\subsection{Comportamientos conocidos del prototipo}
+\label{sec:conocidos}
+
+Los siguientes comportamientos corresponden a limitaciones identificadas durante la validación del prototipo y no constituyen fallas de uso.
+
+\begin{itemize}
+  \item \textbf{Sin autoguardado durante la exposición.} Los tiempos de una sesión se escriben únicamente al presionar \boton{Detener}. Un cierre abrupto del prototipo durante la proyección implica la pérdida de esa sesión.
+  \item \textbf{Catálogo sin materias optativas.} El catálogo de unidades de aprendizaje no incluye las materias optativas. Sus presentaciones pueden analizarse en otra materia afín, pero sin seguimiento de la cobertura del temario (sección~\ref{sec:agregar}).
+  \item \textbf{Diapositivas con imágenes.} Las diapositivas sin texto analizable no se evalúan; el prototipo solo muestra un aviso.
+  \item \textbf{Dependencia de internet.} El análisis requiere conexión y está sujeto a los límites del servicio de Gemini. Si el servicio no está disponible, el análisis se cancela completo y no se guardan resultados parciales.
+  \item \textbf{Análisis no conservados al actualizar.} Al sustituir el prototipo por una versión posterior, los análisis registrados con la versión anterior no se conservan y deben ejecutarse de nuevo (sección~\ref{sec:desinstalacion}).
+  \item \textbf{Un archivo por carga.} El explorador de archivos permite seleccionar un solo archivo a la vez.
+\end{itemize}
+
+\subsection{Recomendaciones de uso}
+\label{sec:recomendaciones}
+
+\begin{itemize}
+  \item Registre la clave de Gemini una sola vez y verifíquela antes de utilizar el análisis por primera vez.
+  \item Recuerde que el análisis es un requisito para exponer la presentación; puede ejecutarse en cualquier momento previo a iniciar la clase, sin necesidad de realizarlo con anticipación.
+  \item Detenga siempre la proyección con \boton{Detener} al terminar la exposición, para que los tiempos queden registrados en el informe.
+  \item Utilice \boton{Actualizar presentación} para registrar nuevas versiones del mismo material, en lugar de cargar archivos duplicados.
+  \item Prefiera \boton{Ocultar} sobre \boton{Eliminar} cuando aún pueda necesitar el material: lo oculto se restaura, lo eliminado no.
+  \item Conserve juntos el ejecutable y el directorio \carpetainterna; los datos del prototipo se almacenan en esa carpeta.
+  \item Antes de actualizar el prototipo, conserve una copia de sus archivos \ruta{.pptx} originales, ya que los análisis deberán ejecutarse de nuevo.
+\end{itemize}
+
+\subsection{Soporte}
+\label{sec:soporte}
+
+Si se presenta un problema que no se describe en este manual, repórtelo al equipo del Trabajo Terminal 2026-B127 e incluya la siguiente información:
+
+\begin{itemize}
+  \item La acción que se estaba realizando al ocurrir el problema.
+  \item El texto exacto del mensaje que apareció en pantalla, o una captura del mismo.
+  \item El nombre de la presentación y de la materia involucradas.
+\end{itemize}
+
+\end{document}
